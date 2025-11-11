@@ -79,6 +79,30 @@
             </Setter>
         </Style>
 
+        <!-- Curled Corner Style -->
+        <Style x:Key="CurledCornerStyle" TargetType="Path">
+            <Setter Property="Width" Value="25"/>
+            <Setter Property="Height" Value="25"/>
+            <Setter Property="Fill">
+                <Setter.Value>
+                    <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
+                        <GradientStop Color="#40000000" Offset="0"/>
+                        <GradientStop Color="#20000000" Offset="0.5"/>
+                        <GradientStop Color="#10FFFFFF" Offset="1"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Data" Value="M 0,25 L 25,25 L 25,0 Q 20,10 0,25 Z"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="VerticalAlignment" Value="Bottom"/>
+            <Setter Property="RenderTransformOrigin" Value="1,1"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#60000000" Direction="225" ShadowDepth="3" Opacity="0.5" BlurRadius="6"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <!-- Title Style -->
         <Style x:Key="TitleStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="18"/>
@@ -422,10 +446,13 @@
                                             <GradientStop Color="#C0392B" Offset="1"/>
                                         </LinearGradientBrush>
                                     </Border.Background>
-                                    <StackPanel>
-                                        <TextBlock Text="🔴 服務運行" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
-                                        <TextBlock Text="{Binding StatusViewModel.IsRunning}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="24"/>
-                                    </StackPanel>
+                                    <Grid>
+                                        <StackPanel>
+                                            <TextBlock Text="🔴 服務運行" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                            <TextBlock Text="{Binding StatusViewModel.IsRunning}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="24"/>
+                                        </StackPanel>
+                                        <Path Style="{StaticResource CurledCornerStyle}"/>
+                                    </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
                             </Grid>
@@ -521,7 +548,12 @@
                         </UniformGrid>
 
                         <!-- System Info Card -->
-                        <Border Style="{StaticResource CardStyle}" Margin="15,20">
+                        <Grid Margin="15,20">
+                            <Border Style="{StaticResource CardStyle}" Margin="0">
+                                <Border.RenderTransform>
+                                    <RotateTransform Angle="-0.5"/>
+                                </Border.RenderTransform>
+                                <Border.RenderTransformOrigin>0.5,0</Border.RenderTransformOrigin>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -546,7 +578,9 @@
                                                Margin="0,5,0,0"/>
                                 </StackPanel>
                             </Grid>
-                        </Border>
+                            </Border>
+                            <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
+                        </Grid>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
@@ -558,72 +592,91 @@
                         <TextBlock Text="上傳佇列" Style="{StaticResource TitleStyle}" Margin="20,10,0,10"/>
                         <UniformGrid Columns="2" Rows="3" Margin="5,0">
                             <!-- Pending -->
-                            <Border Style="{StaticResource StatusCardStyle}">
-                                <Border.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                        <GradientStop Color="#3498DB" Offset="0"/>
-                                        <GradientStop Color="#2980B9" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Border.Background>
-                                <StackPanel>
-                                    <TextBlock Text="📋 待處理" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
-                                    <TextBlock Text="{Binding QueueViewModel.PendingCount}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
-                                </StackPanel>
-                            </Border>
+                            <Grid>
+                                <Border Style="{StaticResource StatusCardStyle2}">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                            <GradientStop Color="#3498DB" Offset="0"/>
+                                            <GradientStop Color="#2980B9" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                    <StackPanel>
+                                        <TextBlock Text="📋 待處理" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                        <TextBlock Text="{Binding QueueViewModel.PendingCount}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
+                                    </StackPanel>
+                                </Border>
+                                <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
+                            </Grid>
 
                             <!-- Retrying -->
-                            <Border Style="{StaticResource StatusCardStyle}">
-                                <Border.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                        <GradientStop Color="#F39C12" Offset="0"/>
-                                        <GradientStop Color="#E67E22" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Border.Background>
-                                <StackPanel>
-                                    <TextBlock Text="🔄 重試中" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
-                                    <TextBlock Text="{Binding QueueViewModel.RetryingCount}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
-                                </StackPanel>
-                            </Border>
+                            <Grid>
+                                <Border Style="{StaticResource StatusCardStyle3}">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                            <GradientStop Color="#F39C12" Offset="0"/>
+                                            <GradientStop Color="#E67E22" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                    <StackPanel>
+                                        <TextBlock Text="🔄 重試中" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                        <TextBlock Text="{Binding QueueViewModel.RetryingCount}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
+                                    </StackPanel>
+                                </Border>
+                                <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
+                            </Grid>
 
                             <!-- Failed -->
-                            <Border Style="{StaticResource StatusCardStyle}">
-                                <Border.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                        <GradientStop Color="#E74C3C" Offset="0"/>
-                                        <GradientStop Color="#C0392B" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Border.Background>
-                                <StackPanel>
-                                    <TextBlock Text="❌ 失敗" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
-                                    <TextBlock Text="{Binding QueueViewModel.FailedCount}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
-                                </StackPanel>
-                            </Border>
+                            <Grid>
+                                <Border Style="{StaticResource StatusCardStyle}">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                            <GradientStop Color="#E74C3C" Offset="0"/>
+                                            <GradientStop Color="#C0392B" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                    <StackPanel>
+                                        <TextBlock Text="❌ 失敗" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                        <TextBlock Text="{Binding QueueViewModel.FailedCount}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
+                                    </StackPanel>
+                                </Border>
+                                <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
+                            </Grid>
 
                             <!-- Total Depth -->
-                            <Border Style="{StaticResource StatusCardStyle}">
-                                <Border.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                        <GradientStop Color="#9B59B6" Offset="0"/>
-                                        <GradientStop Color="#8E44AD" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Border.Background>
-                                <StackPanel>
-                                    <TextBlock Text="📊 總深度" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
-                                    <TextBlock Text="{Binding QueueViewModel.TotalDepth}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
-                                </StackPanel>
-                            </Border>
+                            <Grid>
+                                <Border Style="{StaticResource StatusCardStyle2}">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                            <GradientStop Color="#9B59B6" Offset="0"/>
+                                            <GradientStop Color="#8E44AD" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                    <StackPanel>
+                                        <TextBlock Text="📊 總深度" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                        <TextBlock Text="{Binding QueueViewModel.TotalDepth}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
+                                    </StackPanel>
+                                </Border>
+                                <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
+                            </Grid>
                         </UniformGrid>
 
                         <!-- Oldest Queued Info -->
-                        <Border Style="{StaticResource CardStyle}" Margin="15,20">
-                            <StackPanel>
-                                <TextBlock Text="⏰ 最舊佇列項目" Style="{StaticResource LabelStyle}"/>
-                                <TextBlock Text="{Binding QueueViewModel.OldestQueuedAt}"
-                                           Style="{StaticResource ValueStyle}"
-                                           FontSize="16"
-                                           Margin="0,5,0,0"/>
-                            </StackPanel>
-                        </Border>
+                        <Grid Margin="15,20">
+                            <Border Style="{StaticResource CardStyle}" Margin="0">
+                                <Border.RenderTransform>
+                                    <RotateTransform Angle="0.8"/>
+                                </Border.RenderTransform>
+                                <Border.RenderTransformOrigin>0.5,0</Border.RenderTransformOrigin>
+                                <StackPanel>
+                                    <TextBlock Text="⏰ 最舊佇列項目" Style="{StaticResource LabelStyle}"/>
+                                    <TextBlock Text="{Binding QueueViewModel.OldestQueuedAt}"
+                                               Style="{StaticResource ValueStyle}"
+                                               FontSize="16"
+                                               Margin="0,5,0,0"/>
+                                </StackPanel>
+                            </Border>
+                            <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
+                        </Grid>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
