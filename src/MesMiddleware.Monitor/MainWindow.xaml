@@ -83,23 +83,24 @@
         <Style x:Key="CurledCornerStyle" TargetType="Path">
             <Setter Property="HorizontalAlignment" Value="Right"/>
             <Setter Property="VerticalAlignment" Value="Bottom"/>
-            <Setter Property="Width" Value="35"/>
-            <Setter Property="Height" Value="35"/>
+            <Setter Property="Width" Value="45"/>
+            <Setter Property="Height" Value="45"/>
             <Setter Property="Stretch" Value="Fill"/>
             <Setter Property="Margin" Value="0,0,-18,-15"/>
-            <Setter Property="Data" Value="M 0,35 L 35,35 L 35,0 Z"/>
+            <Setter Property="Data" Value="M 0,45 Q 8,40 15,40 L 45,40 L 45,15 Q 40,8 40,0 L 0,45 Z"/>
             <Setter Property="Fill">
                 <Setter.Value>
-                    <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
-                        <GradientStop Color="#60000000" Offset="0"/>
-                        <GradientStop Color="#30000000" Offset="0.5"/>
+                    <RadialGradientBrush Center="1,1" RadiusX="1" RadiusY="1" GradientOrigin="0.7,0.7">
+                        <GradientStop Color="#80000000" Offset="0"/>
+                        <GradientStop Color="#50000000" Offset="0.4"/>
+                        <GradientStop Color="#30000000" Offset="0.7"/>
                         <GradientStop Color="Transparent" Offset="1"/>
-                    </LinearGradientBrush>
+                    </RadialGradientBrush>
                 </Setter.Value>
             </Setter>
             <Setter Property="Effect">
                 <Setter.Value>
-                    <DropShadowEffect Color="#40FFFFFF" Direction="135" ShadowDepth="1" Opacity="0.7" BlurRadius="2"/>
+                    <DropShadowEffect Color="#60FFFFFF" Direction="135" ShadowDepth="2" Opacity="0.8" BlurRadius="4"/>
                 </Setter.Value>
             </Setter>
         </Style>
