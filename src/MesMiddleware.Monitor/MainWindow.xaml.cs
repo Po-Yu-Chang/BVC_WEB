@@ -40,14 +40,13 @@ public partial class MainWindow : Window
         await _viewModel.InitializeAsync();
     }
 
-    private void Window_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+    private async void Window_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
         // Dispose tray icon immediately
         _trayIcon?.Dispose();
 
-        // Fire-and-forget: Start shutdown but don't wait
-        // This prevents 5-10 second delay when closing window
-        _ = _viewModel.ShutdownAsync();
+        // Shutdown ViewModel resources (now fast - no waiting)
+        await _viewModel.ShutdownAsync();
 
         // Force immediate application shutdown
         Application.Current.Shutdown();

@@ -95,7 +95,8 @@ public partial class QueueViewModel : ObservableObject
     public void StopPeriodicRefresh()
     {
         _refreshCts?.Cancel();
-        _refreshTask?.Wait(TimeSpan.FromSeconds(5));
+        // Don't wait for task completion - immediate shutdown
+        // _refreshTask?.Wait(TimeSpan.FromSeconds(5));
         _refreshCts?.Dispose();
     }
 
