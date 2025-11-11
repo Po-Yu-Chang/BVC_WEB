@@ -79,17 +79,27 @@
             </Setter>
         </Style>
 
-        <!-- Curled Corner Style - Enhanced -->
-        <Style x:Key="CurledCornerStyle" TargetType="Canvas">
-            <Setter Property="Width" Value="40"/>
-            <Setter Property="Height" Value="40"/>
+        <!-- Curled Corner Triangle Style -->
+        <Style x:Key="CurledCornerStyle" TargetType="Polygon">
+            <Setter Property="Points" Value="0,30 30,30 30,0"/>
             <Setter Property="HorizontalAlignment" Value="Right"/>
             <Setter Property="VerticalAlignment" Value="Bottom"/>
-            <Setter Property="Margin" Value="0,0,-2,-2"/>
+            <Setter Property="Margin" Value="0,0,0,0"/>
+            <Setter Property="Fill">
+                <Setter.Value>
+                    <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
+                        <GradientStop Color="#60000000" Offset="0"/>
+                        <GradientStop Color="#30000000" Offset="0.5"/>
+                        <GradientStop Color="Transparent" Offset="1"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#40FFFFFF" Direction="135" ShadowDepth="1" Opacity="0.7" BlurRadius="2"/>
+                </Setter.Value>
+            </Setter>
         </Style>
-
-        <!-- Curled Corner Shadow Path -->
-        <PathGeometry x:Key="CurledCornerGeometry">M 0,40 L 40,40 L 40,0 Q 30,15 0,40 Z</PathGeometry>
 
         <!-- Title Style -->
         <Style x:Key="TitleStyle" TargetType="TextBlock">
@@ -440,27 +450,7 @@
                                             <TextBlock Text="{Binding StatusViewModel.IsRunning}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="24"/>
                                         </StackPanel>
                                         <!-- Curled Corner -->
-                                        <Canvas Style="{StaticResource CurledCornerStyle}">
-                                            <!-- Shadow layer -->
-                                            <Path Data="{StaticResource CurledCornerGeometry}" Opacity="0.3">
-                                                <Path.Fill>
-                                                    <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
-                                                        <GradientStop Color="#80000000" Offset="0"/>
-                                                        <GradientStop Color="#40000000" Offset="0.6"/>
-                                                        <GradientStop Color="Transparent" Offset="1"/>
-                                                    </LinearGradientBrush>
-                                                </Path.Fill>
-                                            </Path>
-                                            <!-- Highlight layer -->
-                                            <Path Data="{StaticResource CurledCornerGeometry}" Canvas.Left="1" Canvas.Top="1" Opacity="0.5">
-                                                <Path.Fill>
-                                                    <LinearGradientBrush StartPoint="1,0" EndPoint="0,1">
-                                                        <GradientStop Color="#60FFFFFF" Offset="0.7"/>
-                                                        <GradientStop Color="Transparent" Offset="1"/>
-                                                    </LinearGradientBrush>
-                                                </Path.Fill>
-                                            </Path>
-                                        </Canvas>
+                                        <Polygon Style="{StaticResource CurledCornerStyle}"/>
                                     </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
@@ -475,10 +465,14 @@
                                             <GradientStop Color="#2980B9" Offset="1"/>
                                         </LinearGradientBrush>
                                     </Border.Background>
-                                    <StackPanel>
-                                        <TextBlock Text="🌐 WebAPI 連接" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
-                                        <TextBlock Text="{Binding StatusViewModel.IsWebApiConnected}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="24"/>
-                                    </StackPanel>
+                                    <Grid>
+                                        <StackPanel>
+                                            <TextBlock Text="🌐 WebAPI 連接" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                            <TextBlock Text="{Binding StatusViewModel.IsWebApiConnected}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="24"/>
+                                        </StackPanel>
+                                        <!-- Curled Corner -->
+                                        <Polygon Style="{StaticResource CurledCornerStyle}"/>
+                                    </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
                             </Grid>
@@ -492,10 +486,14 @@
                                             <GradientStop Color="#8E44AD" Offset="1"/>
                                         </LinearGradientBrush>
                                     </Border.Background>
-                                    <StackPanel>
-                                        <TextBlock Text="💾 共享記憶體" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
-                                        <TextBlock Text="{Binding StatusViewModel.IsSharedMemoryActive}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="24"/>
-                                    </StackPanel>
+                                    <Grid>
+                                        <StackPanel>
+                                            <TextBlock Text="💾 共享記憶體" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                            <TextBlock Text="{Binding StatusViewModel.IsSharedMemoryActive}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="24"/>
+                                        </StackPanel>
+                                        <!-- Curled Corner -->
+                                        <Polygon Style="{StaticResource CurledCornerStyle}"/>
+                                    </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
                             </Grid>
@@ -513,10 +511,14 @@
                                             <GradientStop Color="#27AE60" Offset="1"/>
                                         </LinearGradientBrush>
                                     </Border.Background>
-                                    <StackPanel>
-                                        <TextBlock Text="📥 總接收數據" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
-                                        <TextBlock Text="{Binding StatusViewModel.TotalDataReceived}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="32"/>
-                                    </StackPanel>
+                                    <Grid>
+                                        <StackPanel>
+                                            <TextBlock Text="📥 總接收數據" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                            <TextBlock Text="{Binding StatusViewModel.TotalDataReceived}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="32"/>
+                                        </StackPanel>
+                                        <!-- Curled Corner -->
+                                        <Polygon Style="{StaticResource CurledCornerStyle}"/>
+                                    </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
                             </Grid>
@@ -530,10 +532,14 @@
                                             <GradientStop Color="#E67E22" Offset="1"/>
                                         </LinearGradientBrush>
                                     </Border.Background>
-                                    <StackPanel>
-                                        <TextBlock Text="✅ 成功上傳" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
-                                        <TextBlock Text="{Binding StatusViewModel.SuccessfulUploads}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="32"/>
-                                    </StackPanel>
+                                    <Grid>
+                                        <StackPanel>
+                                            <TextBlock Text="✅ 成功上傳" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                            <TextBlock Text="{Binding StatusViewModel.SuccessfulUploads}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="32"/>
+                                        </StackPanel>
+                                        <!-- Curled Corner -->
+                                        <Polygon Style="{StaticResource CurledCornerStyle}"/>
+                                    </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
                             </Grid>
@@ -547,10 +553,14 @@
                                             <GradientStop Color="#16A085" Offset="1"/>
                                         </LinearGradientBrush>
                                     </Border.Background>
-                                    <StackPanel>
-                                        <TextBlock Text="⏳ 佇列中" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
-                                        <TextBlock Text="{Binding StatusViewModel.QueuedUploads}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="32"/>
-                                    </StackPanel>
+                                    <Grid>
+                                        <StackPanel>
+                                            <TextBlock Text="⏳ 佇列中" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                            <TextBlock Text="{Binding StatusViewModel.QueuedUploads}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="32"/>
+                                        </StackPanel>
+                                        <!-- Curled Corner -->
+                                        <Polygon Style="{StaticResource CurledCornerStyle}"/>
+                                    </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
                             </Grid>
@@ -609,10 +619,14 @@
                                             <GradientStop Color="#2980B9" Offset="1"/>
                                         </LinearGradientBrush>
                                     </Border.Background>
-                                    <StackPanel>
-                                        <TextBlock Text="📋 待處理" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
-                                        <TextBlock Text="{Binding QueueViewModel.PendingCount}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
-                                    </StackPanel>
+                                    <Grid>
+                                        <StackPanel>
+                                            <TextBlock Text="📋 待處理" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                            <TextBlock Text="{Binding QueueViewModel.PendingCount}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
+                                        </StackPanel>
+                                        <!-- Curled Corner -->
+                                        <Polygon Style="{StaticResource CurledCornerStyle}"/>
+                                    </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
                             </Grid>
@@ -626,10 +640,14 @@
                                             <GradientStop Color="#E67E22" Offset="1"/>
                                         </LinearGradientBrush>
                                     </Border.Background>
-                                    <StackPanel>
-                                        <TextBlock Text="🔄 重試中" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
-                                        <TextBlock Text="{Binding QueueViewModel.RetryingCount}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
-                                    </StackPanel>
+                                    <Grid>
+                                        <StackPanel>
+                                            <TextBlock Text="🔄 重試中" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                            <TextBlock Text="{Binding QueueViewModel.RetryingCount}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
+                                        </StackPanel>
+                                        <!-- Curled Corner -->
+                                        <Polygon Style="{StaticResource CurledCornerStyle}"/>
+                                    </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
                             </Grid>
@@ -643,10 +661,14 @@
                                             <GradientStop Color="#C0392B" Offset="1"/>
                                         </LinearGradientBrush>
                                     </Border.Background>
-                                    <StackPanel>
-                                        <TextBlock Text="❌ 失敗" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
-                                        <TextBlock Text="{Binding QueueViewModel.FailedCount}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
-                                    </StackPanel>
+                                    <Grid>
+                                        <StackPanel>
+                                            <TextBlock Text="❌ 失敗" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                            <TextBlock Text="{Binding QueueViewModel.FailedCount}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
+                                        </StackPanel>
+                                        <!-- Curled Corner -->
+                                        <Polygon Style="{StaticResource CurledCornerStyle}"/>
+                                    </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
                             </Grid>
@@ -660,10 +682,14 @@
                                             <GradientStop Color="#8E44AD" Offset="1"/>
                                         </LinearGradientBrush>
                                     </Border.Background>
-                                    <StackPanel>
-                                        <TextBlock Text="📊 總深度" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
-                                        <TextBlock Text="{Binding QueueViewModel.TotalDepth}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
-                                    </StackPanel>
+                                    <Grid>
+                                        <StackPanel>
+                                            <TextBlock Text="📊 總深度" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                            <TextBlock Text="{Binding QueueViewModel.TotalDepth}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
+                                        </StackPanel>
+                                        <!-- Curled Corner -->
+                                        <Polygon Style="{StaticResource CurledCornerStyle}"/>
+                                    </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
                             </Grid>
