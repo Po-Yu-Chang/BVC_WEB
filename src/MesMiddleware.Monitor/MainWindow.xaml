@@ -79,31 +79,20 @@
             </Setter>
         </Style>
 
-        <!-- Curled Corner Triangle Style -->
-        <Style x:Key="CurledCornerStyle" TargetType="Path">
+        <!-- Curled Corner Effect - Dual Layer Style -->
+        <Style x:Key="CurledCornerStyle" TargetType="Canvas">
             <Setter Property="HorizontalAlignment" Value="Right"/>
             <Setter Property="VerticalAlignment" Value="Bottom"/>
-            <Setter Property="Width" Value="45"/>
-            <Setter Property="Height" Value="45"/>
-            <Setter Property="Stretch" Value="Fill"/>
+            <Setter Property="Width" Value="50"/>
+            <Setter Property="Height" Value="50"/>
             <Setter Property="Margin" Value="0,0,-18,-15"/>
-            <Setter Property="Data" Value="M 0,45 Q 8,40 15,40 L 45,40 L 45,15 Q 40,8 40,0 L 0,45 Z"/>
-            <Setter Property="Fill">
-                <Setter.Value>
-                    <RadialGradientBrush Center="1,1" RadiusX="1" RadiusY="1" GradientOrigin="0.7,0.7">
-                        <GradientStop Color="#80000000" Offset="0"/>
-                        <GradientStop Color="#50000000" Offset="0.4"/>
-                        <GradientStop Color="#30000000" Offset="0.7"/>
-                        <GradientStop Color="Transparent" Offset="1"/>
-                    </RadialGradientBrush>
-                </Setter.Value>
-            </Setter>
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect Color="#60FFFFFF" Direction="135" ShadowDepth="2" Opacity="0.8" BlurRadius="4"/>
-                </Setter.Value>
-            </Setter>
         </Style>
+
+        <!-- Back Triangle (Folded underside - darker) -->
+        <PathGeometry x:Key="FoldBackGeometry">M 0,50 L 50,50 L 50,0 Z</PathGeometry>
+
+        <!-- Front Triangle (Visible curl - lighter with gradient) -->
+        <PathGeometry x:Key="FoldFrontGeometry">M 0,50 L 50,50 L 50,0 Z</PathGeometry>
 
         <!-- Title Style -->
         <Style x:Key="TitleStyle" TargetType="TextBlock">
@@ -453,8 +442,25 @@
                                             <TextBlock Text="🔴 服務運行" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding StatusViewModel.IsRunning}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="24"/>
                                         </StackPanel>
-                                        <!-- Curled Corner - Inside Border, will rotate with Border -->
-                                        <Path Style="{StaticResource CurledCornerStyle}"/>
+                                        <!-- Curled Corner - Dual Layer Effect -->
+                                        <Canvas Style="{StaticResource CurledCornerStyle}">
+                                            <!-- Back layer - darker underside of fold -->
+                                            <Path Data="{StaticResource FoldBackGeometry}" Fill="#30000000"/>
+                                            <!-- Front layer - visible curl with gradient -->
+                                            <Path Data="{StaticResource FoldFrontGeometry}">
+                                                <Path.Fill>
+                                                    <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
+                                                        <GradientStop Color="#A0000000" Offset="0"/>
+                                                        <GradientStop Color="#60000000" Offset="0.3"/>
+                                                        <GradientStop Color="#30000000" Offset="0.6"/>
+                                                        <GradientStop Color="Transparent" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Path.Fill>
+                                                <Path.Effect>
+                                                    <DropShadowEffect Color="#80000000" Direction="315" ShadowDepth="3" Opacity="0.6" BlurRadius="5"/>
+                                                </Path.Effect>
+                                            </Path>
+                                        </Canvas>
                                     </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
