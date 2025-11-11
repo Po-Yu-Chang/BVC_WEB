@@ -80,11 +80,11 @@
         </Style>
 
         <!-- Curled Corner Triangle Style -->
-        <Style x:Key="CurledCornerStyle" TargetType="Polygon">
-            <Setter Property="Points" Value="0,30 30,30 30,0"/>
+        <Style x:Key="CurledCornerStyle" TargetType="Path">
             <Setter Property="HorizontalAlignment" Value="Right"/>
             <Setter Property="VerticalAlignment" Value="Bottom"/>
-            <Setter Property="Margin" Value="0,0,0,0"/>
+            <Setter Property="Margin" Value="0,0,-1,-1"/>
+            <Setter Property="Data" Value="M 0,35 L 35,35 L 35,0 Z"/>
             <Setter Property="Fill">
                 <Setter.Value>
                     <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
@@ -450,7 +450,7 @@
                                             <TextBlock Text="{Binding StatusViewModel.IsRunning}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="24"/>
                                         </StackPanel>
                                         <!-- Curled Corner -->
-                                        <Polygon Style="{StaticResource CurledCornerStyle}"/>
+                                        <Path Style="{StaticResource CurledCornerStyle}"/>
                                     </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
@@ -471,7 +471,7 @@
                                             <TextBlock Text="{Binding StatusViewModel.IsWebApiConnected}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="24"/>
                                         </StackPanel>
                                         <!-- Curled Corner -->
-                                        <Polygon Style="{StaticResource CurledCornerStyle}"/>
+                                        <Path Style="{StaticResource CurledCornerStyle}"/>
                                     </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
@@ -492,7 +492,7 @@
                                             <TextBlock Text="{Binding StatusViewModel.IsSharedMemoryActive}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="24"/>
                                         </StackPanel>
                                         <!-- Curled Corner -->
-                                        <Polygon Style="{StaticResource CurledCornerStyle}"/>
+                                        <Path Style="{StaticResource CurledCornerStyle}"/>
                                     </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
@@ -517,7 +517,7 @@
                                             <TextBlock Text="{Binding StatusViewModel.TotalDataReceived}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="32"/>
                                         </StackPanel>
                                         <!-- Curled Corner -->
-                                        <Polygon Style="{StaticResource CurledCornerStyle}"/>
+                                        <Path Style="{StaticResource CurledCornerStyle}"/>
                                     </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
@@ -538,7 +538,7 @@
                                             <TextBlock Text="{Binding StatusViewModel.SuccessfulUploads}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="32"/>
                                         </StackPanel>
                                         <!-- Curled Corner -->
-                                        <Polygon Style="{StaticResource CurledCornerStyle}"/>
+                                        <Path Style="{StaticResource CurledCornerStyle}"/>
                                     </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
@@ -559,7 +559,7 @@
                                             <TextBlock Text="{Binding StatusViewModel.QueuedUploads}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="32"/>
                                         </StackPanel>
                                         <!-- Curled Corner -->
-                                        <Polygon Style="{StaticResource CurledCornerStyle}"/>
+                                        <Path Style="{StaticResource CurledCornerStyle}"/>
                                     </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
@@ -625,7 +625,7 @@
                                             <TextBlock Text="{Binding QueueViewModel.PendingCount}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
                                         </StackPanel>
                                         <!-- Curled Corner -->
-                                        <Polygon Style="{StaticResource CurledCornerStyle}"/>
+                                        <Path Style="{StaticResource CurledCornerStyle}"/>
                                     </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
@@ -646,7 +646,7 @@
                                             <TextBlock Text="{Binding QueueViewModel.RetryingCount}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
                                         </StackPanel>
                                         <!-- Curled Corner -->
-                                        <Polygon Style="{StaticResource CurledCornerStyle}"/>
+                                        <Path Style="{StaticResource CurledCornerStyle}"/>
                                     </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
@@ -667,7 +667,7 @@
                                             <TextBlock Text="{Binding QueueViewModel.FailedCount}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
                                         </StackPanel>
                                         <!-- Curled Corner -->
-                                        <Polygon Style="{StaticResource CurledCornerStyle}"/>
+                                        <Path Style="{StaticResource CurledCornerStyle}"/>
                                     </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
@@ -688,7 +688,7 @@
                                             <TextBlock Text="{Binding QueueViewModel.TotalDepth}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
                                         </StackPanel>
                                         <!-- Curled Corner -->
-                                        <Polygon Style="{StaticResource CurledCornerStyle}"/>
+                                        <Path Style="{StaticResource CurledCornerStyle}"/>
                                     </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
