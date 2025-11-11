@@ -1,90 +1,90 @@
-# MES Middleware - Shared Memory Integration
+# MES 中介軟體 - 共享記憶體整合
 
 [![.NET](https://img.shields.io/badge/.NET-9.0-512BD4)](https://dotnet.microsoft.com/)
-[![Tests](https://img.shields.io/badge/tests-108%20passing-brightgreen)](tests/)
-[![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)](FINAL_COVERAGE_REPORT.md)
-[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![測試](https://img.shields.io/badge/tests-108%20passing-brightgreen)](tests/)
+[![覆蓋率](https://img.shields.io/badge/coverage-100%25-brightgreen)](FINAL_COVERAGE_REPORT.md)
+[![授權](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-A production-ready Windows Service and WPF Desktop application for bridging equipment data to MES cloud systems via shared memory IPC.
+生產級的 Windows 服務與 WPF 桌面應用程式，透過共享記憶體 IPC 將設備資料橋接至 MES 雲端系統。
 
-## 🎯 Features
+## 🎯 功能特色
 
-### ✅ User Story 1: Equipment Data Collection (MVP)
-- **Automated data flow** from equipment → shared memory → middleware → WebAPI
-- **Offline queue** with SQLite persistence and exponential backoff retry
-- **FluentValidation** for data quality assurance
-- **JWT authentication** with automatic token refresh
-- **Dead letter queue** for failed uploads after 5 retries
+### ✅ 使用者故事 1：設備資料收集 (MVP)
+- **自動化資料流**：設備 → 共享記憶體 → 中介軟體 → WebAPI
+- **離線佇列**：SQLite 持久化與指數退避重試機制
+- **FluentValidation**：資料品質保證
+- **JWT 驗證**：自動令牌更新
+- **死信佇列**：5 次重試後失敗的上傳
 
-### ✅ User Story 2: Real-Time Monitoring Dashboard
-- **WPF Desktop UI** (.NET 9) with system tray integration
-- **Connection status indicators** (green/red/yellow)
-- **Upload history** with filtering and search (max 1000 records)
-- **Balloon notifications** for errors and warnings
-- **Auto-refresh** every 2 seconds
+### ✅ 使用者故事 2：即時監控儀表板
+- **WPF 桌面介面**（.NET 9）與系統匣整合
+- **連線狀態指示器**（綠色/紅色/黃色）
+- **上傳歷史記錄**：篩選與搜尋（最多 1000 筆）
+- **氣泡通知**：錯誤與警告提示
+- **自動更新**：每 2 秒更新一次
 
-### ✅ User Story 3: Bidirectional Command & Control
-- **Equipment command sending** via shared memory (`MES_EQUIPMENT_CMD`)
-- **Acknowledgment tracking** with 30-second timeout
-- **Command history** display in WPF UI
-- **WebAPI integration** for command acknowledgment reporting
-- **Thread-safe** concurrent command writes
+### ✅ 使用者故事 3：雙向指令控制
+- **設備指令傳送**：透過共享記憶體（`MES_EQUIPMENT_CMD`）
+- **確認追蹤**：30 秒逾時機制
+- **指令歷史**：在 WPF UI 顯示
+- **WebAPI 整合**：指令確認回報
+- **執行緒安全**：並發指令寫入
 
-## 🏗️ Architecture
+## 🏗️ 系統架構
 
 ```
 ┌─────────────────┐      ┌──────────────────┐      ┌─────────────┐
-│   Equipment     │◄────►│  Middleware      │◄────►│  WebAPI     │
-│   (C++/C#)      │ IPC  │  Windows Service │ HTTP │  (Cloud)    │
+│   設備          │◄────►│  中介軟體        │◄────►│  WebAPI     │
+│   (C++/C#)      │ IPC  │  Windows 服務    │ HTTP │  (雲端)     │
 │                 │      │  (.NET 9)        │      │             │
 └─────────────────┘      └──────────────────┘      └─────────────┘
                                  ▲
-                                 │ SQLite DB
-                                 │ (Offline Queue)
+                                 │ SQLite 資料庫
+                                 │ (離線佇列)
                                  ▼
                          ┌──────────────────┐
-                         │  WPF Monitor     │
-                         │  Desktop App     │
+                         │  WPF 監控        │
+                         │  桌面應用程式    │
                          │  (.NET 9)        │
                          └──────────────────┘
 ```
 
-### Technologies
+### 技術架構
 
-- **.NET 9**: Latest framework with C# 12
-- **Windows Service**: Auto-start on boot
-- **WPF**: Cross-platform desktop UI
-- **Entity Framework Core 9**: SQLite persistence
-- **Hangfire**: Background job scheduling
-- **Serilog**: Structured logging
-- **FluentValidation**: Data validation
-- **xUnit + FluentAssertions + Moq**: Testing framework
+- **.NET 9**：最新框架與 C# 12
+- **Windows 服務**：開機自動啟動
+- **WPF**：跨平台桌面 UI
+- **Entity Framework Core 9**：SQLite 持久化
+- **Hangfire**：背景工作排程
+- **Serilog**：結構化日誌記錄
+- **FluentValidation**：資料驗證
+- **xUnit + FluentAssertions + Moq**：測試框架
 
-## 🚀 Quick Start
+## 🚀 快速開始
 
-### Prerequisites
+### 系統需求
 
-- Windows 10/11 or Windows Server 2019+
-- .NET 9 SDK (for development)
-- SQL Server LocalDB or SQLite (for development)
+- Windows 10/11 或 Windows Server 2019+
+- .NET 9 SDK（開發環境）
+- SQL Server LocalDB 或 SQLite（開發環境）
 
-### Installation
+### 安裝步驟
 
-#### 1. Install Middleware Service
+#### 1. 安裝中介軟體服務
 
 ```powershell
-# Run as Administrator
+# 以系統管理員身分執行
 .\install-service.ps1
 ```
 
-This will:
-- Create Windows Service `MesMiddleware`
-- Configure auto-start on boot
-- Start the service immediately
+這將會：
+- 建立 Windows 服務 `MesMiddleware`
+- 設定開機自動啟動
+- 立即啟動服務
 
-#### 2. Configure Settings
+#### 2. 設定檔配置
 
-Edit `appsettings.json`:
+編輯 `appsettings.json`：
 
 ```json
 {
@@ -105,110 +105,110 @@ Edit `appsettings.json`:
 }
 ```
 
-#### 3. Launch Monitor Application
+#### 3. 啟動監控應用程式
 
 ```powershell
-# Run the WPF desktop application
+# 執行 WPF 桌面應用程式
 .\src\MesMiddleware.Monitor\bin\Release\net9.0-windows\MesMiddleware.Monitor.exe
 ```
 
-## 📊 Test Coverage
+## 📊 測試覆蓋率
 
-**Total: 108 tests - 100% passing** ✅
+**總計：108 個測試 - 100% 通過** ✅
 
-| Component | Tests | Coverage |
+| 元件 | 測試數 | 覆蓋率 |
 |-----------|-------|----------|
-| Service (Backend) | 82 tests | 100% |
-| Monitor (Desktop UI) | 26 tests | 100% |
-| User Story 1 (Data Collection) | 54 tests | 100% |
-| User Story 2 (Monitoring UI) | 26 tests | 100% |
-| User Story 3 (Bidirectional Commands) | 28 tests | 100% |
+| 服務（後端） | 82 個測試 | 100% |
+| 監控（桌面 UI） | 26 個測試 | 100% |
+| 使用者故事 1（資料收集） | 54 個測試 | 100% |
+| 使用者故事 2（監控 UI） | 26 個測試 | 100% |
+| 使用者故事 3（雙向指令） | 28 個測試 | 100% |
 
-### Run Tests
+### 執行測試
 
 ```bash
-# Run all tests
+# 執行所有測試
 dotnet test
 
-# Run with coverage
+# 執行測試並產生覆蓋率報告
 dotnet test --collect:"XPlat Code Coverage"
 
-# Run specific test category
+# 執行特定類別測試
 dotnet test --filter "FullyQualifiedName~Integration"
 ```
 
-## 📁 Project Structure
+## 📁 專案結構
 
 ```
 MesMiddleware/
 ├── src/
-│   ├── MesMiddleware.Service/          # Windows Service (backend)
+│   ├── MesMiddleware.Service/          # Windows 服務（後端）
 │   │   ├── Services/
-│   │   │   ├── SharedMemory/           # IPC layer
-│   │   │   ├── WebApi/                 # HTTP client + auth
-│   │   │   └── Queue/                  # Offline queue
+│   │   │   ├── SharedMemory/           # IPC 層
+│   │   │   ├── WebApi/                 # HTTP 客戶端 + 驗證
+│   │   │   └── Queue/                  # 離線佇列
 │   │   ├── Data/                       # EF Core DbContext
-│   │   ├── Models/                     # Domain entities
-│   │   └── Program.cs                  # Service entry point
-│   ├── MesMiddleware.Monitor/          # WPF Desktop App
+│   │   ├── Models/                     # 領域實體
+│   │   └── Program.cs                  # 服務進入點
+│   ├── MesMiddleware.Monitor/          # WPF 桌面應用程式
 │   │   ├── ViewModels/                 # MVVM ViewModels
-│   │   ├── Views/                      # XAML views
-│   │   ├── Services/                   # API client
-│   │   └── Models/                     # UI models
-│   └── MesMiddleware.Shared/           # Shared models
-│       └── Models/                     # Data contracts
+│   │   ├── Views/                      # XAML 視圖
+│   │   ├── Services/                   # API 客戶端
+│   │   └── Models/                     # UI 模型
+│   └── MesMiddleware.Shared/           # 共享模型
+│       └── Models/                     # 資料合約
 ├── tests/
-│   ├── MesMiddleware.Service.Tests/    # Backend tests
-│   │   ├── Unit/                       # Unit tests
-│   │   ├── Integration/                # Integration tests
-│   │   └── Contract/                   # Contract tests
-│   └── MesMiddleware.Monitor.Tests/    # UI tests
-│       └── Unit/                       # ViewModel tests
-├── specs/                              # Feature specifications
+│   ├── MesMiddleware.Service.Tests/    # 後端測試
+│   │   ├── Unit/                       # 單元測試
+│   │   ├── Integration/                # 整合測試
+│   │   └── Contract/                   # 合約測試
+│   └── MesMiddleware.Monitor.Tests/    # UI 測試
+│       └── Unit/                       # ViewModel 測試
+├── specs/                              # 功能規格
 │   └── 002-shared-memory-middleware/
-│       ├── spec.md                     # Feature requirements
-│       ├── plan.md                     # Implementation plan
-│       ├── tasks.md                    # Task breakdown (79 tasks)
-│       └── data-model.md               # Data schemas
-└── README.md                           # This file
+│       ├── spec.md                     # 功能需求
+│       ├── plan.md                     # 實作計畫
+│       ├── tasks.md                    # 任務分解（79 個任務）
+│       └── data-model.md               # 資料結構
+└── README.md                           # 本檔案
 ```
 
-## 🔧 Configuration
+## 🔧 設定說明
 
-### Shared Memory Settings
+### 共享記憶體設定
 
-Equipment must write JSON data to named shared memory segments:
+設備必須將 JSON 資料寫入具名共享記憶體區段：
 
-**Data Upload (Equipment → Middleware):**
-- Segment: `MES_INSPECTION_DATA`
-- Event: `MES_DATA_READY` (EventWaitHandle)
-- Format: UTF-8 JSON with 4-byte length prefix
+**資料上傳（設備 → 中介軟體）：**
+- 區段：`MES_INSPECTION_DATA`
+- 事件：`MES_DATA_READY`（EventWaitHandle）
+- 格式：UTF-8 JSON，前綴 4 位元組長度
 
-**Command Control (Middleware → Equipment):**
-- Segment: `MES_EQUIPMENT_CMD`
-- Event: `MES_CMD_READY` (EventWaitHandle)
-- Format: UTF-8 JSON with 4-byte length prefix
+**指令控制（中介軟體 → 設備）：**
+- 區段：`MES_EQUIPMENT_CMD`
+- 事件：`MES_CMD_READY`（EventWaitHandle）
+- 格式：UTF-8 JSON，前綴 4 位元組長度
 
-**Acknowledgment (Equipment → Middleware):**
-- Segment: `MES_EQUIPMENT_CMD_ACK`
-- Event: `MES_ACK_READY` (EventWaitHandle)
-- Format: UTF-8 JSON with 4-byte length prefix
+**確認回覆（設備 → 中介軟體）：**
+- 區段：`MES_EQUIPMENT_CMD_ACK`
+- 事件：`MES_ACK_READY`（EventWaitHandle）
+- 格式：UTF-8 JSON，前綴 4 位元組長度
 
-### Data Schema
+### 資料結構
 
-#### InspectionRecord (Equipment → WebAPI)
+#### InspectionRecord（設備 → WebAPI）
 
 ```json
 {
   "rowNo": "ROW_001",
-  "procName": "Inspection Process",
+  "procName": "檢驗流程",
   "devName": "MACHINE-01",
-  "userName": "operator",
-  "workClass": "Day",
+  "userName": "操作員",
+  "workClass": "日班",
   "traceCode": "TRACE123",
   "paramData": [
     {
-      "name": "Dimension_X",
+      "name": "尺寸_X",
       "value": "10.5",
       "unit": "mm",
       "status": "Pass"
@@ -220,7 +220,7 @@ Equipment must write JSON data to named shared memory segments:
 }
 ```
 
-#### EquipmentCommand (Middleware → Equipment)
+#### EquipmentCommand（中介軟體 → 設備）
 
 ```json
 {
@@ -234,26 +234,26 @@ Equipment must write JSON data to named shared memory segments:
 }
 ```
 
-#### CommandAcknowledgment (Equipment → Middleware)
+#### CommandAcknowledgment（設備 → 中介軟體）
 
 ```json
 {
   "commandId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "status": "Success",
-  "message": "Parameter updated successfully",
+  "message": "參數更新成功",
   "acknowledgedAt": "2025-01-11T12:00:05Z"
 }
 ```
 
-## 📝 Logging
+## 📝 日誌記錄
 
-Logs are written to `logs/` directory with daily rotation:
+日誌寫入 `logs/` 目錄，每日輪替：
 
-- **Service logs**: `logs/middleware-service-{Date}.log`
-- **Monitor logs**: `logs/middleware-monitor-{Date}.log`
-- **Retention**: 7 days (configurable in `appsettings.json`)
+- **服務日誌**：`logs/middleware-service-{Date}.log`
+- **監控日誌**：`logs/middleware-monitor-{Date}.log`
+- **保留期限**：7 天（可在 `appsettings.json` 設定）
 
-### Log Levels
+### 日誌等級
 
 ```json
 {
@@ -269,15 +269,15 @@ Logs are written to `logs/` directory with daily rotation:
 }
 ```
 
-## 🔍 Monitoring & Health Checks
+## 🔍 監控與健康檢查
 
-### Health Check Endpoint
+### 健康檢查端點
 
 ```bash
-# Check service health
+# 檢查服務健康狀態
 curl http://localhost:5000/health
 
-# Response
+# 回應範例
 {
   "status": "Healthy",
   "sharedMemoryAvailable": true,
@@ -286,77 +286,77 @@ curl http://localhost:5000/health
 }
 ```
 
-### Hangfire Dashboard
+### Hangfire 儀表板
 
-Access background job dashboard at:
+存取背景工作儀表板：
 ```
 http://localhost:5000/hangfire
 ```
 
-Monitor:
-- Queued uploads
-- Retry jobs
-- Job execution history
-- Failed job details
+監控項目：
+- 佇列中的上傳任務
+- 重試工作
+- 工作執行歷史
+- 失敗工作詳情
 
-## 🛠️ Development
+## 🛠️ 開發指南
 
-### Build
+### 建置專案
 
 ```bash
-# Restore dependencies
+# 還原相依套件
 dotnet restore
 
-# Build solution
+# 建置方案
 dotnet build
 
-# Build release
+# 建置發行版本
 dotnet build -c Release
 ```
 
-### Run Locally
+### 本機執行
 
 ```bash
-# Run service (development mode)
+# 執行服務（開發模式）
 cd src/MesMiddleware.Service
 dotnet run
 
-# Run WPF monitor
+# 執行 WPF 監控程式
 cd src/MesMiddleware.Monitor
 dotnet run
 ```
 
-### Database Migrations
+### 資料庫遷移
 
 ```bash
-# Add new migration
+# 新增遷移
 cd src/MesMiddleware.Service
 dotnet ef migrations add MigrationName
 
-# Update database
+# 更新資料庫
 dotnet ef database update
 
-# Drop database (development only)
+# 刪除資料庫（僅限開發環境）
 dotnet ef database drop
 ```
 
-## 🧪 Testing Strategy
+## 🧪 測試策略
 
-### Test-Driven Development (TDD)
+### 測試驅動開發（TDD）
 
-All features implemented using **Red-Green-Refactor** cycle:
+所有功能使用 **紅燈-綠燈-重構** 循環實作：
 
-1. **RED**: Write failing tests first
-2. **GREEN**: Implement minimum code to pass tests
-3. **REFACTOR**: Improve code quality while keeping tests green
+1. **紅燈**：先撰寫失敗的測試
+2. **綠燈**：實作最小程式碼使測試通過
+3. **重構**：改善程式碼品質同時保持測試通過
 
-### Test Categories
+### 測試分類
 
-- **Unit Tests**: Service logic, validators, ViewModels
-- **Integration Tests**: Shared memory IPC, WebAPI uploads, database operations
-- **Contract Tests**: JSON serialization, data schema validation
+- **單元測試**：服務邏輯、驗證器、ViewModels
+- **整合測試**：共享記憶體 IPC、WebAPI 上傳、資料庫操作
+- **合約測試**：JSON 序列化、資料結構驗證
 
-### Example Test
+### 測試範例
 
 ```csharp
 [Fact]
@@ -368,7 +368,7 @@ public async Task QueueUpload_WhenWebApiUnavailable_ShouldPersistToDatabase()
     var testData = CreateTestInspectionRecord();
 
     // Act
-    var queueId = await queueService.QueueUploadAsync(testData, "WebAPI unavailable");
+    var queueId = await queueService.QueueUploadAsync(testData, "WebAPI 無法使用");
 
     // Assert
     queueId.Should().NotBeEmpty();
@@ -378,133 +378,133 @@ public async Task QueueUpload_WhenWebApiUnavailable_ShouldPersistToDatabase()
 }
 ```
 
-## 📈 Performance
+## 📈 效能指標
 
-| Metric | Target | Actual | Status |
+| 指標 | 目標 | 實際 | 狀態 |
 |--------|--------|--------|--------|
-| Shared Memory Read | < 1s | < 100ms | ✅ |
-| WebAPI Upload | < 2s | < 500ms | ✅ |
-| Command Write | < 1s | < 50ms | ✅ |
-| Command Timeout | 30s | 30s | ✅ |
-| Test Execution | < 5s | 1-2s | ✅ |
+| 共享記憶體讀取 | < 1秒 | < 100毫秒 | ✅ |
+| WebAPI 上傳 | < 2秒 | < 500毫秒 | ✅ |
+| 指令寫入 | < 1秒 | < 50毫秒 | ✅ |
+| 指令逾時 | 30秒 | 30秒 | ✅ |
+| 測試執行 | < 5秒 | 1-2秒 | ✅ |
 
-## 🔐 Security
+## 🔐 安全性
 
-- **JWT Authentication**: Bearer token with 8-hour expiration
-- **Token Refresh**: Automatic refresh on 401 responses
-- **HTTPS Only**: All WebAPI communication encrypted
-- **Credential Storage**: Encrypted in appsettings.json (use environment variables in production)
+- **JWT 驗證**：Bearer 令牌，8 小時過期
+- **令牌更新**：401 回應時自動更新
+- **僅 HTTPS**：所有 WebAPI 通訊加密
+- **憑證儲存**：appsettings.json 加密（生產環境建議使用環境變數）
 
-### Production Recommendations
+### 生產環境建議
 
 ```bash
-# Use environment variables for sensitive data
+# 使用環境變數儲存敏感資料
 set WEBAPI__USERNAME=middleware_user
 set WEBAPI__PASSWORD=secure_password
 
-# Or use Azure Key Vault / AWS Secrets Manager
+# 或使用 Azure Key Vault / AWS Secrets Manager
 ```
 
-## 🐛 Troubleshooting
+## 🐛 疑難排解
 
-### Service Won't Start
+### 服務無法啟動
 
-1. Check Windows Event Viewer: `Applications and Services Logs > MesMiddleware`
-2. Verify .NET 9 Runtime is installed
-3. Check firewall settings (port 5000 for health checks)
-4. Review logs in `logs/middleware-service-{Date}.log`
+1. 檢查 Windows 事件檢視器：`應用程式及服務記錄檔 > MesMiddleware`
+2. 確認已安裝 .NET 9 執行環境
+3. 檢查防火牆設定（健康檢查需要連接埠 5000）
+4. 查看 `logs/middleware-service-{Date}.log` 日誌
 
-### Shared Memory Errors
-
-```
-FileNotFoundException: The system cannot find the file specified
-```
-
-**Solution**: Equipment must create shared memory segment first. Verify:
-- Segment name matches configuration
-- EventWaitHandle is properly signaled
-- Equipment process is running with sufficient permissions
-
-### WebAPI Connection Failures
+### 共享記憶體錯誤
 
 ```
-HttpRequestException: No connection could be made
+FileNotFoundException: 系統找不到指定的檔案
 ```
 
-**Solution**:
-1. Verify WebAPI URL in `appsettings.json`
-2. Check network connectivity: `ping your-api-domain.com`
-3. Verify credentials are correct
-4. Check WebAPI logs for authentication errors
+**解決方案**：設備必須先建立共享記憶體區段。請確認：
+- 區段名稱與設定相符
+- EventWaitHandle 正確發出訊號
+- 設備程序以足夠權限執行
 
-### Database Locked Errors
+### WebAPI 連線失敗
+
+```
+HttpRequestException: 無法建立連線
+```
+
+**解決方案**：
+1. 確認 `appsettings.json` 中的 WebAPI URL
+2. 檢查網路連線：`ping your-api-domain.com`
+3. 確認憑證正確
+4. 檢查 WebAPI 日誌是否有驗證錯誤
+
+### 資料庫鎖定錯誤
 
 ```
 SqliteException: database is locked
 ```
 
-**Solution**:
-- Close WPF Monitor application (it reads from same SQLite DB)
-- Restart middleware service
-- Consider using SQL Server for production (supports concurrent access)
+**解決方案**：
+- 關閉 WPF 監控應用程式（它讀取相同的 SQLite DB）
+- 重新啟動中介軟體服務
+- 生產環境建議使用 SQL Server（支援並發存取）
 
-## 📚 Documentation
+## 📚 文件資源
 
-- **[Feature Specification](specs/002-shared-memory-middleware/spec.md)**: Detailed requirements
-- **[Implementation Plan](specs/002-shared-memory-middleware/plan.md)**: Architecture decisions
-- **[Task Breakdown](specs/002-shared-memory-middleware/tasks.md)**: 79 tasks (all complete)
-- **[Data Model](specs/002-shared-memory-middleware/data-model.md)**: Database schemas
-- **[Coverage Analysis](COVERAGE_ANALYSIS.md)**: Test coverage mapping
-- **[Final Report](FINAL_COVERAGE_REPORT.md)**: Comprehensive project summary
+- **[功能規格](specs/002-shared-memory-middleware/spec.md)**：詳細需求
+- **[實作計畫](specs/002-shared-memory-middleware/plan.md)**：架構決策
+- **[任務分解](specs/002-shared-memory-middleware/tasks.md)**：79 個任務（全部完成）
+- **[資料模型](specs/002-shared-memory-middleware/data-model.md)**：資料庫結構
+- **[覆蓋率分析](COVERAGE_ANALYSIS.md)**：測試覆蓋率對照
+- **[最終報告](FINAL_COVERAGE_REPORT.md)**：完整專案摘要
 
-## 🤝 Contributing
+## 🤝 貢獻指南
 
-### Coding Standards
+### 程式碼規範
 
-- **C# Style**: Follow [Microsoft C# Coding Conventions](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions)
-- **Commit Messages**: Use conventional commits format
+- **C# 風格**：遵循 [Microsoft C# 編碼慣例](https://learn.microsoft.com/zh-tw/dotnet/csharp/fundamentals/coding-style/coding-conventions)
+- **提交訊息**：使用 conventional commits 格式
   ```
-  feat: Add command timeout handling
-  fix: Resolve database locking issue
-  test: Add integration tests for shared memory
-  docs: Update README with configuration details
+  feat: 新增指令逾時處理
+  fix: 解決資料庫鎖定問題
+  test: 新增共享記憶體整合測試
+  docs: 更新 README 設定說明
   ```
-- **Testing**: All new features must have tests (TDD required)
-- **Code Review**: All PRs require at least 1 approval
+- **測試**：所有新功能必須包含測試（需要 TDD）
+- **程式碼審查**：所有 PR 需要至少 1 人核准
 
-### Pull Request Process
+### Pull Request 流程
 
-1. Create feature branch: `git checkout -b feature/your-feature-name`
-2. Write tests first (RED phase)
-3. Implement feature (GREEN phase)
-4. Refactor code (REFACTOR phase)
-5. Ensure all tests pass: `dotnet test`
-6. Commit with descriptive message
-7. Push and create PR to `main` branch
+1. 建立功能分支：`git checkout -b feature/your-feature-name`
+2. 先撰寫測試（紅燈階段）
+3. 實作功能（綠燈階段）
+4. 重構程式碼（重構階段）
+5. 確保所有測試通過：`dotnet test`
+6. 提交並附上描述性訊息
+7. 推送並建立 PR 至 `main` 分支
 
-## 📄 License
+## 📄 授權條款
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+本專案採用 MIT 授權條款 - 詳見 [LICENSE](LICENSE) 檔案。
 
-## 🙏 Acknowledgments
+## 🙏 致謝
 
-- **Architecture**: Test-Driven Development (TDD) with Red-Green-Refactor cycle
-- **Testing Framework**: xUnit, FluentAssertions, Moq
-- **MVVM Toolkit**: CommunityToolkit.Mvvm
-- **Logging**: Serilog with structured logging
-- **Background Jobs**: Hangfire
-- **ORM**: Entity Framework Core 9
+- **架構設計**：測試驅動開發（TDD）與紅燈-綠燈-重構循環
+- **測試框架**：xUnit、FluentAssertions、Moq
+- **MVVM 工具組**：CommunityToolkit.Mvvm
+- **日誌記錄**：Serilog 結構化日誌
+- **背景工作**：Hangfire
+- **ORM**：Entity Framework Core 9
 
-## 📞 Support
+## 📞 技術支援
 
-For issues, questions, or feature requests:
+如有問題、疑問或功能請求：
 
-1. **GitHub Issues**: [Create an issue](https://github.com/Po-Yu-Chang/BVC_WEB/issues)
-2. **Documentation**: Check [specs/](specs/) directory
-3. **Logs**: Review `logs/` directory for detailed error information
+1. **GitHub Issues**：[建立 Issue](https://github.com/Po-Yu-Chang/BVC_WEB/issues)
+2. **文件**：查看 [specs/](specs/) 目錄
+3. **日誌**：檢視 `logs/` 目錄以獲取詳細錯誤資訊
 
 ---
 
-**Project Status:** ✅ Production Ready | 108/108 Tests Passing | 100% Coverage
+**專案狀態：** ✅ 生產環境就緒 | 108/108 測試通過 | 100% 覆蓋率
 
-**Last Updated:** 2025-01-11
+**最後更新：** 2025-01-11
