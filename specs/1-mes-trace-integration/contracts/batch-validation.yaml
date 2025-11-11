@@ -1,0 +1,273 @@
+openapi: 3.0.3
+info:
+  title: MES Batch Validation API Contract
+  description: |
+    Trace code validation endpoint for Cimforce MES Trace Management System.
+    Based on API specification document CIMFORCE-WPT-20240902.
+
+    This contract validates trace codes against work orders to detect mixed batches
+    per FR-027 (detect mixed batches), FR-028 (validate multiple codes), FR-029 (identify mismatched codes).
+
+    Success Criteria (SC-006): Validation completes in <5 seconds for 10-50 codes
+  version: 1.0.0
+  contact:
+    name: MES Integration Team
+
+servers:
+  - url: http://{ip}:{port}/CimforceTraceMgrDev
+    description: MES API Server
+    variables:
+      ip:
+        default: localhost
+      port:
+        default: '8080'
+
+paths:
+  /api/transcode/checkcode:
+    post:
+      summary: Validate Trace Codes
+      description: |
+        Validates trace codes against work order to detect mixed-batch errors.
+
+        Authentication: Requires accessToken header from login response.
+
+        Use Cases:
+        - Pre-inspection validation: Check trace codes before starting inspection
+        - Post-inspection validation: Verify batch consistency after inspection complete
+        - Operator alerts: Identify specific codes that don't match expected work order
+
+        Functional Requirements:
+        - FR-027: Validate trace codes against work orders
+        - FR-028: Support multiple codes in single request
+        - FR-029: Identify specific mismatched codes
+        - FR-030: Validate work order existence
+      operationId: validateTraceCodes
+      tags:
+        - Batch Validation
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: accessToken
+          in: header
+          required: true
+          description: Authentication token from login response
+          schema:
+            type: string
+            example: "autoprtaed02b44469a0e81a63dec431"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchValidationRequest'
+            examples:
+              allCodesValid:
+                summary: All codes belong to work order
+                value:
+                  woType: 1
+                  woNum: "229033-0-1-1"
+                  codes: ["0000000001", "0000000002", "0000000003"]
+                  PrtMacNo: "W5-JSDEV-001"
+              mixedBatch:
+                summary: Some codes from different work order
+                value:
+                  woType: 1
+                  woNum: "229033-0-1-1"
+                  codes: ["0000000001", "0000000005", "0000000010"]
+                  PrtMacNo: "S63"
+      responses:
+        '200':
+          description: Validation successful (all codes belong to work order)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationSuccessResponse'
+              examples:
+                allValid:
+                  summary: All codes validated successfully
+                  value:
+                    success: true
+                    data: null
+                    msg: "验证成功"
+                    code: "200"
+        '400':
+          description: Validation failed (mixed batch detected or invalid codes)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              examples:
+                mixedBatch:
+                  summary: Some codes don't belong to work order
+                  value:
+                    success: false
+                    data: null
+                    msg: "验证失败:编码[0000000001]不属于工单。编码[0000000002]不属于工单。"
+                    code: "0"
+                emptyCodeList:
+                  summary: No codes provided
+                  value:
+                    success: false
+                    data: null
+                    msg: "验证失败:未提供待验证编码"
+                    code: "0"
+        '401':
+          description: Authentication error (invalid/expired token)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              examples:
+                invalidToken:
+                  summary: Invalid authentication token
+                  value:
+                    success: false
+                    data: null
+                    msg: "Token 无效或已过期,请重新登录"
+                    code: "401"
+        '404':
+          description: Work order not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              examples:
+                workOrderNotFound:
+                  summary: Work order does not exist in MES
+                  value:
+                    success: false
+                    data: null
+                    msg: "工单[229033-0-1-1]不存在"
+                    code: "404"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+
+components:
+  schemas:
+    BatchValidationRequest:
+      type: object
+      required:
+        - woType
+        - woNum
+        - codes
+        - PrtMacNo
+      properties:
+        woType:
+          type: integer
+          description: Validation type (fixed value 1 per API specification)
+          enum: [1]
+          example: 1
+        woNum:
+          type: string
+          description: Work order number to validate against (FR-030)
+          minLength: 1
+          maxLength: 100
+          example: "229033-0-1-1"
+        codes:
+          type: array
+          description: Trace codes to validate (FR-028 - multiple codes supported)
+          minItems: 1
+          maxItems: 100
+          items:
+            type: string
+            description: Individual trace code
+            minLength: 1
+            maxLength: 100
+            example: "0000000001"
+          example: ["0000000001", "0000000002", "0000000003"]
+        PrtMacNo:
+          type: string
+          description: Requesting equipment identifier
+          minLength: 1
+          maxLength: 50
+          example: "W5-JSDEV-001"
+      additionalProperties: false
+
+    ValidationSuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - msg
+        - code
+      properties:
+        success:
+          type: boolean
+          description: Validation status (true = all codes valid)
+          enum: [true]
+        data:
+          type: object
+          nullable: true
+          description: Validation result data (typically null for success)
+          example: null
+        msg:
+          type: string
+          description: Success message
+          example: "验证成功"
+        code:
+          type: string
+          description: Response code (200 = success)
+          enum: ["200"]
+      additionalProperties: false
+
+    ValidationErrorResponse:
+      type: object
+      required:
+        - success
+        - data
+        - msg
+        - code
+      properties:
+        success:
+          type: boolean
+          description: Validation status (false = validation failed)
+          enum: [false]
+        data:
+          type: object
+          nullable: true
+          description: Error data (always null)
+          example: null
+        msg:
+          type: string
+          description: |
+            Error message describing validation failure.
+            For mixed batch errors, lists specific codes that don't belong (FR-029).
+            Format: "验证失败:编码[CODE1]不属于工单。编码[CODE2]不属于工单。"
+          example: "验证失败:编码[0000000001]不属于工单。编码[0000000002]不属于工单。"
+        code:
+          type: string
+          description: Error code (0 = validation failure, 404 = work order not found, 401 = auth error)
+          example: "0"
+      additionalProperties: false
+
+  securitySchemes:
+    bearerAuth:
+      type: apiKey
+      in: header
+      name: accessToken
+      description: Authentication token from login response
+
+tags:
+  - name: Batch Validation
+    description: |
+      Trace code validation operations for mixed-batch detection.
+
+      Use Cases:
+      1. Pre-Inspection Validation: Validate trace codes before starting inspection to prevent mixed-batch processing
+      2. Post-Inspection Validation: Verify batch consistency after inspection completes
+      3. Real-Time Alerts: Alert operators immediately when mismatched codes detected
+
+      Business Rules:
+      - Work order must exist in MES system (FR-030)
+      - All trace codes must belong to specified work order
+      - System identifies specific codes that don't match (FR-029)
+      - Validation prevents quality issues from batch mixing
+
+      Performance:
+      - Target: <5 seconds for 10-50 codes (SC-006)
+      - Typical batch size: 10-50 trace codes
+      - Maximum recommended: 100 codes per request

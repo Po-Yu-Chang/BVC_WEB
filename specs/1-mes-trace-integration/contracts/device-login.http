@@ -1,0 +1,81 @@
+### Device Login - Success Case
+# Equipment authenticates with MES system using machine number and IP address
+# Returns long-lived token for subsequent operations
+
+POST {{baseUrl}}/CimforceTraceMgrDev/api/prtmac/prtmacuserlogin
+Referrer: 192.168.1.231
+Content-Type: application/json
+
+{
+  "PrtMacNo": "S63"
+}
+
+### Expected Response (Success)
+# HTTP/1.1 200 OK
+# Content-Type: application/json
+#
+# {
+#   "success": true,
+#   "data": {
+#     "PrtMacNo": "S63",
+#     "IpAddr": "192.168.1.231",
+#     "Token": "autoprtaed02b44469a0e81a63dec431",
+#     "SysUserId": null
+#   },
+#   "msg": "success",
+#   "code": "200"
+# }
+
+###
+
+### Device Login - IP Mismatch Error
+# Equipment IP does not match registered IP in MES
+
+POST {{baseUrl}}/CimforceTraceMgrDev/api/prtmac/prtmacuserlogin
+Referrer: 192.168.1.10
+Content-Type: application/json
+
+{
+  "PrtMacNo": "S63"
+}
+
+### Expected Response (IP Mismatch)
+# HTTP/1.1 200 OK
+# Content-Type: application/json
+#
+# {
+#   "success": false,
+#   "data": null,
+#   "msg": ",:ð(S63)IP(192.168.1.10)èŒ5 IP 9M!",
+#   "code": "300"
+# }
+
+###
+
+### Device Login - Invalid Machine Number
+# Machine number not registered in MES system
+
+POST {{baseUrl}}/CimforceTraceMgrDev/api/prtmac/prtmacuserlogin
+Referrer: 192.168.1.100
+Content-Type: application/json
+
+{
+  "PrtMacNo": "INVALID_MACHINE"
+}
+
+### Expected Response (Machine Not Found)
+# HTTP/1.1 200 OK
+# Content-Type: application/json
+#
+# {
+#   "success": false,
+#   "data": null,
+#   "msg": ":ð÷X(",
+#   "code": "-1"
+# }
+
+###
+
+@baseUrl = http://{{mesHost}}:{{mesPort}}
+@mesHost = 192.168.1.100
+@mesPort = 8080

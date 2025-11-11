@@ -1,0 +1,218 @@
+openapi: 3.0.3
+info:
+  title: MES Authentication API Contract
+  description: |
+    Equipment authentication endpoint for Cimforce MES Trace Management System.
+    Based on API specification document CIMFORCE-WPT-20240902.
+
+    This contract validates exact request/response structures per Constitution Principle IV (Structured Data Contracts).
+  version: 1.0.0
+  contact:
+    name: MES Integration Team
+
+servers:
+  - url: http://{ip}:{port}/CimforceTraceMgrDev
+    description: MES API Server
+    variables:
+      ip:
+        default: localhost
+        description: MES server IP address
+      port:
+        default: '8080'
+        description: MES server port
+
+paths:
+  /api/prtmac/prtmacuserlogin:
+    post:
+      summary: Equipment Login
+      description: |
+        Authenticates production equipment and obtains long-lived access token.
+
+        Security Requirements (Constitution Principle II):
+        - IP address binding enforced via Referrer header
+        - Token tied to machine number and IP address
+        - Re-authentication required if IP changes
+
+        Success Criteria (SC-001): Authentication completes in <5 seconds
+      operationId: equipmentLogin
+      tags:
+        - Authentication
+      parameters:
+        - name: Referrer
+          in: header
+          required: true
+          description: Current equipment IP address (actual internal IP)
+          schema:
+            type: string
+            format: ipv4
+            example: "192.168.1.231"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            examples:
+              validMachine:
+                summary: Valid machine login
+                value:
+                  PrtMacNo: "S63"
+              anotherMachine:
+                summary: Another equipment
+                value:
+                  PrtMacNo: "W5-JSDEV-001"
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginSuccessResponse'
+              examples:
+                success:
+                  summary: Successful authentication
+                  value:
+                    success: true
+                    data:
+                      PrtMacNo: "S63"
+                      IpAddr: "192.168.1.231"
+                      Token: "autoprtaed02b44469a0e81a63dec431"
+                      SysUserId: null
+                    msg: "success"
+                    code: "200"
+        '300':
+          description: IP address mismatch error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                ipMismatch:
+                  summary: IP address does not match registered IP
+                  value:
+                    success: false
+                    data: null
+                    msg: "本机台(S63)IP(192.168.1.10)与注册电脑 IP 不匹配!"
+                    code: "300"
+        '404':
+          description: Machine not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                machineNotFound:
+                  summary: Machine number not registered in MES
+                  value:
+                    success: false
+                    data: null
+                    msg: "机台(INVALID)未在系统中注册"
+                    code: "404"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - PrtMacNo
+      properties:
+        PrtMacNo:
+          type: string
+          description: Machine number assigned by MES system
+          minLength: 1
+          maxLength: 20
+          pattern: '^[A-Z0-9-]+$'
+          example: "S63"
+      additionalProperties: false
+
+    LoginSuccessResponse:
+      type: object
+      required:
+        - success
+        - data
+        - msg
+        - code
+      properties:
+        success:
+          type: boolean
+          description: Request status (true = success, false = failure)
+          enum: [true]
+        data:
+          $ref: '#/components/schemas/LoginData'
+        msg:
+          type: string
+          description: Success message
+          example: "success"
+        code:
+          type: string
+          description: Response code (200 = success)
+          enum: ["200"]
+      additionalProperties: false
+
+    LoginData:
+      type: object
+      required:
+        - PrtMacNo
+        - IpAddr
+        - Token
+      properties:
+        PrtMacNo:
+          type: string
+          description: Authenticated machine number
+          example: "S63"
+        IpAddr:
+          type: string
+          description: Registered machine IP address
+          format: ipv4
+          example: "192.168.1.231"
+        Token:
+          type: string
+          description: Long-lived authentication token (include in accessToken header for subsequent requests)
+          minLength: 1
+          example: "autoprtaed02b44469a0e81a63dec431"
+        SysUserId:
+          type: string
+          nullable: true
+          description: Bound system user ID (if configured)
+          example: null
+      additionalProperties: false
+
+    ErrorResponse:
+      type: object
+      required:
+        - success
+        - data
+        - msg
+        - code
+      properties:
+        success:
+          type: boolean
+          description: Request status (false = failure)
+          enum: [false]
+        data:
+          type: object
+          nullable: true
+          description: Error data (always null)
+          example: null
+        msg:
+          type: string
+          description: Error message describing failure reason
+          example: "本机台(S63)IP(192.168.1.10)与注册电脑 IP 不匹配!"
+        code:
+          type: string
+          description: Error code (non-200 indicates failure)
+          example: "300"
+      additionalProperties: false
+
+  securitySchemes:
+    ipBinding:
+      type: apiKey
+      in: header
+      name: Referrer
+      description: Equipment IP address for binding validation

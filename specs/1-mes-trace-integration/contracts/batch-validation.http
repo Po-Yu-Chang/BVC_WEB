@@ -1,0 +1,122 @@
+### Batch Validation - All Codes Valid
+# Validate multiple trace codes against work order to detect mixed batches
+
+POST {{baseUrl}}/CimforceTraceMgrDev/api/transcode/checkcode
+accessToken: {{token}}
+Content-Type: application/json
+
+{
+  "woType": 1,
+  "woNum": "229033-0-1-1",
+  "codes": [
+    "0000000001",
+    "0000000002",
+    "0000000003"
+  ],
+  "PrtMacNo": "W5-JSDEV-001"
+}
+
+### Expected Response (Success)
+# HTTP/1.1 200 OK
+# Content-Type: application/json
+#
+# {
+#   "success": true,
+#   "data": null,
+#   "msg": "ŒÁŸ",
+#   "code": "200"
+# }
+
+###
+
+### Batch Validation - Mixed Batch Error
+# Some codes do not belong to the specified work order
+
+POST {{baseUrl}}/CimforceTraceMgrDev/api/transcode/checkcode
+accessToken: {{token}}
+Content-Type: application/json
+
+{
+  "woType": 1,
+  "woNum": "229033-0-1-1",
+  "codes": [
+    "0000000001",
+    "0000000002",
+    "INVALID_CODE_1",
+    "INVALID_CODE_2"
+  ],
+  "PrtMacNo": "W5-JSDEV-001"
+}
+
+### Expected Response (Mixed Batch)
+# HTTP/1.1 200 OK
+# Content-Type: application/json
+#
+# {
+#   "success": false,
+#   "data": null,
+#   "msg": "ŒÁ1%:[INVALID_CODE_1]^ŽåU[INVALID_CODE_2]^ŽåU",
+#   "code": "0"
+# }
+
+###
+
+### Batch Validation - Work Order Not Found
+# Work order number does not exist in MES system
+
+POST {{baseUrl}}/CimforceTraceMgrDev/api/transcode/checkcode
+accessToken: {{token}}
+Content-Type: application/json
+
+{
+  "woType": 1,
+  "woNum": "INVALID_WO_NUMBER",
+  "codes": [
+    "0000000001"
+  ],
+  "PrtMacNo": "W5-JSDEV-001"
+}
+
+### Expected Response (Work Order Not Found)
+# HTTP/1.1 200 OK
+# Content-Type: application/json
+#
+# {
+#   "success": false,
+#   "data": null,
+#   "msg": "åUX(",
+#   "code": "-1"
+# }
+
+###
+
+### Batch Validation - Missing Token Error
+# Request without authentication token
+
+POST {{baseUrl}}/CimforceTraceMgrDev/api/transcode/checkcode
+Content-Type: application/json
+
+{
+  "woType": 1,
+  "woNum": "229033-0-1-1",
+  "codes": ["0000000001"],
+  "PrtMacNo": "W5-JSDEV-001"
+}
+
+### Expected Response (Unauthorized)
+# HTTP/1.1 401 Unauthorized
+# Content-Type: application/json
+#
+# {
+#   "success": false,
+#   "data": null,
+#   "msg": "*ˆC¿î",
+#   "code": "401"
+# }
+
+###
+
+@baseUrl = http://{{mesHost}}:{{mesPort}}
+@mesHost = 192.168.1.100
+@mesPort = 8080
+@token = autoprtaed02b44469a0e81a63dec431
