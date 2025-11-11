@@ -25,14 +25,37 @@
             </Setter>
         </Style>
 
-        <!-- Status Card Style - Pinned Card Effect -->
+        <!-- Status Card Style - Sticky Note Effect -->
         <Style x:Key="StatusCardStyle" TargetType="Border">
-            <Setter Property="CornerRadius" Value="4"/>
-            <Setter Property="Padding" Value="15"/>
-            <Setter Property="Margin" Value="8"/>
+            <Setter Property="CornerRadius" Value="2"/>
+            <Setter Property="Padding" Value="18,15"/>
+            <Setter Property="Margin" Value="12,8"/>
             <Setter Property="Effect">
                 <Setter.Value>
-                    <DropShadowEffect Color="#40000000" Direction="315" ShadowDepth="5" Opacity="0.5" BlurRadius="12"/>
+                    <DropShadowEffect Color="#60000000" Direction="320" ShadowDepth="6" Opacity="0.4" BlurRadius="14"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <RotateTransform Angle="0.5"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0"/>
+        </Style>
+
+        <!-- Alternate Card Rotation -->
+        <Style x:Key="StatusCardStyle2" TargetType="Border" BasedOn="{StaticResource StatusCardStyle}">
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <RotateTransform Angle="-0.8"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="StatusCardStyle3" TargetType="Border" BasedOn="{StaticResource StatusCardStyle}">
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <RotateTransform Angle="1.2"/>
                 </Setter.Value>
             </Setter>
         </Style>
@@ -391,92 +414,110 @@
                         <TextBlock Text="服務狀態" Style="{StaticResource TitleStyle}" Margin="20,10,0,10"/>
                         <UniformGrid Columns="3" Margin="5,0">
                             <!-- Service Running Card -->
-                            <Border Style="{StaticResource StatusCardStyle}">
-                                <Border.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                        <GradientStop Color="#E74C3C" Offset="0"/>
-                                        <GradientStop Color="#C0392B" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Border.Background>
-                                <StackPanel>
-                                    <TextBlock Text="🔴 服務運行" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
-                                    <TextBlock Text="{Binding StatusViewModel.IsRunning}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="24"/>
-                                </StackPanel>
-                            </Border>
+                            <Grid>
+                                <Border Style="{StaticResource StatusCardStyle}">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                            <GradientStop Color="#E74C3C" Offset="0"/>
+                                            <GradientStop Color="#C0392B" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                    <StackPanel>
+                                        <TextBlock Text="🔴 服務運行" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                        <TextBlock Text="{Binding StatusViewModel.IsRunning}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="24"/>
+                                    </StackPanel>
+                                </Border>
+                                <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
+                            </Grid>
 
                             <!-- WebAPI Connected Card -->
-                            <Border Style="{StaticResource StatusCardStyle}">
-                                <Border.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                        <GradientStop Color="#3498DB" Offset="0"/>
-                                        <GradientStop Color="#2980B9" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Border.Background>
-                                <StackPanel>
-                                    <TextBlock Text="🌐 WebAPI 連接" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
-                                    <TextBlock Text="{Binding StatusViewModel.IsWebApiConnected}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="24"/>
-                                </StackPanel>
-                            </Border>
+                            <Grid>
+                                <Border Style="{StaticResource StatusCardStyle2}">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                            <GradientStop Color="#3498DB" Offset="0"/>
+                                            <GradientStop Color="#2980B9" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                    <StackPanel>
+                                        <TextBlock Text="🌐 WebAPI 連接" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                        <TextBlock Text="{Binding StatusViewModel.IsWebApiConnected}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="24"/>
+                                    </StackPanel>
+                                </Border>
+                                <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
+                            </Grid>
 
                             <!-- Shared Memory Card -->
-                            <Border Style="{StaticResource StatusCardStyle}">
-                                <Border.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                        <GradientStop Color="#9B59B6" Offset="0"/>
-                                        <GradientStop Color="#8E44AD" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Border.Background>
-                                <StackPanel>
-                                    <TextBlock Text="💾 共享記憶體" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
-                                    <TextBlock Text="{Binding StatusViewModel.IsSharedMemoryActive}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="24"/>
-                                </StackPanel>
-                            </Border>
+                            <Grid>
+                                <Border Style="{StaticResource StatusCardStyle3}">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                            <GradientStop Color="#9B59B6" Offset="0"/>
+                                            <GradientStop Color="#8E44AD" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                    <StackPanel>
+                                        <TextBlock Text="💾 共享記憶體" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                        <TextBlock Text="{Binding StatusViewModel.IsSharedMemoryActive}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="24"/>
+                                    </StackPanel>
+                                </Border>
+                                <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
+                            </Grid>
                         </UniformGrid>
 
                         <!-- Statistics Cards -->
                         <TextBlock Text="數據統計" Style="{StaticResource TitleStyle}" Margin="20,20,0,10"/>
                         <UniformGrid Columns="3" Margin="5,0">
                             <!-- Total Received -->
-                            <Border Style="{StaticResource StatusCardStyle}">
-                                <Border.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                        <GradientStop Color="#2ECC71" Offset="0"/>
-                                        <GradientStop Color="#27AE60" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Border.Background>
-                                <StackPanel>
-                                    <TextBlock Text="📥 總接收數據" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
-                                    <TextBlock Text="{Binding StatusViewModel.TotalDataReceived}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="32"/>
-                                </StackPanel>
-                            </Border>
+                            <Grid>
+                                <Border Style="{StaticResource StatusCardStyle2}">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                            <GradientStop Color="#2ECC71" Offset="0"/>
+                                            <GradientStop Color="#27AE60" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                    <StackPanel>
+                                        <TextBlock Text="📥 總接收數據" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                        <TextBlock Text="{Binding StatusViewModel.TotalDataReceived}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="32"/>
+                                    </StackPanel>
+                                </Border>
+                                <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
+                            </Grid>
 
                             <!-- Successful Uploads -->
-                            <Border Style="{StaticResource StatusCardStyle}">
-                                <Border.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                        <GradientStop Color="#F39C12" Offset="0"/>
-                                        <GradientStop Color="#E67E22" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Border.Background>
-                                <StackPanel>
-                                    <TextBlock Text="✅ 成功上傳" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
-                                    <TextBlock Text="{Binding StatusViewModel.SuccessfulUploads}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="32"/>
-                                </StackPanel>
-                            </Border>
+                            <Grid>
+                                <Border Style="{StaticResource StatusCardStyle3}">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                            <GradientStop Color="#F39C12" Offset="0"/>
+                                            <GradientStop Color="#E67E22" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                    <StackPanel>
+                                        <TextBlock Text="✅ 成功上傳" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                        <TextBlock Text="{Binding StatusViewModel.SuccessfulUploads}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="32"/>
+                                    </StackPanel>
+                                </Border>
+                                <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
+                            </Grid>
 
                             <!-- Queued Uploads -->
-                            <Border Style="{StaticResource StatusCardStyle}">
-                                <Border.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                        <GradientStop Color="#1ABC9C" Offset="0"/>
-                                        <GradientStop Color="#16A085" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Border.Background>
-                                <StackPanel>
-                                    <TextBlock Text="⏳ 佇列中" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
-                                    <TextBlock Text="{Binding StatusViewModel.QueuedUploads}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="32"/>
-                                </StackPanel>
-                            </Border>
+                            <Grid>
+                                <Border Style="{StaticResource StatusCardStyle}">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                            <GradientStop Color="#1ABC9C" Offset="0"/>
+                                            <GradientStop Color="#16A085" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                    <StackPanel>
+                                        <TextBlock Text="⏳ 佇列中" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                        <TextBlock Text="{Binding StatusViewModel.QueuedUploads}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="32"/>
+                                    </StackPanel>
+                                </Border>
+                                <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
+                            </Grid>
                         </UniformGrid>
 
                         <!-- System Info Card -->
