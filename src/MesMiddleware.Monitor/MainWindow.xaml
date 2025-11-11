@@ -86,6 +86,7 @@
             <Setter Property="Width" Value="35"/>
             <Setter Property="Height" Value="35"/>
             <Setter Property="Stretch" Value="Fill"/>
+            <Setter Property="Margin" Value="0,0,-18,-15"/>
             <Setter Property="Data" Value="M 0,35 L 35,35 L 35,0 Z"/>
             <Setter Property="Fill">
                 <Setter.Value>
@@ -451,7 +452,7 @@
                                             <TextBlock Text="🔴 服務運行" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding StatusViewModel.IsRunning}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="24"/>
                                         </StackPanel>
-                                        <!-- Curled Corner -->
+                                        <!-- Curled Corner - Inside Border, will rotate with Border -->
                                         <Path Style="{StaticResource CurledCornerStyle}"/>
                                     </Grid>
                                 </Border>
@@ -472,7 +473,6 @@
                                             <TextBlock Text="🌐 WebAPI 連接" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding StatusViewModel.IsWebApiConnected}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="24"/>
                                         </StackPanel>
-                                        <!-- Curled Corner -->
                                         <Path Style="{StaticResource CurledCornerStyle}"/>
                                     </Grid>
                                 </Border>
@@ -493,7 +493,6 @@
                                             <TextBlock Text="💾 共享記憶體" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding StatusViewModel.IsSharedMemoryActive}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="24"/>
                                         </StackPanel>
-                                        <!-- Curled Corner -->
                                         <Path Style="{StaticResource CurledCornerStyle}"/>
                                     </Grid>
                                 </Border>
@@ -518,7 +517,6 @@
                                             <TextBlock Text="📥 總接收數據" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding StatusViewModel.TotalDataReceived}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="32"/>
                                         </StackPanel>
-                                        <!-- Curled Corner -->
                                         <Path Style="{StaticResource CurledCornerStyle}"/>
                                     </Grid>
                                 </Border>
@@ -539,7 +537,6 @@
                                             <TextBlock Text="✅ 成功上傳" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding StatusViewModel.SuccessfulUploads}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="32"/>
                                         </StackPanel>
-                                        <!-- Curled Corner -->
                                         <Path Style="{StaticResource CurledCornerStyle}"/>
                                     </Grid>
                                 </Border>
@@ -560,7 +557,6 @@
                                             <TextBlock Text="⏳ 佇列中" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding StatusViewModel.QueuedUploads}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="32"/>
                                         </StackPanel>
-                                        <!-- Curled Corner -->
                                         <Path Style="{StaticResource CurledCornerStyle}"/>
                                     </Grid>
                                 </Border>
@@ -626,7 +622,6 @@
                                             <TextBlock Text="📋 待處理" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding QueueViewModel.PendingCount}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
                                         </StackPanel>
-                                        <!-- Curled Corner -->
                                         <Path Style="{StaticResource CurledCornerStyle}"/>
                                     </Grid>
                                 </Border>
@@ -647,7 +642,6 @@
                                             <TextBlock Text="🔄 重試中" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding QueueViewModel.RetryingCount}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
                                         </StackPanel>
-                                        <!-- Curled Corner -->
                                         <Path Style="{StaticResource CurledCornerStyle}"/>
                                     </Grid>
                                 </Border>
@@ -668,7 +662,6 @@
                                             <TextBlock Text="❌ 失敗" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding QueueViewModel.FailedCount}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
                                         </StackPanel>
-                                        <!-- Curled Corner -->
                                         <Path Style="{StaticResource CurledCornerStyle}"/>
                                     </Grid>
                                 </Border>
@@ -689,7 +682,6 @@
                                             <TextBlock Text="📊 總深度" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding QueueViewModel.TotalDepth}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
                                         </StackPanel>
-                                        <!-- Curled Corner -->
                                         <Path Style="{StaticResource CurledCornerStyle}"/>
                                     </Grid>
                                 </Border>
