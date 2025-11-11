@@ -42,8 +42,14 @@ public partial class MainWindow : Window
 
     private async void Window_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
+        // Dispose tray icon first
         _trayIcon.Dispose();
+
+        // Shutdown ViewModel resources
         await _viewModel.ShutdownAsync();
+
+        // Ensure application shuts down completely
+        Application.Current.Shutdown();
     }
 
     private void Window_StateChanged(object? sender, EventArgs e)
