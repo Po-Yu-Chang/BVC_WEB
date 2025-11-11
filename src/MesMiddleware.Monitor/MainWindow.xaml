@@ -480,7 +480,22 @@
                                             <TextBlock Text="🌐 WebAPI 連接" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding StatusViewModel.IsWebApiConnected}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="24"/>
                                         </StackPanel>
-                                        <Path Style="{StaticResource CurledCornerStyle}"/>
+                                        <Canvas Style="{StaticResource CurledCornerStyle}">
+                                            <Path Data="{StaticResource FoldBackGeometry}" Fill="#30000000"/>
+                                            <Path Data="{StaticResource FoldFrontGeometry}">
+                                                <Path.Fill>
+                                                    <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
+                                                        <GradientStop Color="#A0000000" Offset="0"/>
+                                                        <GradientStop Color="#60000000" Offset="0.3"/>
+                                                        <GradientStop Color="#30000000" Offset="0.6"/>
+                                                        <GradientStop Color="Transparent" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Path.Fill>
+                                                <Path.Effect>
+                                                    <DropShadowEffect Color="#80000000" Direction="315" ShadowDepth="3" Opacity="0.6" BlurRadius="5"/>
+                                                </Path.Effect>
+                                            </Path>
+                                        </Canvas>
                                     </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
@@ -500,7 +515,22 @@
                                             <TextBlock Text="💾 共享記憶體" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding StatusViewModel.IsSharedMemoryActive}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="24"/>
                                         </StackPanel>
-                                        <Path Style="{StaticResource CurledCornerStyle}"/>
+                                        <Canvas Style="{StaticResource CurledCornerStyle}">
+                                            <Path Data="{StaticResource FoldBackGeometry}" Fill="#30000000"/>
+                                            <Path Data="{StaticResource FoldFrontGeometry}">
+                                                <Path.Fill>
+                                                    <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
+                                                        <GradientStop Color="#A0000000" Offset="0"/>
+                                                        <GradientStop Color="#60000000" Offset="0.3"/>
+                                                        <GradientStop Color="#30000000" Offset="0.6"/>
+                                                        <GradientStop Color="Transparent" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Path.Fill>
+                                                <Path.Effect>
+                                                    <DropShadowEffect Color="#80000000" Direction="315" ShadowDepth="3" Opacity="0.6" BlurRadius="5"/>
+                                                </Path.Effect>
+                                            </Path>
+                                        </Canvas>
                                     </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
@@ -524,7 +554,22 @@
                                             <TextBlock Text="📥 總接收數據" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding StatusViewModel.TotalDataReceived}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="32"/>
                                         </StackPanel>
-                                        <Path Style="{StaticResource CurledCornerStyle}"/>
+                                        <Canvas Style="{StaticResource CurledCornerStyle}">
+                                            <Path Data="{StaticResource FoldBackGeometry}" Fill="#30000000"/>
+                                            <Path Data="{StaticResource FoldFrontGeometry}">
+                                                <Path.Fill>
+                                                    <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
+                                                        <GradientStop Color="#A0000000" Offset="0"/>
+                                                        <GradientStop Color="#60000000" Offset="0.3"/>
+                                                        <GradientStop Color="#30000000" Offset="0.6"/>
+                                                        <GradientStop Color="Transparent" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Path.Fill>
+                                                <Path.Effect>
+                                                    <DropShadowEffect Color="#80000000" Direction="315" ShadowDepth="3" Opacity="0.6" BlurRadius="5"/>
+                                                </Path.Effect>
+                                            </Path>
+                                        </Canvas>
                                     </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
@@ -544,7 +589,22 @@
                                             <TextBlock Text="✅ 成功上傳" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding StatusViewModel.SuccessfulUploads}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="32"/>
                                         </StackPanel>
-                                        <Path Style="{StaticResource CurledCornerStyle}"/>
+                                        <Canvas Style="{StaticResource CurledCornerStyle}">
+                                            <Path Data="{StaticResource FoldBackGeometry}" Fill="#30000000"/>
+                                            <Path Data="{StaticResource FoldFrontGeometry}">
+                                                <Path.Fill>
+                                                    <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
+                                                        <GradientStop Color="#A0000000" Offset="0"/>
+                                                        <GradientStop Color="#60000000" Offset="0.3"/>
+                                                        <GradientStop Color="#30000000" Offset="0.6"/>
+                                                        <GradientStop Color="Transparent" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Path.Fill>
+                                                <Path.Effect>
+                                                    <DropShadowEffect Color="#80000000" Direction="315" ShadowDepth="3" Opacity="0.6" BlurRadius="5"/>
+                                                </Path.Effect>
+                                            </Path>
+                                        </Canvas>
                                     </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
@@ -564,7 +624,22 @@
                                             <TextBlock Text="⏳ 佇列中" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding StatusViewModel.QueuedUploads}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="32"/>
                                         </StackPanel>
-                                        <Path Style="{StaticResource CurledCornerStyle}"/>
+                                        <Canvas Style="{StaticResource CurledCornerStyle}">
+                                            <Path Data="{StaticResource FoldBackGeometry}" Fill="#30000000"/>
+                                            <Path Data="{StaticResource FoldFrontGeometry}">
+                                                <Path.Fill>
+                                                    <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
+                                                        <GradientStop Color="#A0000000" Offset="0"/>
+                                                        <GradientStop Color="#60000000" Offset="0.3"/>
+                                                        <GradientStop Color="#30000000" Offset="0.6"/>
+                                                        <GradientStop Color="Transparent" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Path.Fill>
+                                                <Path.Effect>
+                                                    <DropShadowEffect Color="#80000000" Direction="315" ShadowDepth="3" Opacity="0.6" BlurRadius="5"/>
+                                                </Path.Effect>
+                                            </Path>
+                                        </Canvas>
                                     </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
@@ -629,7 +704,22 @@
                                             <TextBlock Text="📋 待處理" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding QueueViewModel.PendingCount}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
                                         </StackPanel>
-                                        <Path Style="{StaticResource CurledCornerStyle}"/>
+                                        <Canvas Style="{StaticResource CurledCornerStyle}">
+                                            <Path Data="{StaticResource FoldBackGeometry}" Fill="#30000000"/>
+                                            <Path Data="{StaticResource FoldFrontGeometry}">
+                                                <Path.Fill>
+                                                    <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
+                                                        <GradientStop Color="#A0000000" Offset="0"/>
+                                                        <GradientStop Color="#60000000" Offset="0.3"/>
+                                                        <GradientStop Color="#30000000" Offset="0.6"/>
+                                                        <GradientStop Color="Transparent" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Path.Fill>
+                                                <Path.Effect>
+                                                    <DropShadowEffect Color="#80000000" Direction="315" ShadowDepth="3" Opacity="0.6" BlurRadius="5"/>
+                                                </Path.Effect>
+                                            </Path>
+                                        </Canvas>
                                     </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
@@ -649,7 +739,22 @@
                                             <TextBlock Text="🔄 重試中" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding QueueViewModel.RetryingCount}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
                                         </StackPanel>
-                                        <Path Style="{StaticResource CurledCornerStyle}"/>
+                                        <Canvas Style="{StaticResource CurledCornerStyle}">
+                                            <Path Data="{StaticResource FoldBackGeometry}" Fill="#30000000"/>
+                                            <Path Data="{StaticResource FoldFrontGeometry}">
+                                                <Path.Fill>
+                                                    <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
+                                                        <GradientStop Color="#A0000000" Offset="0"/>
+                                                        <GradientStop Color="#60000000" Offset="0.3"/>
+                                                        <GradientStop Color="#30000000" Offset="0.6"/>
+                                                        <GradientStop Color="Transparent" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Path.Fill>
+                                                <Path.Effect>
+                                                    <DropShadowEffect Color="#80000000" Direction="315" ShadowDepth="3" Opacity="0.6" BlurRadius="5"/>
+                                                </Path.Effect>
+                                            </Path>
+                                        </Canvas>
                                     </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
@@ -669,7 +774,22 @@
                                             <TextBlock Text="❌ 失敗" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding QueueViewModel.FailedCount}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
                                         </StackPanel>
-                                        <Path Style="{StaticResource CurledCornerStyle}"/>
+                                        <Canvas Style="{StaticResource CurledCornerStyle}">
+                                            <Path Data="{StaticResource FoldBackGeometry}" Fill="#30000000"/>
+                                            <Path Data="{StaticResource FoldFrontGeometry}">
+                                                <Path.Fill>
+                                                    <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
+                                                        <GradientStop Color="#A0000000" Offset="0"/>
+                                                        <GradientStop Color="#60000000" Offset="0.3"/>
+                                                        <GradientStop Color="#30000000" Offset="0.6"/>
+                                                        <GradientStop Color="Transparent" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Path.Fill>
+                                                <Path.Effect>
+                                                    <DropShadowEffect Color="#80000000" Direction="315" ShadowDepth="3" Opacity="0.6" BlurRadius="5"/>
+                                                </Path.Effect>
+                                            </Path>
+                                        </Canvas>
                                     </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
@@ -689,7 +809,22 @@
                                             <TextBlock Text="📊 總深度" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding QueueViewModel.TotalDepth}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
                                         </StackPanel>
-                                        <Path Style="{StaticResource CurledCornerStyle}"/>
+                                        <Canvas Style="{StaticResource CurledCornerStyle}">
+                                            <Path Data="{StaticResource FoldBackGeometry}" Fill="#30000000"/>
+                                            <Path Data="{StaticResource FoldFrontGeometry}">
+                                                <Path.Fill>
+                                                    <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
+                                                        <GradientStop Color="#A0000000" Offset="0"/>
+                                                        <GradientStop Color="#60000000" Offset="0.3"/>
+                                                        <GradientStop Color="#30000000" Offset="0.6"/>
+                                                        <GradientStop Color="Transparent" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Path.Fill>
+                                                <Path.Effect>
+                                                    <DropShadowEffect Color="#80000000" Direction="315" ShadowDepth="3" Opacity="0.6" BlurRadius="5"/>
+                                                </Path.Effect>
+                                            </Path>
+                                        </Canvas>
                                     </Grid>
                                 </Border>
                                 <Ellipse Style="{StaticResource PushPinStyle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-6,0,0"/>
