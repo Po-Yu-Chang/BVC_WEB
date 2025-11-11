@@ -8,7 +8,6 @@
         mc:Ignorable="d"
         Title="MES Middleware Monitor" Height="700" Width="1200"
         WindowStartupLocation="CenterScreen"
-        Background="#F5F7FA"
         Closing="Window_Closing"
         StateChanged="Window_StateChanged">
 
@@ -26,14 +25,33 @@
             </Setter>
         </Style>
 
-        <!-- Status Card Style -->
+        <!-- Status Card Style - Pinned Card Effect -->
         <Style x:Key="StatusCardStyle" TargetType="Border">
-            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="CornerRadius" Value="4"/>
             <Setter Property="Padding" Value="15"/>
             <Setter Property="Margin" Value="8"/>
             <Setter Property="Effect">
                 <Setter.Value>
-                    <DropShadowEffect Color="#D0D0D0" Direction="270" ShadowDepth="1" Opacity="0.2" BlurRadius="8"/>
+                    <DropShadowEffect Color="#40000000" Direction="315" ShadowDepth="5" Opacity="0.5" BlurRadius="12"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Push Pin Style -->
+        <Style x:Key="PushPinStyle" TargetType="Ellipse">
+            <Setter Property="Width" Value="12"/>
+            <Setter Property="Height" Value="12"/>
+            <Setter Property="Fill">
+                <Setter.Value>
+                    <RadialGradientBrush>
+                        <GradientStop Color="#E74C3C" Offset="0"/>
+                        <GradientStop Color="#C0392B" Offset="1"/>
+                    </RadialGradientBrush>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#80000000" Direction="315" ShadowDepth="2" Opacity="0.6" BlurRadius="4"/>
                 </Setter.Value>
             </Setter>
         </Style>
@@ -157,39 +175,216 @@
         </Style>
     </Window.Resources>
 
+    <!-- Cork Board Background -->
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#D4A574" Offset="0"/>
+                <GradientStop Color="#C49A6C" Offset="0.5"/>
+                <GradientStop Color="#B8915F" Offset="1"/>
+            </LinearGradientBrush>
+        </Grid.Background>
 
-        <!-- Header with Gradient -->
-        <Border Grid.Row="0" Height="100">
+        <!-- Add Cork Texture Pattern with Granular Detail -->
+        <Rectangle>
+            <Rectangle.Fill>
+                <DrawingBrush TileMode="Tile" Viewport="0,0,50,50" ViewportUnits="Absolute">
+                    <DrawingBrush.Drawing>
+                        <DrawingGroup>
+                            <!-- Dark spots - cork grain -->
+                            <GeometryDrawing Brush="#44000000">
+                                <GeometryDrawing.Geometry>
+                                    <EllipseGeometry Center="5,5" RadiusX="1.5" RadiusY="1"/>
+                                </GeometryDrawing.Geometry>
+                            </GeometryDrawing>
+                            <GeometryDrawing Brush="#33000000">
+                                <GeometryDrawing.Geometry>
+                                    <EllipseGeometry Center="15,12" RadiusX="2" RadiusY="1.5"/>
+                                </GeometryDrawing.Geometry>
+                            </GeometryDrawing>
+                            <GeometryDrawing Brush="#22000000">
+                                <GeometryDrawing.Geometry>
+                                    <EllipseGeometry Center="30,8" RadiusX="1" RadiusY="0.5"/>
+                                </GeometryDrawing.Geometry>
+                            </GeometryDrawing>
+                            <GeometryDrawing Brush="#44000000">
+                                <GeometryDrawing.Geometry>
+                                    <EllipseGeometry Center="42,15" RadiusX="1.5" RadiusY="1"/>
+                                </GeometryDrawing.Geometry>
+                            </GeometryDrawing>
+                            <GeometryDrawing Brush="#33000000">
+                                <GeometryDrawing.Geometry>
+                                    <EllipseGeometry Center="8,25" RadiusX="2.5" RadiusY="1.5"/>
+                                </GeometryDrawing.Geometry>
+                            </GeometryDrawing>
+                            <GeometryDrawing Brush="#22000000">
+                                <GeometryDrawing.Geometry>
+                                    <EllipseGeometry Center="25,30" RadiusX="1" RadiusY="1"/>
+                                </GeometryDrawing.Geometry>
+                            </GeometryDrawing>
+                            <GeometryDrawing Brush="#33000000">
+                                <GeometryDrawing.Geometry>
+                                    <EllipseGeometry Center="38,28" RadiusX="1.5" RadiusY="2"/>
+                                </GeometryDrawing.Geometry>
+                            </GeometryDrawing>
+                            <GeometryDrawing Brush="#22000000">
+                                <GeometryDrawing.Geometry>
+                                    <EllipseGeometry Center="18,38" RadiusX="0.8" RadiusY="0.8"/>
+                                </GeometryDrawing.Geometry>
+                            </GeometryDrawing>
+                            <GeometryDrawing Brush="#44000000">
+                                <GeometryDrawing.Geometry>
+                                    <EllipseGeometry Center="35,42" RadiusX="2" RadiusY="1.5"/>
+                                </GeometryDrawing.Geometry>
+                            </GeometryDrawing>
+                            <GeometryDrawing Brush="#22000000">
+                                <GeometryDrawing.Geometry>
+                                    <EllipseGeometry Center="12,45" RadiusX="1" RadiusY="1.5"/>
+                                </GeometryDrawing.Geometry>
+                            </GeometryDrawing>
+                            <!-- Light spots - highlights -->
+                            <GeometryDrawing Brush="#11FFFFFF">
+                                <GeometryDrawing.Geometry>
+                                    <EllipseGeometry Center="20,18" RadiusX="3" RadiusY="2"/>
+                                </GeometryDrawing.Geometry>
+                            </GeometryDrawing>
+                            <GeometryDrawing Brush="#11FFFFFF">
+                                <GeometryDrawing.Geometry>
+                                    <EllipseGeometry Center="40,35" RadiusX="2.5" RadiusY="2.5"/>
+                                </GeometryDrawing.Geometry>
+                            </GeometryDrawing>
+                            <GeometryDrawing Brush="#11FFFFFF">
+                                <GeometryDrawing.Geometry>
+                                    <EllipseGeometry Center="10,40" RadiusX="2" RadiusY="3"/>
+                                </GeometryDrawing.Geometry>
+                            </GeometryDrawing>
+                        </DrawingGroup>
+                    </DrawingBrush.Drawing>
+                </DrawingBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+
+        <!-- Add subtle noise overlay for more texture -->
+        <Rectangle Opacity="0.03">
+            <Rectangle.Fill>
+                <DrawingBrush TileMode="Tile" Viewport="0,0,2,2" ViewportUnits="Absolute">
+                    <DrawingBrush.Drawing>
+                        <GeometryDrawing Brush="Black">
+                            <GeometryDrawing.Geometry>
+                                <RectangleGeometry Rect="0,0,1,1"/>
+                            </GeometryDrawing.Geometry>
+                        </GeometryDrawing>
+                    </DrawingBrush.Drawing>
+                </DrawingBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+
+        <!-- Content Grid -->
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header - Pinned Note Style -->
+            <Border Grid.Row="0" Height="120" Margin="20,15,20,10" CornerRadius="4">
             <Border.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
                     <GradientStop Color="#3498DB" Offset="0"/>
                     <GradientStop Color="#2ECC71" Offset="1"/>
                 </LinearGradientBrush>
             </Border.Background>
-            <Grid Margin="30,0">
-                <StackPanel VerticalAlignment="Center">
+            <Border.Effect>
+                <DropShadowEffect Color="#60000000" Direction="315" ShadowDepth="8" Opacity="0.6" BlurRadius="15"/>
+            </Border.Effect>
+
+            <Grid>
+                <!-- Push Pins at Top -->
+                <Canvas>
+                    <Ellipse Style="{StaticResource PushPinStyle}" Canvas.Left="30" Canvas.Top="-6"/>
+                    <Ellipse Style="{StaticResource PushPinStyle}" Canvas.Right="30" Canvas.Top="-6"/>
+                </Canvas>
+
+                <StackPanel VerticalAlignment="Center" Margin="30,0">
                     <TextBlock Text="🎯 MES MIDDLEWARE"
-                               FontSize="28"
+                               FontSize="32"
                                FontWeight="Bold"
                                Foreground="White"
-                               Margin="0,0,0,5"/>
+                               Margin="0,0,0,5"
+                               TextAlignment="Center"/>
                     <TextBlock Text="Real-time Monitoring Dashboard"
-                               FontSize="14"
+                               FontSize="15"
                                Foreground="#ECF0F1"
-                               Opacity="0.9"/>
+                               Opacity="0.95"
+                               TextAlignment="Center"/>
                 </StackPanel>
             </Grid>
         </Border>
 
-        <!-- Main Content -->
-        <TabControl Grid.Row="1" Margin="0,10,0,0">
-            <!-- Status Tab -->
-            <TabItem Header="📊 系統狀態">
+        <!-- Main Content with Cork Texture -->
+        <Border Grid.Row="1" Margin="10" CornerRadius="8">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#E5C9A6" Offset="0"/>
+                    <GradientStop Color="#D4B898" Offset="0.5"/>
+                    <GradientStop Color="#C4A888" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <Border.Effect>
+                <DropShadowEffect Color="#60000000" Direction="315" ShadowDepth="6" Opacity="0.4" BlurRadius="12"/>
+            </Border.Effect>
+
+            <Grid>
+                <!-- Add granular texture to TabControl area -->
+                <Rectangle>
+                    <Rectangle.Fill>
+                        <DrawingBrush TileMode="Tile" Viewport="0,0,40,40" ViewportUnits="Absolute">
+                            <DrawingBrush.Drawing>
+                                <DrawingGroup>
+                                    <GeometryDrawing Brush="#33000000">
+                                        <GeometryDrawing.Geometry>
+                                            <EllipseGeometry Center="5,8" RadiusX="1" RadiusY="0.8"/>
+                                        </GeometryDrawing.Geometry>
+                                    </GeometryDrawing>
+                                    <GeometryDrawing Brush="#22000000">
+                                        <GeometryDrawing.Geometry>
+                                            <EllipseGeometry Center="18,5" RadiusX="1.2" RadiusY="1"/>
+                                        </GeometryDrawing.Geometry>
+                                    </GeometryDrawing>
+                                    <GeometryDrawing Brush="#22000000">
+                                        <GeometryDrawing.Geometry>
+                                            <EllipseGeometry Center="30,15" RadiusX="0.8" RadiusY="0.8"/>
+                                        </GeometryDrawing.Geometry>
+                                    </GeometryDrawing>
+                                    <GeometryDrawing Brush="#33000000">
+                                        <GeometryDrawing.Geometry>
+                                            <EllipseGeometry Center="12,22" RadiusX="1.5" RadiusY="1.2"/>
+                                        </GeometryDrawing.Geometry>
+                                    </GeometryDrawing>
+                                    <GeometryDrawing Brush="#22000000">
+                                        <GeometryDrawing.Geometry>
+                                            <EllipseGeometry Center="25,28" RadiusX="0.9" RadiusY="1.1"/>
+                                        </GeometryDrawing.Geometry>
+                                    </GeometryDrawing>
+                                    <GeometryDrawing Brush="#11FFFFFF">
+                                        <GeometryDrawing.Geometry>
+                                            <EllipseGeometry Center="15,12" RadiusX="2" RadiusY="1.5"/>
+                                        </GeometryDrawing.Geometry>
+                                    </GeometryDrawing>
+                                    <GeometryDrawing Brush="#11FFFFFF">
+                                        <GeometryDrawing.Geometry>
+                                            <EllipseGeometry Center="32,25" RadiusX="1.8" RadiusY="1.8"/>
+                                        </GeometryDrawing.Geometry>
+                                    </GeometryDrawing>
+                                </DrawingGroup>
+                            </DrawingBrush.Drawing>
+                        </DrawingBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+
+                <TabControl Margin="10">
+                    <!-- Status Tab -->
+                    <TabItem Header="📊 系統狀態">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="10">
                     <StackPanel>
                         <!-- Service Status Cards -->
@@ -425,5 +620,8 @@
                 </Grid>
             </TabItem>
         </TabControl>
+            </Grid>
+        </Border>
+        </Grid>
     </Grid>
 </Window>
