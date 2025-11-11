@@ -8,9 +8,9 @@ using MesMiddleware.Monitor.Services;
 namespace MesMiddleware.Monitor.ViewModels;
 
 /// <summary>
-/// View model for command history display (T066).
-/// Shows equipment commands with status, timestamps, and acknowledgments.
-/// Part of User Story 3 (Bidirectional Command & Control).
+/// 命令歷史顯示的視圖模型（任務 T066）
+/// 顯示設備命令及其狀態、時間戳記和確認訊息
+/// 屬於使用者故事 3（雙向命令與控制）的一部分
 /// </summary>
 public partial class CommandHistoryViewModel : ObservableObject
 {
@@ -19,33 +19,58 @@ public partial class CommandHistoryViewModel : ObservableObject
     private CancellationTokenSource? _refreshCts;
     private Task? _refreshTask;
 
+    /// <summary>
+    /// 命令記錄集合
+    /// </summary>
     [ObservableProperty]
     private ObservableCollection<CommandRecord> _commandRecords = new();
 
+    /// <summary>
+    /// 篩選後的記錄集合
+    /// </summary>
     [ObservableProperty]
     private ObservableCollection<CommandRecord> _filteredRecords = new();
 
+    /// <summary>
+    /// 篩選文字
+    /// </summary>
     [ObservableProperty]
     private string _filterText = string.Empty;
 
+    /// <summary>
+    /// 狀態篩選條件
+    /// </summary>
     [ObservableProperty]
     private string _statusFilter = "All";
 
+    /// <summary>
+    /// 是否正在載入
+    /// </summary>
     [ObservableProperty]
     private bool _isLoading;
 
+    /// <summary>
+    /// 錯誤訊息
+    /// </summary>
     [ObservableProperty]
     private string _errorMessage = string.Empty;
 
+    /// <summary>
+    /// 建構函式，初始化命令歷史視圖模型
+    /// </summary>
     public CommandHistoryViewModel(IMiddlewareApiClient apiClient, ILogger<CommandHistoryViewModel> logger)
     {
         _apiClient = apiClient;
         _logger = logger;
     }
 
+    /// <summary>
+    /// 載入命令歷史記錄
+    /// </summary>
     [RelayCommand]
     private async Task LoadHistoryAsync()
     {
+        // 如果正在載入，則跳過
         if (IsLoading) return;
 
         IsLoading = true;
@@ -55,9 +80,10 @@ public partial class CommandHistoryViewModel : ObservableObject
         {
             _logger.LogDebug("Loading command history from middleware API");
 
-            // Get command history from middleware (max 1000 records)
+            // 從中介軟體取得命令歷史（最多 1000 筆）
             var commands = await _apiClient.GetCommandHistoryAsync(maxRecords: 1000);
 
+            // 清空並更新命令記錄集合
             CommandRecords.Clear();
             foreach (var cmd in commands)
             {
@@ -66,7 +92,7 @@ public partial class CommandHistoryViewModel : ObservableObject
 
             _logger.LogInformation("Loaded {Count} command records", CommandRecords.Count);
 
-            // Apply current filter
+            // 套用目前的篩選條件
             ApplyFilter();
         }
         catch (Exception ex)
@@ -81,6 +107,9 @@ public partial class CommandHistoryViewModel : ObservableObject
         }
     }
 
+    /// <summary>
+    /// 套用篩選條件
+    /// </summary>
     [RelayCommand]
     private void ApplyFilter()
     {
@@ -88,7 +117,7 @@ public partial class CommandHistoryViewModel : ObservableObject
 
         var filtered = CommandRecords.AsEnumerable();
 
-        // Filter by text (CommandType or EquipmentName)
+        // 根據文字篩選（命令類型或設備名稱）
         if (!string.IsNullOrWhiteSpace(FilterText))
         {
             filtered = filtered.Where(r =>
@@ -96,12 +125,13 @@ public partial class CommandHistoryViewModel : ObservableObject
                 r.EquipmentName.Contains(FilterText, StringComparison.OrdinalIgnoreCase));
         }
 
-        // Filter by status
+        // 根據狀態篩選
         if (StatusFilter != "All")
         {
             filtered = filtered.Where(r => r.Status == StatusFilter);
         }
 
+        // 將篩選結果加入到篩選後的記錄集合
         foreach (var record in filtered)
         {
             FilteredRecords.Add(record);
@@ -111,6 +141,9 @@ public partial class CommandHistoryViewModel : ObservableObject
             FilteredRecords.Count, CommandRecords.Count);
     }
 
+    /// <summary>
+    /// 清除篩選條件
+    /// </summary>
     [RelayCommand]
     private void ClearFilter()
     {
@@ -119,6 +152,9 @@ public partial class CommandHistoryViewModel : ObservableObject
         ApplyFilter();
     }
 
+    /// <summary>
+    /// 啟動定期刷新
+    /// </summary>
     public async Task StartPeriodicRefreshAsync()
     {
         _refreshCts = new CancellationTokenSource();
@@ -126,6 +162,9 @@ public partial class CommandHistoryViewModel : ObservableObject
         await Task.CompletedTask;
     }
 
+    /// <summary>
+    /// 停止定期刷新
+    /// </summary>
     public void StopPeriodicRefresh()
     {
         _refreshCts?.Cancel();
@@ -133,6 +172,10 @@ public partial class CommandHistoryViewModel : ObservableObject
         _refreshCts?.Dispose();
     }
 
+    /// <summary>
+    /// 定期刷新迴圈
+    /// </summary>
+    /// <param name="cancellationToken">取消令牌</param>
     private async Task PeriodicRefreshLoopAsync(CancellationToken cancellationToken)
     {
         while (!cancellationToken.IsCancellationRequested)
@@ -140,25 +183,34 @@ public partial class CommandHistoryViewModel : ObservableObject
             try
             {
                 await LoadHistoryAsync();
+                // 每 5 秒刷新一次
                 await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
             }
             catch (OperationCanceledException)
             {
+                // 取消操作，退出迴圈
                 break;
             }
             catch (Exception ex)
             {
+                // 發生錯誤時記錄並等待 10 秒後重試
                 _logger.LogError(ex, "Error in periodic refresh loop");
                 await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
             }
         }
     }
 
+    /// <summary>
+    /// 當篩選文字改變時，自動套用篩選
+    /// </summary>
     partial void OnFilterTextChanged(string value)
     {
         ApplyFilter();
     }
 
+    /// <summary>
+    /// 當狀態篩選改變時，自動套用篩選
+    /// </summary>
     partial void OnStatusFilterChanged(string value)
     {
         ApplyFilter();

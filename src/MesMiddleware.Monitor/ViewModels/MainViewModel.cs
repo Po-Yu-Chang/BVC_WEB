@@ -7,40 +7,128 @@ using System.Windows;
 namespace MesMiddleware.Monitor.ViewModels;
 
 /// <summary>
-/// Main view model for the monitoring dashboard.
-/// Coordinates child view models and manages system tray.
+/// 監控儀表板的主視圖模型
+/// 協調子視圖模型並管理系統匣功能
 /// </summary>
 public partial class MainViewModel : ObservableObject
 {
     private readonly IMiddlewareApiClient _apiClient;
+    private readonly ILocalizationService _localizationService;
     private readonly ILogger<MainViewModel> _logger;
 
+    /// <summary>
+    /// 狀態視圖模型
+    /// </summary>
     [ObservableProperty]
     private StatusViewModel _statusViewModel;
 
+    /// <summary>
+    /// 歷史記錄視圖模型
+    /// </summary>
     [ObservableProperty]
     private HistoryViewModel _historyViewModel;
 
+    /// <summary>
+    /// 佇列狀態視圖模型
+    /// </summary>
     [ObservableProperty]
     private QueueViewModel _queueViewModel;
 
+    /// <summary>
+    /// 視窗是否可見
+    /// </summary>
     [ObservableProperty]
     private bool _isWindowVisible = true;
 
+    /// <summary>
+    /// 當前語言代碼
+    /// </summary>
+    [ObservableProperty]
+    private string _currentLanguage = "zh-TW";
+
+    /// <summary>
+    /// 本地化服務
+    /// </summary>
+    public ILocalizationService LocalizationService => _localizationService;
+
+    // 視窗標題
+    public string WindowTitle => _localizationService.GetString("WindowTitle");
+
+    // Tab 標題
+    public string TabStatus => _localizationService.GetString("TabStatus");
+    public string TabHistory => _localizationService.GetString("TabHistory");
+    public string TabQueue => _localizationService.GetString("TabQueue");
+    public string TabCommands => _localizationService.GetString("TabCommands");
+
+    // 語言選項
+    public string LanguageTitle => _localizationService.GetString("Language_Title");
+    public string LanguageEnglish => _localizationService.GetString("Language_English");
+    public string LanguageSimplifiedChinese => _localizationService.GetString("Language_SimplifiedChinese");
+    public string LanguageTraditionalChinese => _localizationService.GetString("Language_TraditionalChinese");
+
+    // 系統匣選單
+    public string TrayMenuShow => _localizationService.GetString("TrayMenuShow");
+    public string TrayMenuExit => _localizationService.GetString("TrayMenuExit");
+
+    // 主標題
+    public string HeaderTitle => _localizationService.GetString("Header_Title");
+    public string HeaderSubtitle => _localizationService.GetString("Header_Subtitle");
+
+    // 服務狀態頁面
+    public string StatusSectionTitle => _localizationService.GetString("Status_SectionTitle");
+    public string StatusServiceRunning => _localizationService.GetString("Status_ServiceRunning");
+    public string StatusWebApiConnection => _localizationService.GetString("Status_WebApiConnection");
+    public string StatusSharedMemory => _localizationService.GetString("Status_SharedMemory");
+    public string StatusStatisticsTitle => _localizationService.GetString("Status_StatisticsTitle");
+    public string StatusTotalReceived => _localizationService.GetString("Status_TotalReceived");
+    public string StatusSuccessUploads => _localizationService.GetString("Status_SuccessUploads");
+    public string StatusQueuedItems => _localizationService.GetString("Status_QueuedItems");
+    public string StatusUptime => _localizationService.GetString("Status_Uptime");
+    public string StatusLastUpdate => _localizationService.GetString("Status_LastUpdate");
+    public string StatusLastError => _localizationService.GetString("Status_LastError");
+
+    // 佇列狀態頁面
+    public string QueueSectionTitle => _localizationService.GetString("Queue_SectionTitle");
+    public string QueuePendingTitle => _localizationService.GetString("Queue_PendingTitle");
+    public string QueueRetryingTitle => _localizationService.GetString("Queue_RetryingTitle");
+    public string QueueFailedTitle => _localizationService.GetString("Queue_FailedTitle");
+    public string QueueTotalDepthTitle => _localizationService.GetString("Queue_TotalDepthTitle");
+    public string QueueOldestItem => _localizationService.GetString("Queue_OldestItem");
+
+    // 上傳歷史頁面
+    public string HistoryRefreshButton => _localizationService.GetString("History_RefreshButton");
+    public string HistoryColumnTimestamp => _localizationService.GetString("History_ColumnTimestamp");
+    public string HistoryColumnTraceCode => _localizationService.GetString("History_ColumnTraceCode");
+    public string HistoryColumnDevice => _localizationService.GetString("History_ColumnDevice");
+    public string HistoryColumnStatus => _localizationService.GetString("History_ColumnStatus");
+    public string HistoryColumnRetryCount => _localizationService.GetString("History_ColumnRetryCount");
+    public string HistoryColumnError => _localizationService.GetString("History_ColumnError");
+
+    /// <summary>
+    /// 建構函式，初始化主視圖模型
+    /// </summary>
     public MainViewModel(
         IMiddlewareApiClient apiClient,
+        ILocalizationService localizationService,
         StatusViewModel statusViewModel,
         HistoryViewModel historyViewModel,
         QueueViewModel queueViewModel,
         ILogger<MainViewModel> logger)
     {
         _apiClient = apiClient;
+        _localizationService = localizationService;
         StatusViewModel = statusViewModel;
         HistoryViewModel = historyViewModel;
         QueueViewModel = queueViewModel;
         _logger = logger;
+
+        // 訂閱語言變更事件
+        _localizationService.LanguageChanged += OnLanguageChanged;
     }
 
+    /// <summary>
+    /// 顯示視窗命令
+    /// </summary>
     [RelayCommand]
     private void ShowWindow()
     {
@@ -48,6 +136,9 @@ public partial class MainViewModel : ObservableObject
         _logger.LogInformation("Window shown from system tray");
     }
 
+    /// <summary>
+    /// 隱藏視窗命令
+    /// </summary>
     [RelayCommand]
     private void HideWindow()
     {
@@ -55,6 +146,9 @@ public partial class MainViewModel : ObservableObject
         _logger.LogInformation("Window hidden to system tray");
     }
 
+    /// <summary>
+    /// 結束應用程式命令
+    /// </summary>
     [RelayCommand]
     private void ExitApplication()
     {
@@ -62,25 +156,94 @@ public partial class MainViewModel : ObservableObject
         Application.Current.Shutdown();
     }
 
+    /// <summary>
+    /// 初始化視圖模型，啟動所有子視圖模型的定期更新
+    /// </summary>
     public async Task InitializeAsync()
     {
         _logger.LogInformation("Initializing main view model");
 
-        // Start periodic refresh for all child view models
+        // 啟動所有子視圖模型的定期更新
         await StatusViewModel.StartPeriodicRefreshAsync();
         await HistoryViewModel.StartPeriodicRefreshAsync();
         await QueueViewModel.StartPeriodicRefreshAsync();
     }
 
+    /// <summary>
+    /// 關閉視圖模型，停止所有定期更新
+    /// </summary>
     public async Task ShutdownAsync()
     {
         _logger.LogInformation("Shutting down main view model");
 
-        // Stop periodic refresh
+        // 取消訂閱語言變更事件
+        _localizationService.LanguageChanged -= OnLanguageChanged;
+
+        // 停止定期更新
         StatusViewModel.StopPeriodicRefresh();
         HistoryViewModel.StopPeriodicRefresh();
         QueueViewModel.StopPeriodicRefresh();
 
         await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// 切換語言命令
+    /// </summary>
+    /// <param name="languageCode">語言代碼（en, zh-CN, zh-TW）</param>
+    [RelayCommand]
+    private void ChangeLanguage(string languageCode)
+    {
+        _logger.LogInformation("Changing language to: {LanguageCode}", languageCode);
+        _localizationService.ChangeLanguage(languageCode);
+        CurrentLanguage = languageCode;
+    }
+
+    /// <summary>
+    /// 語言變更事件處理
+    /// </summary>
+    private void OnLanguageChanged(object? sender, EventArgs e)
+    {
+        _logger.LogInformation("Language changed to: {Culture}", _localizationService.CurrentCulture.Name);
+
+        // 通知所有屬性變更，以更新 UI
+        OnPropertyChanged(nameof(LocalizationService));
+        OnPropertyChanged(nameof(WindowTitle));
+        OnPropertyChanged(nameof(TabStatus));
+        OnPropertyChanged(nameof(TabHistory));
+        OnPropertyChanged(nameof(TabQueue));
+        OnPropertyChanged(nameof(TabCommands));
+        OnPropertyChanged(nameof(LanguageTitle));
+        OnPropertyChanged(nameof(LanguageEnglish));
+        OnPropertyChanged(nameof(LanguageSimplifiedChinese));
+        OnPropertyChanged(nameof(LanguageTraditionalChinese));
+        OnPropertyChanged(nameof(TrayMenuShow));
+        OnPropertyChanged(nameof(TrayMenuExit));
+        OnPropertyChanged(nameof(HeaderTitle));
+        OnPropertyChanged(nameof(HeaderSubtitle));
+        OnPropertyChanged(nameof(StatusSectionTitle));
+        OnPropertyChanged(nameof(StatusServiceRunning));
+        OnPropertyChanged(nameof(StatusWebApiConnection));
+        OnPropertyChanged(nameof(StatusSharedMemory));
+        OnPropertyChanged(nameof(StatusStatisticsTitle));
+        OnPropertyChanged(nameof(StatusTotalReceived));
+        OnPropertyChanged(nameof(StatusSuccessUploads));
+        OnPropertyChanged(nameof(StatusQueuedItems));
+        OnPropertyChanged(nameof(StatusUptime));
+        OnPropertyChanged(nameof(StatusLastUpdate));
+        OnPropertyChanged(nameof(StatusLastError));
+        OnPropertyChanged(nameof(QueueSectionTitle));
+        OnPropertyChanged(nameof(QueuePendingTitle));
+        OnPropertyChanged(nameof(QueueRetryingTitle));
+        OnPropertyChanged(nameof(QueueFailedTitle));
+        OnPropertyChanged(nameof(QueueTotalDepthTitle));
+        OnPropertyChanged(nameof(QueueOldestItem));
+        OnPropertyChanged(nameof(HistoryRefreshButton));
+        OnPropertyChanged(nameof(HistoryColumnTimestamp));
+        OnPropertyChanged(nameof(HistoryColumnTraceCode));
+        OnPropertyChanged(nameof(HistoryColumnDevice));
+        OnPropertyChanged(nameof(HistoryColumnStatus));
+        OnPropertyChanged(nameof(HistoryColumnRetryCount));
+        OnPropertyChanged(nameof(HistoryColumnError));
     }
 }

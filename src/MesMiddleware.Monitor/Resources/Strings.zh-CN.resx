@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- 主窗口标题 -->
+  <data name="WindowTitle" xml:space="preserve">
+    <value>MES 中介软件监控仪表板</value>
+  </data>
+
+  <!-- 系统托盘 -->
+  <data name="TrayIconTooltip" xml:space="preserve">
+    <value>MES 中介软件监控器</value>
+  </data>
+  <data name="TrayMenuShow" xml:space="preserve">
+    <value>显示监控窗口</value>
+  </data>
+  <data name="TrayMenuExit" xml:space="preserve">
+    <value>退出程序</value>
+  </data>
+
+  <!-- Tab 标题 -->
+  <data name="TabStatus" xml:space="preserve">
+    <value>📊 服务状态</value>
+  </data>
+  <data name="TabHistory" xml:space="preserve">
+    <value>📜 上传历史</value>
+  </data>
+  <data name="TabQueue" xml:space="preserve">
+    <value>⏳ 队列状态</value>
+  </data>
+  <data name="TabCommands" xml:space="preserve">
+    <value>🖥️ 命令记录</value>
+  </data>
+
+  <!-- 服务状态卡片 -->
+  <data name="StatusCard_Title" xml:space="preserve">
+    <value>📡 连接状态</value>
+  </data>
+  <data name="StatusCard_Status" xml:space="preserve">
+    <value>状态：</value>
+  </data>
+  <data name="StatusCard_LastPing" xml:space="preserve">
+    <value>最后 Ping：</value>
+  </data>
+  <data name="StatusCard_QueueDepth" xml:space="preserve">
+    <value>队列深度：</value>
+  </data>
+
+  <data name="ServiceCard_Title" xml:space="preserve">
+    <value>⚙️ 服务信息</value>
+  </data>
+  <data name="ServiceCard_Running" xml:space="preserve">
+    <value>服务运行：</value>
+  </data>
+  <data name="ServiceCard_Uptime" xml:space="preserve">
+    <value>运行时间：</value>
+  </data>
+  <data name="ServiceCard_LastUpdate" xml:space="preserve">
+    <value>最后更新：</value>
+  </data>
+
+  <data name="ApiCard_Title" xml:space="preserve">
+    <value>🌐 Web API</value>
+  </data>
+  <data name="ApiCard_Connected" xml:space="preserve">
+    <value>API 连接：</value>
+  </data>
+
+  <data name="MemoryCard_Title" xml:space="preserve">
+    <value>💾 共享内存</value>
+  </data>
+  <data name="MemoryCard_Active" xml:space="preserve">
+    <value>内存活跃：</value>
+  </data>
+
+  <!-- 统计卡片 -->
+  <data name="StatsCard_Title" xml:space="preserve">
+    <value>📈 统计信息</value>
+  </data>
+  <data name="StatsCard_Received" xml:space="preserve">
+    <value>已接收：</value>
+  </data>
+  <data name="StatsCard_Success" xml:space="preserve">
+    <value>成功上传：</value>
+  </data>
+  <data name="StatsCard_Queued" xml:space="preserve">
+    <value>排队中：</value>
+  </data>
+
+  <!-- 上传历史 -->
+  <data name="History_TraceCode" xml:space="preserve">
+    <value>跟踪码</value>
+  </data>
+  <data name="History_Status" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="History_Timestamp" xml:space="preserve">
+    <value>时间戳</value>
+  </data>
+  <data name="History_Message" xml:space="preserve">
+    <value>消息</value>
+  </data>
+  <data name="History_FilterPlaceholder" xml:space="preserve">
+    <value>按跟踪码筛选...</value>
+  </data>
+  <data name="History_StatusFilter" xml:space="preserve">
+    <value>状态筛选</value>
+  </data>
+  <data name="History_ClearFilter" xml:space="preserve">
+    <value>清除筛选</value>
+  </data>
+  <data name="History_Refresh" xml:space="preserve">
+    <value>刷新</value>
+  </data>
+
+  <!-- 队列状态 -->
+  <data name="Queue_Title" xml:space="preserve">
+    <value>队列状态概览</value>
+  </data>
+  <data name="Queue_Pending" xml:space="preserve">
+    <value>⏳ 等待中：</value>
+  </data>
+  <data name="Queue_Retrying" xml:space="preserve">
+    <value>🔄 重试中：</value>
+  </data>
+  <data name="Queue_Failed" xml:space="preserve">
+    <value>❌ 失败：</value>
+  </data>
+  <data name="Queue_TotalDepth" xml:space="preserve">
+    <value>📊 总深度：</value>
+  </data>
+  <data name="Queue_OldestQueued" xml:space="preserve">
+    <value>🕒 最旧排队时间：</value>
+  </data>
+  <data name="Queue_Refresh" xml:space="preserve">
+    <value>刷新</value>
+  </data>
+
+  <!-- 命令记录 -->
+  <data name="Commands_CommandName" xml:space="preserve">
+    <value>命令名称</value>
+  </data>
+  <data name="Commands_Status" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="Commands_ExecutedAt" xml:space="preserve">
+    <value>执行时间</value>
+  </data>
+  <data name="Commands_Result" xml:space="preserve">
+    <value>结果</value>
+  </data>
+  <data name="Commands_Refresh" xml:space="preserve">
+    <value>刷新</value>
+  </data>
+
+  <!-- 通用 -->
+  <data name="Common_Yes" xml:space="preserve">
+    <value>是</value>
+  </data>
+  <data name="Common_No" xml:space="preserve">
+    <value>否</value>
+  </data>
+  <data name="Common_Connected" xml:space="preserve">
+    <value>已连接</value>
+  </data>
+  <data name="Common_Disconnected" xml:space="preserve">
+    <value>已断开</value>
+  </data>
+  <data name="Common_Error" xml:space="preserve">
+    <value>错误</value>
+  </data>
+  <data name="Common_Loading" xml:space="preserve">
+    <value>加载中...</value>
+  </data>
+  <data name="Common_NA" xml:space="preserve">
+    <value>N/A</value>
+  </data>
+
+  <!-- 语言选项 -->
+  <data name="Language_English" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="Language_SimplifiedChinese" xml:space="preserve">
+    <value>简体中文</value>
+  </data>
+  <data name="Language_TraditionalChinese" xml:space="preserve">
+    <value>繁體中文</value>
+  </data>
+  <data name="Language_Title" xml:space="preserve">
+    <value>🌐 语言</value>
+  </data>
+
+  <!-- 服务状态页面 -->
+  <data name="Status_SectionTitle" xml:space="preserve">
+    <value>服务状态</value>
+  </data>
+  <data name="Status_ServiceRunning" xml:space="preserve">
+    <value>🔴 服务运行</value>
+  </data>
+  <data name="Status_WebApiConnection" xml:space="preserve">
+    <value>🌐 WebAPI 连接</value>
+  </data>
+  <data name="Status_SharedMemory" xml:space="preserve">
+    <value>💾 共享内存</value>
+  </data>
+  <data name="Status_StatisticsTitle" xml:space="preserve">
+    <value>数据统计</value>
+  </data>
+  <data name="Status_TotalReceived" xml:space="preserve">
+    <value>📥 总接收数据</value>
+  </data>
+  <data name="Status_SuccessUploads" xml:space="preserve">
+    <value>✅ 成功上传</value>
+  </data>
+  <data name="Status_QueuedItems" xml:space="preserve">
+    <value>⏳ 队列中</value>
+  </data>
+  <data name="Status_Uptime" xml:space="preserve">
+    <value>⏱️ 运行时间</value>
+  </data>
+  <data name="Status_LastUpdate" xml:space="preserve">
+    <value>🕐 最后更新</value>
+  </data>
+  <data name="Status_LastError" xml:space="preserve">
+    <value>⚠️ 最后错误</value>
+  </data>
+
+  <!-- 队列状态页面 -->
+  <data name="Queue_SectionTitle" xml:space="preserve">
+    <value>上传队列</value>
+  </data>
+  <data name="Queue_PendingTitle" xml:space="preserve">
+    <value>📋 待处理</value>
+  </data>
+  <data name="Queue_RetryingTitle" xml:space="preserve">
+    <value>🔄 重试中</value>
+  </data>
+  <data name="Queue_FailedTitle" xml:space="preserve">
+    <value>❌ 失败</value>
+  </data>
+  <data name="Queue_TotalDepthTitle" xml:space="preserve">
+    <value>📊 总深度</value>
+  </data>
+  <data name="Queue_OldestItem" xml:space="preserve">
+    <value>⏰ 最旧队列项目</value>
+  </data>
+
+  <!-- 上传历史页面 -->
+  <data name="History_RefreshButton" xml:space="preserve">
+    <value>🔄 刷新</value>
+  </data>
+  <data name="History_ColumnTimestamp" xml:space="preserve">
+    <value>⏰ 时间戳</value>
+  </data>
+  <data name="History_ColumnTraceCode" xml:space="preserve">
+    <value>🏷️ 跟踪码/批号</value>
+  </data>
+  <data name="History_ColumnDevice" xml:space="preserve">
+    <value>🖥️ 设备</value>
+  </data>
+  <data name="History_ColumnStatus" xml:space="preserve">
+    <value>📊 状态</value>
+  </data>
+  <data name="History_ColumnRetryCount" xml:space="preserve">
+    <value>🔄 重试次数</value>
+  </data>
+  <data name="History_ColumnError" xml:space="preserve">
+    <value>⚠️ 错误消息</value>
+  </data>
+
+  <!-- 主标题 -->
+  <data name="Header_Title" xml:space="preserve">
+    <value>🎯 MES MIDDLEWARE</value>
+  </data>
+  <data name="Header_Subtitle" xml:space="preserve">
+    <value>Real-time Monitoring Dashboard</value>
+  </data>
+</root>

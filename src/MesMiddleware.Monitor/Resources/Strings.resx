@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- 主視窗標題 -->
+  <data name="WindowTitle" xml:space="preserve">
+    <value>MES 中介軟體監控儀表板</value>
+  </data>
+
+  <!-- 系統匣 -->
+  <data name="TrayIconTooltip" xml:space="preserve">
+    <value>MES 中介軟體監控器</value>
+  </data>
+  <data name="TrayMenuShow" xml:space="preserve">
+    <value>顯示監控視窗</value>
+  </data>
+  <data name="TrayMenuExit" xml:space="preserve">
+    <value>結束程式</value>
+  </data>
+
+  <!-- Tab 標題 -->
+  <data name="TabStatus" xml:space="preserve">
+    <value>📊 服務狀態</value>
+  </data>
+  <data name="TabHistory" xml:space="preserve">
+    <value>📜 上傳歷史</value>
+  </data>
+  <data name="TabQueue" xml:space="preserve">
+    <value>⏳ 佇列狀態</value>
+  </data>
+  <data name="TabCommands" xml:space="preserve">
+    <value>🖥️ 命令記錄</value>
+  </data>
+
+  <!-- 服務狀態卡片 -->
+  <data name="StatusCard_Title" xml:space="preserve">
+    <value>📡 連線狀態</value>
+  </data>
+  <data name="StatusCard_Status" xml:space="preserve">
+    <value>狀態：</value>
+  </data>
+  <data name="StatusCard_LastPing" xml:space="preserve">
+    <value>最後 Ping：</value>
+  </data>
+  <data name="StatusCard_QueueDepth" xml:space="preserve">
+    <value>佇列深度：</value>
+  </data>
+
+  <data name="ServiceCard_Title" xml:space="preserve">
+    <value>⚙️ 服務資訊</value>
+  </data>
+  <data name="ServiceCard_Running" xml:space="preserve">
+    <value>服務運行：</value>
+  </data>
+  <data name="ServiceCard_Uptime" xml:space="preserve">
+    <value>運行時間：</value>
+  </data>
+  <data name="ServiceCard_LastUpdate" xml:space="preserve">
+    <value>最後更新：</value>
+  </data>
+
+  <data name="ApiCard_Title" xml:space="preserve">
+    <value>🌐 Web API</value>
+  </data>
+  <data name="ApiCard_Connected" xml:space="preserve">
+    <value>API 連線：</value>
+  </data>
+
+  <data name="MemoryCard_Title" xml:space="preserve">
+    <value>💾 共享記憶體</value>
+  </data>
+  <data name="MemoryCard_Active" xml:space="preserve">
+    <value>記憶體活躍：</value>
+  </data>
+
+  <!-- 統計卡片 -->
+  <data name="StatsCard_Title" xml:space="preserve">
+    <value>📈 統計資訊</value>
+  </data>
+  <data name="StatsCard_Received" xml:space="preserve">
+    <value>已接收：</value>
+  </data>
+  <data name="StatsCard_Success" xml:space="preserve">
+    <value>成功上傳：</value>
+  </data>
+  <data name="StatsCard_Queued" xml:space="preserve">
+    <value>排隊中：</value>
+  </data>
+
+  <!-- 上傳歷史 -->
+  <data name="History_TraceCode" xml:space="preserve">
+    <value>追蹤碼</value>
+  </data>
+  <data name="History_Status" xml:space="preserve">
+    <value>狀態</value>
+  </data>
+  <data name="History_Timestamp" xml:space="preserve">
+    <value>時間戳記</value>
+  </data>
+  <data name="History_Message" xml:space="preserve">
+    <value>訊息</value>
+  </data>
+  <data name="History_FilterPlaceholder" xml:space="preserve">
+    <value>依追蹤碼篩選...</value>
+  </data>
+  <data name="History_StatusFilter" xml:space="preserve">
+    <value>狀態篩選</value>
+  </data>
+  <data name="History_ClearFilter" xml:space="preserve">
+    <value>清除篩選</value>
+  </data>
+  <data name="History_Refresh" xml:space="preserve">
+    <value>重新整理</value>
+  </data>
+
+  <!-- 佇列狀態 -->
+  <data name="Queue_Title" xml:space="preserve">
+    <value>佇列狀態概覽</value>
+  </data>
+  <data name="Queue_Pending" xml:space="preserve">
+    <value>⏳ 等待中：</value>
+  </data>
+  <data name="Queue_Retrying" xml:space="preserve">
+    <value>🔄 重試中：</value>
+  </data>
+  <data name="Queue_Failed" xml:space="preserve">
+    <value>❌ 失敗：</value>
+  </data>
+  <data name="Queue_TotalDepth" xml:space="preserve">
+    <value>📊 總深度：</value>
+  </data>
+  <data name="Queue_OldestQueued" xml:space="preserve">
+    <value>🕒 最舊排隊時間：</value>
+  </data>
+  <data name="Queue_Refresh" xml:space="preserve">
+    <value>重新整理</value>
+  </data>
+
+  <!-- 命令記錄 -->
+  <data name="Commands_CommandName" xml:space="preserve">
+    <value>命令名稱</value>
+  </data>
+  <data name="Commands_Status" xml:space="preserve">
+    <value>狀態</value>
+  </data>
+  <data name="Commands_ExecutedAt" xml:space="preserve">
+    <value>執行時間</value>
+  </data>
+  <data name="Commands_Result" xml:space="preserve">
+    <value>結果</value>
+  </data>
+  <data name="Commands_Refresh" xml:space="preserve">
+    <value>重新整理</value>
+  </data>
+
+  <!-- 通用 -->
+  <data name="Common_Yes" xml:space="preserve">
+    <value>是</value>
+  </data>
+  <data name="Common_No" xml:space="preserve">
+    <value>否</value>
+  </data>
+  <data name="Common_Connected" xml:space="preserve">
+    <value>已連線</value>
+  </data>
+  <data name="Common_Disconnected" xml:space="preserve">
+    <value>已斷線</value>
+  </data>
+  <data name="Common_Error" xml:space="preserve">
+    <value>錯誤</value>
+  </data>
+  <data name="Common_Loading" xml:space="preserve">
+    <value>載入中...</value>
+  </data>
+  <data name="Common_NA" xml:space="preserve">
+    <value>N/A</value>
+  </data>
+
+  <!-- 語言選項 -->
+  <data name="Language_English" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="Language_SimplifiedChinese" xml:space="preserve">
+    <value>简体中文</value>
+  </data>
+  <data name="Language_TraditionalChinese" xml:space="preserve">
+    <value>繁體中文</value>
+  </data>
+  <data name="Language_Title" xml:space="preserve">
+    <value>🌐 語言</value>
+  </data>
+
+  <!-- 服務狀態頁面 -->
+  <data name="Status_SectionTitle" xml:space="preserve">
+    <value>服務狀態</value>
+  </data>
+  <data name="Status_ServiceRunning" xml:space="preserve">
+    <value>🔴 服務運行</value>
+  </data>
+  <data name="Status_WebApiConnection" xml:space="preserve">
+    <value>🌐 WebAPI 連接</value>
+  </data>
+  <data name="Status_SharedMemory" xml:space="preserve">
+    <value>💾 共享記憶體</value>
+  </data>
+  <data name="Status_StatisticsTitle" xml:space="preserve">
+    <value>數據統計</value>
+  </data>
+  <data name="Status_TotalReceived" xml:space="preserve">
+    <value>📥 總接收數據</value>
+  </data>
+  <data name="Status_SuccessUploads" xml:space="preserve">
+    <value>✅ 成功上傳</value>
+  </data>
+  <data name="Status_QueuedItems" xml:space="preserve">
+    <value>⏳ 佇列中</value>
+  </data>
+  <data name="Status_Uptime" xml:space="preserve">
+    <value>⏱️ 運行時間</value>
+  </data>
+  <data name="Status_LastUpdate" xml:space="preserve">
+    <value>🕐 最後更新</value>
+  </data>
+  <data name="Status_LastError" xml:space="preserve">
+    <value>⚠️ 最後錯誤</value>
+  </data>
+
+  <!-- 佇列狀態頁面 -->
+  <data name="Queue_SectionTitle" xml:space="preserve">
+    <value>上傳佇列</value>
+  </data>
+  <data name="Queue_PendingTitle" xml:space="preserve">
+    <value>📋 待處理</value>
+  </data>
+  <data name="Queue_RetryingTitle" xml:space="preserve">
+    <value>🔄 重試中</value>
+  </data>
+  <data name="Queue_FailedTitle" xml:space="preserve">
+    <value>❌ 失敗</value>
+  </data>
+  <data name="Queue_TotalDepthTitle" xml:space="preserve">
+    <value>📊 總深度</value>
+  </data>
+  <data name="Queue_OldestItem" xml:space="preserve">
+    <value>⏰ 最舊佇列項目</value>
+  </data>
+
+  <!-- 上傳歷史頁面 -->
+  <data name="History_RefreshButton" xml:space="preserve">
+    <value>🔄 重新整理</value>
+  </data>
+  <data name="History_ColumnTimestamp" xml:space="preserve">
+    <value>⏰ 時間戳記</value>
+  </data>
+  <data name="History_ColumnTraceCode" xml:space="preserve">
+    <value>🏷️ 追溯碼/批號</value>
+  </data>
+  <data name="History_ColumnDevice" xml:space="preserve">
+    <value>🖥️ 設備</value>
+  </data>
+  <data name="History_ColumnStatus" xml:space="preserve">
+    <value>📊 狀態</value>
+  </data>
+  <data name="History_ColumnRetryCount" xml:space="preserve">
+    <value>🔄 重試次數</value>
+  </data>
+  <data name="History_ColumnError" xml:space="preserve">
+    <value>⚠️ 錯誤訊息</value>
+  </data>
+
+  <!-- 主標題 -->
+  <data name="Header_Title" xml:space="preserve">
+    <value>🎯 MES MIDDLEWARE</value>
+  </data>
+  <data name="Header_Subtitle" xml:space="preserve">
+    <value>Real-time Monitoring Dashboard</value>
+  </data>
+</root>

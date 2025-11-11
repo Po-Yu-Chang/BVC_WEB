@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:MesMiddleware.Monitor"
         xmlns:tb="http://www.hardcodet.net/taskbar"
         mc:Ignorable="d"
-        Title="MES Middleware Monitor" Height="700" Width="1200"
+        Title="{Binding WindowTitle}" Height="700" Width="1200"
         WindowStartupLocation="CenterScreen"
         Closing="Window_Closing"
         StateChanged="Window_StateChanged">
@@ -344,13 +344,13 @@
                 </Canvas>
 
                 <StackPanel VerticalAlignment="Center" Margin="30,0">
-                    <TextBlock Text="🎯 MES MIDDLEWARE"
+                    <TextBlock Text="{Binding HeaderTitle}"
                                FontSize="32"
                                FontWeight="Bold"
                                Foreground="White"
                                Margin="0,0,0,5"
                                TextAlignment="Center"/>
-                    <TextBlock Text="Real-time Monitoring Dashboard"
+                    <TextBlock Text="{Binding HeaderSubtitle}"
                                FontSize="15"
                                Foreground="#ECF0F1"
                                Opacity="0.95"
@@ -420,13 +420,44 @@
                     </Rectangle.Fill>
                 </Rectangle>
 
-                <TabControl Margin="10">
+                <!-- Language Switcher -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="20,10">
+                    <TextBlock Text="{Binding LanguageTitle}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,10,0"
+                               FontWeight="SemiBold"
+                               Foreground="White"
+                               FontSize="14"/>
+                    <Button Content="{Binding LanguageEnglish}"
+                            Command="{Binding ChangeLanguageCommand}"
+                            CommandParameter="en"
+                            Style="{StaticResource ModernButtonStyle}"
+                            Margin="5,0"
+                            Padding="15,8"
+                            FontSize="12"/>
+                    <Button Content="{Binding LanguageSimplifiedChinese}"
+                            Command="{Binding ChangeLanguageCommand}"
+                            CommandParameter="zh-CN"
+                            Style="{StaticResource ModernButtonStyle}"
+                            Margin="5,0"
+                            Padding="15,8"
+                            FontSize="12"/>
+                    <Button Content="{Binding LanguageTraditionalChinese}"
+                            Command="{Binding ChangeLanguageCommand}"
+                            CommandParameter="zh-TW"
+                            Style="{StaticResource ModernButtonStyle}"
+                            Margin="5,0"
+                            Padding="15,8"
+                            FontSize="12"/>
+                </StackPanel>
+
+                <TabControl Margin="10,60,10,10">
                     <!-- Status Tab -->
-                    <TabItem Header="📊 系統狀態">
+                    <TabItem Header="{Binding TabStatus}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="10">
                     <StackPanel>
                         <!-- Service Status Cards -->
-                        <TextBlock Text="服務狀態" Style="{StaticResource TitleStyle}" Margin="20,10,0,10"/>
+                        <TextBlock Text="{Binding StatusSectionTitle}" Style="{StaticResource TitleStyle}" Margin="20,10,0,10"/>
                         <UniformGrid Columns="3" Margin="5,0">
                             <!-- Service Running Card -->
                             <Grid>
@@ -439,7 +470,7 @@
                                     </Border.Background>
                                     <Grid>
                                         <StackPanel>
-                                            <TextBlock Text="🔴 服務運行" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                            <TextBlock Text="{Binding StatusServiceRunning}" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding StatusViewModel.IsRunning}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="24"/>
                                         </StackPanel>
                                         <!-- Curled Corner - Dual Layer Effect -->
@@ -477,7 +508,7 @@
                                     </Border.Background>
                                     <Grid>
                                         <StackPanel>
-                                            <TextBlock Text="🌐 WebAPI 連接" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                            <TextBlock Text="{Binding StatusWebApiConnection}" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding StatusViewModel.IsWebApiConnected}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="24"/>
                                         </StackPanel>
                                         <Canvas Style="{StaticResource CurledCornerStyle}">
@@ -512,7 +543,7 @@
                                     </Border.Background>
                                     <Grid>
                                         <StackPanel>
-                                            <TextBlock Text="💾 共享記憶體" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                            <TextBlock Text="{Binding StatusSharedMemory}" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding StatusViewModel.IsSharedMemoryActive}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="24"/>
                                         </StackPanel>
                                         <Canvas Style="{StaticResource CurledCornerStyle}">
@@ -538,7 +569,7 @@
                         </UniformGrid>
 
                         <!-- Statistics Cards -->
-                        <TextBlock Text="數據統計" Style="{StaticResource TitleStyle}" Margin="20,20,0,10"/>
+                        <TextBlock Text="{Binding StatusStatisticsTitle}" Style="{StaticResource TitleStyle}" Margin="20,20,0,10"/>
                         <UniformGrid Columns="3" Margin="5,0">
                             <!-- Total Received -->
                             <Grid>
@@ -551,7 +582,7 @@
                                     </Border.Background>
                                     <Grid>
                                         <StackPanel>
-                                            <TextBlock Text="📥 總接收數據" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                            <TextBlock Text="{Binding StatusTotalReceived}" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding StatusViewModel.TotalDataReceived}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="32"/>
                                         </StackPanel>
                                         <Canvas Style="{StaticResource CurledCornerStyle}">
@@ -586,7 +617,7 @@
                                     </Border.Background>
                                     <Grid>
                                         <StackPanel>
-                                            <TextBlock Text="✅ 成功上傳" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                            <TextBlock Text="{Binding StatusSuccessUploads}" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding StatusViewModel.SuccessfulUploads}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="32"/>
                                         </StackPanel>
                                         <Canvas Style="{StaticResource CurledCornerStyle}">
@@ -621,7 +652,7 @@
                                     </Border.Background>
                                     <Grid>
                                         <StackPanel>
-                                            <TextBlock Text="⏳ 佇列中" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                            <TextBlock Text="{Binding StatusQueuedItems}" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding StatusViewModel.QueuedUploads}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="32"/>
                                         </StackPanel>
                                         <Canvas Style="{StaticResource CurledCornerStyle}">
@@ -660,16 +691,16 @@
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Text="⏱️ 運行時間" Style="{StaticResource LabelStyle}"/>
+                                    <TextBlock Text="{Binding StatusUptime}" Style="{StaticResource LabelStyle}"/>
                                     <TextBlock Text="{Binding StatusViewModel.Uptime}" Style="{StaticResource ValueStyle}" FontSize="18" Margin="0,5,0,15"/>
 
-                                    <TextBlock Text="🕐 最後更新" Style="{StaticResource LabelStyle}"/>
+                                    <TextBlock Text="{Binding StatusLastUpdate}" Style="{StaticResource LabelStyle}"/>
                                     <TextBlock Text="{Binding StatusViewModel.LastUpdated, StringFormat='yyyy-MM-dd HH:mm:ss'}"
                                                Style="{StaticResource ValueStyle}" FontSize="14" Margin="0,5,0,0"/>
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="1">
-                                    <TextBlock Text="⚠️ 最後錯誤" Style="{StaticResource LabelStyle}"/>
+                                    <TextBlock Text="{Binding StatusLastError}" Style="{StaticResource LabelStyle}"/>
                                     <TextBlock Text="{Binding StatusViewModel.LastError}"
                                                TextWrapping="Wrap"
                                                Foreground="#E74C3C"
@@ -685,10 +716,10 @@
             </TabItem>
 
             <!-- Queue Status Tab -->
-            <TabItem Header="📦 佇列狀態">
+            <TabItem Header="{Binding TabQueue}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="10">
                     <StackPanel>
-                        <TextBlock Text="上傳佇列" Style="{StaticResource TitleStyle}" Margin="20,10,0,10"/>
+                        <TextBlock Text="{Binding QueueSectionTitle}" Style="{StaticResource TitleStyle}" Margin="20,10,0,10"/>
                         <UniformGrid Columns="2" Rows="3" Margin="5,0">
                             <!-- Pending -->
                             <Grid>
@@ -701,7 +732,7 @@
                                     </Border.Background>
                                     <Grid>
                                         <StackPanel>
-                                            <TextBlock Text="📋 待處理" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                            <TextBlock Text="{Binding QueuePendingTitle}" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding QueueViewModel.PendingCount}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
                                         </StackPanel>
                                         <Canvas Style="{StaticResource CurledCornerStyle}">
@@ -736,7 +767,7 @@
                                     </Border.Background>
                                     <Grid>
                                         <StackPanel>
-                                            <TextBlock Text="🔄 重試中" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                            <TextBlock Text="{Binding QueueRetryingTitle}" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding QueueViewModel.RetryingCount}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
                                         </StackPanel>
                                         <Canvas Style="{StaticResource CurledCornerStyle}">
@@ -771,7 +802,7 @@
                                     </Border.Background>
                                     <Grid>
                                         <StackPanel>
-                                            <TextBlock Text="❌ 失敗" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                            <TextBlock Text="{Binding QueueFailedTitle}" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding QueueViewModel.FailedCount}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
                                         </StackPanel>
                                         <Canvas Style="{StaticResource CurledCornerStyle}">
@@ -806,7 +837,7 @@
                                     </Border.Background>
                                     <Grid>
                                         <StackPanel>
-                                            <TextBlock Text="📊 總深度" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
+                                            <TextBlock Text="{Binding QueueTotalDepthTitle}" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding QueueViewModel.TotalDepth}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="36"/>
                                         </StackPanel>
                                         <Canvas Style="{StaticResource CurledCornerStyle}">
@@ -839,7 +870,7 @@
                                 </Border.RenderTransform>
                                 <Border.RenderTransformOrigin>0.5,0</Border.RenderTransformOrigin>
                                 <StackPanel>
-                                    <TextBlock Text="⏰ 最舊佇列項目" Style="{StaticResource LabelStyle}"/>
+                                    <TextBlock Text="{Binding QueueOldestItem}" Style="{StaticResource LabelStyle}"/>
                                     <TextBlock Text="{Binding QueueViewModel.OldestQueuedAt}"
                                                Style="{StaticResource ValueStyle}"
                                                FontSize="16"
@@ -853,7 +884,7 @@
             </TabItem>
 
             <!-- Upload History Tab -->
-            <TabItem Header="📜 上傳歷史">
+            <TabItem Header="{Binding TabHistory}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -862,7 +893,7 @@
 
                     <!-- Refresh Button -->
                     <Border Grid.Row="0" Background="White" Padding="15" Margin="15,15,15,0" CornerRadius="8,8,0,0">
-                        <Button Content="🔄 重新整理"
+                        <Button Content="{Binding HistoryRefreshButton}"
                                 Command="{Binding HistoryViewModel.RefreshCommand}"
                                 Style="{StaticResource ModernButtonStyle}"
                                 HorizontalAlignment="Right"/>
@@ -873,12 +904,12 @@
                         <DataGrid ItemsSource="{Binding HistoryViewModel.HistoryItems}"
                                   IsReadOnly="True">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="⏰ 時間戳記" Binding="{Binding Timestamp, StringFormat='yyyy-MM-dd HH:mm:ss'}" Width="160"/>
-                                <DataGridTextColumn Header="🏷️ 追溯碼/批號" Binding="{Binding TraceCodeOrLotNo}" Width="150"/>
-                                <DataGridTextColumn Header="🖥️ 設備" Binding="{Binding DeviceName}" Width="130"/>
-                                <DataGridTextColumn Header="📊 狀態" Binding="{Binding Status}" Width="100"/>
-                                <DataGridTextColumn Header="🔄 重試次數" Binding="{Binding RetryCount}" Width="100"/>
-                                <DataGridTextColumn Header="⚠️ 錯誤訊息" Binding="{Binding ErrorMessage}" Width="*"/>
+                                <DataGridTextColumn Header="{Binding DataContext.HistoryColumnTimestamp, RelativeSource={RelativeSource AncestorType=Window}}" Binding="{Binding Timestamp, StringFormat='yyyy-MM-dd HH:mm:ss'}" Width="160"/>
+                                <DataGridTextColumn Header="{Binding DataContext.HistoryColumnTraceCode, RelativeSource={RelativeSource AncestorType=Window}}" Binding="{Binding TraceCodeOrLotNo}" Width="150"/>
+                                <DataGridTextColumn Header="{Binding DataContext.HistoryColumnDevice, RelativeSource={RelativeSource AncestorType=Window}}" Binding="{Binding DeviceName}" Width="130"/>
+                                <DataGridTextColumn Header="{Binding DataContext.HistoryColumnStatus, RelativeSource={RelativeSource AncestorType=Window}}" Binding="{Binding Status}" Width="100"/>
+                                <DataGridTextColumn Header="{Binding DataContext.HistoryColumnRetryCount, RelativeSource={RelativeSource AncestorType=Window}}" Binding="{Binding RetryCount}" Width="100"/>
+                                <DataGridTextColumn Header="{Binding DataContext.HistoryColumnError, RelativeSource={RelativeSource AncestorType=Window}}" Binding="{Binding ErrorMessage}" Width="*"/>
                             </DataGrid.Columns>
                         </DataGrid>
                     </Border>

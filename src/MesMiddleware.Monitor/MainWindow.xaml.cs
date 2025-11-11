@@ -5,14 +5,18 @@ using H.NotifyIcon;
 namespace MesMiddleware.Monitor;
 
 /// <summary>
-/// Main window for MES Middleware monitoring dashboard.
-/// Supports system tray minimize and real-time monitoring.
+/// MES 中介軟體監控儀表板主視窗
+/// 支援系統匣最小化與即時監控功能
 /// </summary>
 public partial class MainWindow : Window
 {
     private readonly MainViewModel _viewModel;
     private readonly TaskbarIcon _trayIcon;
 
+    /// <summary>
+    /// 建構函式，初始化主視窗與系統匣圖示
+    /// </summary>
+    /// <param name="viewModel">主視圖模型</param>
     public MainWindow(MainViewModel viewModel)
     {
         _viewModel = viewModel;
@@ -21,40 +25,50 @@ public partial class MainWindow : Window
         InitializeComponent();
         Loaded += MainWindow_Loaded;
 
-        // Create system tray icon
+        // 建立系統匣圖示
         _trayIcon = new TaskbarIcon
         {
             ToolTipText = "MES Middleware Monitor",
-            // Use default Windows system icon (Information icon)
+            // 使用 Windows 預設的資訊圖示
             Icon = System.Drawing.SystemIcons.Information,
             ContextMenu = CreateTrayContextMenu()
         };
+        // 雙擊系統匣圖示時顯示視窗
         _trayIcon.TrayMouseDoubleClick += (s, e) => ShowFromTray();
 
-        // Show the tray icon immediately
+        // 立即顯示系統匣圖示
         _trayIcon.ForceCreate();
     }
 
+    /// <summary>
+    /// 視窗載入完成時的處理方法
+    /// </summary>
     private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
         await _viewModel.InitializeAsync();
     }
 
+    /// <summary>
+    /// 視窗關閉時的處理方法
+    /// </summary>
     private async void Window_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
-        // Dispose tray icon immediately
+        // 立即釋放系統匣圖示
         _trayIcon?.Dispose();
 
-        // Shutdown ViewModel resources (now fast - no waiting)
+        // 關閉 ViewModel 資源（現在速度很快，不需等待）
         await _viewModel.ShutdownAsync();
 
-        // Force immediate application shutdown
+        // 強制立即關閉應用程式
         Application.Current.Shutdown();
     }
 
+    /// <summary>
+    /// 視窗狀態改變時的處理方法
+    /// </summary>
     private void Window_StateChanged(object? sender, EventArgs e)
     {
-        // Minimize to system tray
+        // 最小化到系統匣
         if (WindowState == WindowState.Minimized)
         {
             Hide();
@@ -62,6 +76,9 @@ public partial class MainWindow : Window
         }
     }
 
+    /// <summary>
+    /// 從系統匣還原視窗
+    /// </summary>
     private void ShowFromTray()
     {
         Show();
@@ -70,23 +87,27 @@ public partial class MainWindow : Window
         _viewModel.ShowWindowCommand.Execute(null);
     }
 
+    /// <summary>
+    /// 建立系統匣右鍵選單
+    /// </summary>
+    /// <returns>系統匣選單物件</returns>
     private System.Windows.Controls.ContextMenu CreateTrayContextMenu()
     {
         var contextMenu = new System.Windows.Controls.ContextMenu();
 
-        var showMenuItem = new System.Windows.Controls.MenuItem
-        {
-            Header = "顯示監控視窗"
-        };
+        // 顯示視窗選單項目
+        var showMenuItem = new System.Windows.Controls.MenuItem();
+        showMenuItem.SetBinding(System.Windows.Controls.MenuItem.HeaderProperty,
+            new System.Windows.Data.Binding("LocalizationService.TrayMenuShow") { Source = _viewModel });
         showMenuItem.Click += (s, e) => ShowFromTray();
         contextMenu.Items.Add(showMenuItem);
 
         contextMenu.Items.Add(new System.Windows.Controls.Separator());
 
-        var exitMenuItem = new System.Windows.Controls.MenuItem
-        {
-            Header = "結束程式"
-        };
+        // 結束程式選單項目
+        var exitMenuItem = new System.Windows.Controls.MenuItem();
+        exitMenuItem.SetBinding(System.Windows.Controls.MenuItem.HeaderProperty,
+            new System.Windows.Data.Binding("LocalizationService.TrayMenuExit") { Source = _viewModel });
         exitMenuItem.Click += async (s, e) =>
         {
             _trayIcon.Dispose();
