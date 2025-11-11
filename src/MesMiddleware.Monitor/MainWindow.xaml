@@ -83,7 +83,9 @@
         <Style x:Key="CurledCornerStyle" TargetType="Path">
             <Setter Property="HorizontalAlignment" Value="Right"/>
             <Setter Property="VerticalAlignment" Value="Bottom"/>
-            <Setter Property="Margin" Value="0,0,-1,-1"/>
+            <Setter Property="Width" Value="35"/>
+            <Setter Property="Height" Value="35"/>
+            <Setter Property="Stretch" Value="Fill"/>
             <Setter Property="Data" Value="M 0,35 L 35,35 L 35,0 Z"/>
             <Setter Property="Fill">
                 <Setter.Value>
