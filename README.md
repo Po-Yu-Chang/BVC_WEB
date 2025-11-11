@@ -18,10 +18,12 @@
 
 ### ✅ 使用者故事 2：即時監控儀表板
 - **WPF 桌面介面**（.NET 9）與系統匣整合
+- **多國語言支援**：繁體中文 / 簡體中文 / English（即時切換）
 - **連線狀態指示器**（綠色/紅色/黃色）
 - **上傳歷史記錄**：篩選與搜尋（最多 1000 筆）
 - **氣泡通知**：錯誤與警告提示
 - **自動更新**：每 2 秒更新一次
+- **Cork Board UI**：便利貼風格的現代化介面
 
 ### ✅ 使用者故事 3：雙向指令控制
 - **設備指令傳送**：透過共享記憶體（`MES_EQUIPMENT_CMD`）
@@ -173,6 +175,40 @@ MesMiddleware/
 └── README.md                           # 本檔案
 ```
 
+## 🌐 多國語言支援
+
+監控應用程式支援三種語言，可即時切換：
+
+### 支援的語言
+
+- **繁體中文（zh-TW）**：預設語言
+- **简体中文（zh-CN）**：簡體中文
+- **English（en）**：英文
+
+### 切換語言
+
+1. 啟動監控應用程式
+2. 點擊右上角的語言按鈕：
+   - **English** - 切換到英文
+   - **简体中文** - 切換到簡體中文
+   - **繁體中文** - 切換到繁體中文
+
+所有 UI 元素（視窗標題、Tab、卡片、按鈕、表格欄位）會立即更新。
+
+### 本地化內容
+
+- 視窗標題和 Tab 標題
+- 所有狀態卡片標籤（23 個元件）
+- 按鈕和選單文字
+- 系統匣選單
+- 表格欄位標題
+
+### 技術實作
+
+- **資源檔案**：.resx 檔案，支援標準 .NET 本地化
+- **即時切換**：使用 ILocalizationService 和 MVVM 資料綁定
+- **可擴展**：輕鬆新增其他語言
+
 ## 🔧 設定說明
 
 ### 共享記憶體設定
@@ -242,6 +278,470 @@ MesMiddleware/
   "status": "Success",
   "message": "參數更新成功",
   "acknowledgedAt": "2025-01-11T12:00:05Z"
+}
+```
+
+## 🔗 異質系統整合指南（C# ↔ LabVIEW）
+
+### 共享記憶體協議規格
+
+本系統使用 Windows **MemoryMappedFile** 和 **EventWaitHandle** 實現跨程序通訊。
+
+#### 記憶體布局
+
+```
+┌──────────────────────────────────────────────────┐
+│ Byte 0-3:   資料長度 (int32, little-endian)      │
+├──────────────────────────────────────────────────┤
+│ Byte 4-N:   UTF-8 JSON 字串                      │
+└──────────────────────────────────────────────────┘
+```
+
+#### 共享區段規格
+
+| 區段名稱 | 大小 | 用途 | 寫入方 | 讀取方 |
+|----------|------|------|--------|--------|
+| `MES_INSPECTION_DATA` | 10 MB | 檢驗資料 | 設備 | 中介軟體 |
+| `MES_EQUIPMENT_CMD` | 10 MB | 設備指令 | 中介軟體 | 設備 |
+| `MES_EQUIPMENT_CMD_ACK` | 10 MB | 指令確認 | 設備 | 中介軟體 |
+
+#### 事件信號規格
+
+| 事件名稱 | 用途 | 觸發時機 |
+|----------|------|----------|
+| `MES_DATA_READY` | 通知中介軟體資料已準備 | 設備寫入資料後 |
+| `MES_CMD_READY` | 通知設備指令已準備 | 中介軟體寫入指令後 |
+| `MES_ACK_READY` | 通知中介軟體確認已準備 | 設備寫入確認後 |
+
+### C# 實作範例
+
+#### 1. 寫入資料到共享記憶體（設備端）
+
+```csharp
+using System;
+using System.IO.MemoryMappedFiles;
+using System.Text;
+using System.Text.Json;
+using System.Threading;
+
+public class SharedMemoryWriter
+{
+    private const string SegmentName = "MES_INSPECTION_DATA";
+    private const string EventName = "MES_DATA_READY";
+    private const long SegmentSize = 10 * 1024 * 1024; // 10MB
+
+    public void WriteInspectionData(object data)
+    {
+        // 1. 序列化為 JSON
+        string json = JsonSerializer.Serialize(data);
+        byte[] jsonBytes = Encoding.UTF8.GetBytes(json);
+
+        Console.WriteLine($"JSON size: {jsonBytes.Length} bytes");
+
+        // 2. 建立或開啟共享記憶體
+        using (var mmf = MemoryMappedFile.CreateOrOpen(SegmentName, SegmentSize))
+        using (var accessor = mmf.CreateViewAccessor())
+        {
+            // 3. 寫入長度（4 bytes, little-endian）
+            accessor.Write(0, jsonBytes.Length);
+
+            // 4. 寫入 JSON 資料
+            accessor.WriteArray(4, jsonBytes, 0, jsonBytes.Length);
+
+            Console.WriteLine($"Written {jsonBytes.Length} bytes to shared memory");
+        }
+
+        // 5. 發送信號通知中介軟體
+        using (var eventHandle = new EventWaitHandle(false,
+                   EventResetMode.AutoReset, EventName))
+        {
+            eventHandle.Set();
+            Console.WriteLine("Signal sent to middleware");
+        }
+    }
+}
+
+// 使用範例
+var writer = new SharedMemoryWriter();
+var inspectionData = new
+{
+    rowNo = "ROW_001",
+    procName = "檢驗流程",
+    devName = "MACHINE-01",
+    traceCode = "TRACE123",
+    inspectionTime = DateTime.UtcNow
+};
+writer.WriteInspectionData(inspectionData);
+```
+
+#### 2. 從共享記憶體讀取資料（設備端接收指令）
+
+```csharp
+using System;
+using System.IO.MemoryMappedFiles;
+using System.Text;
+using System.Text.Json;
+using System.Threading;
+
+public class SharedMemoryReader
+{
+    private const string SegmentName = "MES_EQUIPMENT_CMD";
+    private const string EventName = "MES_CMD_READY";
+
+    public string WaitForCommand(int timeoutSeconds = 30)
+    {
+        // 1. 等待信號
+        using (var eventHandle = new EventWaitHandle(false,
+                   EventResetMode.AutoReset, EventName))
+        {
+            bool signaled = eventHandle.WaitOne(timeoutSeconds * 1000);
+            if (!signaled)
+            {
+                Console.WriteLine("Timeout waiting for command");
+                return null;
+            }
+            Console.WriteLine("Command signal received");
+        }
+
+        // 2. 開啟共享記憶體
+        using (var mmf = MemoryMappedFile.OpenExisting(SegmentName))
+        using (var accessor = mmf.CreateViewAccessor())
+        {
+            // 3. 讀取長度
+            int length = accessor.ReadInt32(0);
+            Console.WriteLine($"Command length: {length} bytes");
+
+            // 4. 讀取 JSON 資料
+            byte[] buffer = new byte[length];
+            accessor.ReadArray(4, buffer, 0, length);
+
+            // 5. 解碼為字串
+            string json = Encoding.UTF8.GetString(buffer);
+            Console.WriteLine($"Received command: {json}");
+
+            return json;
+        }
+    }
+}
+
+// 使用範例
+var reader = new SharedMemoryReader();
+while (true)
+{
+    string commandJson = reader.WaitForCommand();
+    if (commandJson != null)
+    {
+        // 處理指令
+        var command = JsonSerializer.Deserialize<EquipmentCommand>(commandJson);
+        Console.WriteLine($"Processing command: {command.CommandType}");
+    }
+}
+```
+
+### LabVIEW 實作範例
+
+LabVIEW 使用 **Call Library Function Node** 調用 Windows API。
+
+#### 所需的 Windows API 函數
+
+在 LabVIEW 中需要調用以下 DLL：
+- `kernel32.dll` - CreateFileMapping, OpenFileMapping, MapViewOfFile, UnmapViewOfFile, CloseHandle
+- `kernel32.dll` - CreateEvent, OpenEvent, SetEvent, WaitForSingleObject
+
+#### LabVIEW Block Diagram 結構
+
+```
+┌─────────────────────────────────────────────────────┐
+│                寫入資料到共享記憶體                  │
+├─────────────────────────────────────────────────────┤
+│ 1. [JSON Library] 將資料序列化為 JSON 字串         │
+│ 2. [String to Byte Array] 轉換為 UTF-8 bytes       │
+│ 3. [Call Library: CreateFileMapping]               │
+│    - Name: "MES_INSPECTION_DATA"                   │
+│    - Size: 10485760 (10MB)                         │
+│ 4. [Call Library: MapViewOfFile]                   │
+│ 5. [Memory Write] 寫入長度（4 bytes）              │
+│ 6. [Memory Write] 寫入 JSON bytes                  │
+│ 7. [Call Library: UnmapViewOfFile]                 │
+│ 8. [Call Library: CloseHandle]                     │
+│ 9. [Call Library: CreateEvent / SetEvent]          │
+│    - Name: "MES_DATA_READY"                        │
+└─────────────────────────────────────────────────────┘
+```
+
+#### LabVIEW Call Library Function 配置
+
+**1. CreateFileMapping** (kernel32.dll)
+
+```
+Function Name: CreateFileMappingA
+Return Type: Numeric > U32 (Handle)
+
+Parameters:
+  [IN] hFile:           Numeric > I32         = -1 (INVALID_HANDLE_VALUE)
+  [IN] lpAttributes:    Numeric > U32         = 0
+  [IN] flProtect:       Numeric > U32         = 4 (PAGE_READWRITE)
+  [IN] dwMaxSizeHigh:   Numeric > U32         = 0
+  [IN] dwMaxSizeLow:    Numeric > U32         = 10485760
+  [IN] lpName:          String > C String     = "MES_INSPECTION_DATA"
+```
+
+**2. MapViewOfFile** (kernel32.dll)
+
+```
+Function Name: MapViewOfFile
+Return Type: Numeric > U32 (Pointer)
+
+Parameters:
+  [IN] hFileMappingObject: Numeric > U32      = (from CreateFileMapping)
+  [IN] dwDesiredAccess:    Numeric > U32      = 2 (FILE_MAP_WRITE)
+  [IN] dwFileOffsetHigh:   Numeric > U32      = 0
+  [IN] dwFileOffsetLow:    Numeric > U32      = 0
+  [IN] dwNumberOfBytes:    Numeric > U32      = 10485760
+```
+
+**3. MoveBlock** (kernel32.dll)
+
+```
+Function Name: RtlMoveMemory
+Return Type: (none)
+
+Parameters:
+  [IN] Destination:  Numeric > U32            = (pointer from MapViewOfFile)
+  [IN] Source:       Array > 1D Array of U8   = (your data bytes)
+  [IN] Length:       Numeric > U32            = (byte count)
+```
+
+**4. CreateEvent / SetEvent** (kernel32.dll)
+
+```
+Function Name: CreateEventA
+Return Type: Numeric > U32 (Handle)
+
+Parameters:
+  [IN] lpEventAttributes: Numeric > U32       = 0
+  [IN] bManualReset:      Numeric > U32       = 0 (Auto-reset)
+  [IN] bInitialState:     Numeric > U32       = 0 (Non-signaled)
+  [IN] lpName:            String > C String   = "MES_DATA_READY"
+
+---
+
+Function Name: SetEvent
+Return Type: Numeric > U32 (BOOL)
+
+Parameters:
+  [IN] hEvent:  Numeric > U32                 = (from CreateEvent)
+```
+
+#### LabVIEW 完整寫入流程 VI
+
+```
+┌──────────────────────────────────────────────────┐
+│           WriteInspectionData.vi                 │
+├──────────────────────────────────────────────────┤
+│ Input: Cluster (Inspection Data)                │
+│ Output: Boolean (Success)                       │
+│                                                  │
+│ 1. Flatten to JSON (使用 JSONtext 套件)         │
+│ 2. String to Byte Array (UTF-8)                 │
+│ 3. Prepend Array: 插入 4-byte length prefix     │
+│    - Use "Type Cast" U32 → 4 bytes U8[]         │
+│ 4. CreateFileMappingA                           │
+│    - 檢查 Handle != 0                           │
+│ 5. MapViewOfFile                                │
+│    - 檢查 Pointer != 0                          │
+│ 6. RtlMoveMemory (Write data to mapped memory) │
+│ 7. UnmapViewOfFile                              │
+│ 8. CloseHandle (file mapping)                   │
+│ 9. CreateEventA("MES_DATA_READY")               │
+│ 10. SetEvent                                    │
+│ 11. CloseHandle (event)                         │
+└──────────────────────────────────────────────────┘
+```
+
+#### LabVIEW 讀取共享記憶體（接收指令）
+
+```
+┌──────────────────────────────────────────────────┐
+│            WaitForCommand.vi                     │
+├──────────────────────────────────────────────────┤
+│ Input: Timeout (seconds)                         │
+│ Output: String (JSON command)                    │
+│                                                  │
+│ 1. OpenEventA("MES_CMD_READY")                   │
+│ 2. WaitForSingleObject                          │
+│    - Timeout: (input) * 1000 ms                 │
+│    - Return: 0 = signaled, 258 = timeout        │
+│ 3. If signaled:                                 │
+│    a. OpenFileMappingA("MES_EQUIPMENT_CMD")     │
+│    b. MapViewOfFile (read mode)                 │
+│    c. MoveBlock (copy 4 bytes → length)         │
+│    d. MoveBlock (copy N bytes → JSON data)      │
+│    e. Byte Array to String (UTF-8)              │
+│    f. UnmapViewOfFile                           │
+│    g. CloseHandle                               │
+│ 4. CloseHandle (event)                          │
+└──────────────────────────────────────────────────┘
+```
+
+### 記憶體安全注意事項
+
+#### 1. 執行緒安全
+
+- **C#**: 使用 `SemaphoreSlim` 或 `lock` 保護寫入操作
+- **LabVIEW**: 使用 "Single-Threaded" execution 或 Semaphore VI
+
+#### 2. 錯誤處理
+
+```csharp
+// C# 錯誤處理範例
+try
+{
+    using var mmf = MemoryMappedFile.OpenExisting(SegmentName);
+}
+catch (FileNotFoundException)
+{
+    Console.Error.WriteLine("共享記憶體區段不存在，請先啟動中介軟體");
+    return;
+}
+```
+
+```labview
+// LabVIEW 錯誤處理
+If (Handle == 0)  // CreateFileMapping failed
+    → Get Last Error (kernel32.dll:GetLastError)
+    → Display Error Message
+    → Exit with Error
+```
+
+#### 3. 資源清理
+
+**重要**: 必須確保釋放所有資源，避免記憶體洩漏
+
+- **C#**: 使用 `using` 語句自動釋放
+- **LabVIEW**: 在 "While Loop" 外部放置 CloseHandle，或使用 "Error In/Out" 確保執行
+
+#### 4. 資料驗證
+
+```csharp
+// 讀取前驗證資料長度
+int length = accessor.ReadInt32(0);
+if (length <= 0 || length > SegmentSize - 4)
+{
+    throw new InvalidDataException($"Invalid data length: {length}");
+}
+```
+
+### 測試與除錯
+
+#### 測試工具
+
+1. **記憶體檢視器**: 使用 [WinObj](https://learn.microsoft.com/en-us/sysinternals/downloads/winobj) 查看共享記憶體區段
+2. **事件檢視器**: 查看 EventWaitHandle 狀態
+3. **日誌追蹤**: 在兩端都輸出詳細日誌
+
+#### 常見問題
+
+**問題 1**: `FileNotFoundException` - 找不到共享記憶體
+
+**解決方案**:
+- 確認另一端已經先創建區段（使用 `CreateOrOpen` 而非 `OpenExisting`）
+- 檢查區段名稱拼寫是否完全一致（區分大小寫）
+
+**問題 2**: 讀取到亂碼或空資料
+
+**解決方案**:
+- 確認使用 UTF-8 編碼（`Encoding.UTF8`）
+- 檢查長度前綴是否正確（little-endian int32）
+- 使用十六進位檢視器檢查記憶體內容
+
+**問題 3**: 事件信號未觸發
+
+**解決方案**:
+- 確認事件名稱正確
+- 使用 `AutoReset` 模式（每次信號後自動重置）
+- 檢查是否有多個程序同時等待（只有一個會被喚醒）
+
+### 效能最佳化
+
+#### 1. 減少記憶體拷貝
+
+```csharp
+// 不佳: 多次拷貝
+var json = JsonSerializer.Serialize(data);
+var bytes = Encoding.UTF8.GetBytes(json);
+
+// 較佳: 直接寫入 Stream
+using var stream = mmf.CreateViewStream();
+using var writer = new Utf8JsonWriter(stream);
+JsonSerializer.Serialize(writer, data);
+```
+
+#### 2. 重用資源
+
+```csharp
+// 保持 MemoryMappedFile 開啟，避免重複創建
+private MemoryMappedFile _mmf;
+
+public void Initialize()
+{
+    _mmf = MemoryMappedFile.CreateOrOpen(SegmentName, SegmentSize);
+}
+
+public void Dispose()
+{
+    _mmf?.Dispose();
+}
+```
+
+#### 3. 批次處理
+
+當有多筆資料時，考慮使用陣列格式：
+
+```json
+{
+  "batch": [
+    { "data1": "..." },
+    { "data2": "..." }
+  ]
+}
+```
+
+### 進階應用：雙向同步範例
+
+```csharp
+// C# 完整範例：設備端處理指令並回覆確認
+public class EquipmentController
+{
+    public void Run()
+    {
+        var reader = new SharedMemoryReader();
+        var ackWriter = new SharedMemoryWriter();
+
+        while (true)
+        {
+            // 1. 等待指令
+            string commandJson = reader.WaitForCommand();
+            if (commandJson == null) continue;
+
+            // 2. 解析指令
+            var command = JsonSerializer.Deserialize<EquipmentCommand>(commandJson);
+
+            // 3. 執行指令
+            bool success = ExecuteCommand(command);
+
+            // 4. 寫入確認到 MES_EQUIPMENT_CMD_ACK
+            var ack = new
+            {
+                commandId = command.CommandId,
+                status = success ? "Success" : "Failed",
+                message = success ? "指令執行成功" : "執行失敗",
+                acknowledgedAt = DateTime.UtcNow
+            };
+
+            ackWriter.WriteAcknowledgment(ack, "MES_EQUIPMENT_CMD_ACK", "MES_ACK_READY");
+        }
+    }
 }
 ```
 
