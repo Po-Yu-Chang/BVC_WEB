@@ -35,6 +35,16 @@ public interface IUploadQueueService
     /// Gets all queued uploads (for monitoring UI).
     /// </summary>
     Task<List<QueuedUploadInfo>> GetQueuedUploadsAsync(int limit = 100, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets recent upload history (success, failed, pending) for monitoring.
+    /// </summary>
+    Task<List<UploadHistoryItem>> GetRecentHistoryAsync(int limit = 100, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Manually retry a specific queued upload (triggered from WPF UI).
+    /// </summary>
+    Task<bool> RetryUploadAsync(int id, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -49,4 +59,18 @@ public class QueuedUploadInfo
     public DateTime? NextRetryAt { get; set; }
     public string Status { get; set; } = string.Empty;
     public string? LastError { get; set; }
+}
+
+/// <summary>
+/// DTO for upload history (includes successful, failed, and pending uploads).
+/// </summary>
+public class UploadHistoryItem
+{
+    public int Id { get; set; }
+    public string TraceCode { get; set; } = string.Empty;
+    public string RowNo { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
+    public string Status { get; set; } = string.Empty; // "Success", "Failed", "Pending", "Retrying"
+    public int RetryCount { get; set; }
+    public string? LastErrorMessage { get; set; }
 }

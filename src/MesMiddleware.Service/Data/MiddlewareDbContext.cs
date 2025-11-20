@@ -19,6 +19,11 @@ public class MiddlewareDbContext : DbContext
     /// </summary>
     public DbSet<QueuedUpload> QueuedUploads => Set<QueuedUpload>();
 
+    /// <summary>
+    /// Upload history table (all uploads to MES Cloud: success and failed)
+    /// </summary>
+    public DbSet<UploadHistory> UploadHistory => Set<UploadHistory>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -49,6 +54,53 @@ public class MiddlewareDbContext : DbContext
             entity.HasIndex(e => e.Status);
             entity.HasIndex(e => e.NextRetryAt);
             entity.HasIndex(e => e.MachineNumber);
+        });
+
+        modelBuilder.Entity<UploadHistory>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Status)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.Property(e => e.MachineNumber)
+                .HasMaxLength(50);
+
+            entity.Property(e => e.TraceCode)
+                .HasMaxLength(100);
+
+            entity.Property(e => e.LotNo)
+                .HasMaxLength(100);
+
+            entity.Property(e => e.PartNumber)
+                .HasMaxLength(100);
+
+            entity.Property(e => e.ProcessName)
+                .HasMaxLength(100);
+
+            entity.Property(e => e.DeviceName)
+                .HasMaxLength(100);
+
+            entity.Property(e => e.ResponseMessage)
+                .HasMaxLength(500);
+
+            entity.Property(e => e.ErrorMessage)
+                .HasMaxLength(2000);
+
+            entity.Property(e => e.Source)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.Property(e => e.InspectionDataJson)
+                .HasMaxLength(100000); // 100KB for full JSON
+
+            // Indexes for efficient queries
+            entity.HasIndex(e => e.UploadedAt);
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.MachineNumber);
+            entity.HasIndex(e => e.TraceCode);
+            entity.HasIndex(e => e.LotNo);
         });
     }
 }

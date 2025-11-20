@@ -1,8 +1,10 @@
 ﻿<Application x:Class="MesMiddleware.Monitor.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:MesMiddleware.Monitor">
+             xmlns:local="clr-namespace:MesMiddleware.Monitor"
+             xmlns:converters="clr-namespace:MesMiddleware.Monitor.Converters">
     <Application.Resources>
-
+        <!-- 全域轉換器 -->
+        <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
     </Application.Resources>
 </Application>

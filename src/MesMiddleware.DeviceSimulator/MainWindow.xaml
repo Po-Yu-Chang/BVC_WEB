@@ -1,0 +1,258 @@
+<Window x:Class="MesMiddleware.DeviceSimulator.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="設備端模擬器 - MES Middleware Device Simulator" Height="700" Width="1000"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.Resources>
+        <!-- 按鈕樣式 -->
+        <Style x:Key="ButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#3498DB"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#2980B9"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Background" Value="#BDC3C7"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid Background="#F5F5F5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 頂部: 連接狀態 -->
+        <Border Grid.Row="0" Background="White" Padding="15" Margin="10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="300"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" Text="服務器地址:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,10,0"/>
+                <TextBox Grid.Column="1" Text="{Binding ServerUrl}" VerticalAlignment="Center" Padding="8,5"/>
+
+                <Button Grid.Column="2" Content="🔌 測試連接" Command="{Binding TestConnectionCommand}"
+                        Style="{StaticResource ButtonStyle}" Margin="10,0,0,0"/>
+
+                <Ellipse Grid.Column="4" Width="15" Height="15" Margin="0,0,10,0">
+                    <Ellipse.Style>
+                        <Style TargetType="Ellipse">
+                            <Setter Property="Fill" Value="Red"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                    <Setter Property="Fill" Value="#2ECC71"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Ellipse.Style>
+                </Ellipse>
+
+                <TextBlock Grid.Column="5" VerticalAlignment="Center" Margin="0,0,20,0">
+                    <Run Text="狀態: " FontWeight="SemiBold"/>
+                    <Run>
+                        <Run.Style>
+                            <Style TargetType="Run">
+                                <Setter Property="Text" Value="未連接"/>
+                                <Setter Property="Foreground" Value="Red"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                        <Setter Property="Text" Value="已連接"/>
+                                        <Setter Property="Foreground" Value="#2ECC71"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Run.Style>
+                    </Run>
+                </TextBlock>
+
+                <!-- 統計 -->
+                <StackPanel Grid.Column="6" Orientation="Horizontal">
+                    <TextBlock VerticalAlignment="Center" Margin="0,0,15,0">
+                        <Run Text="總數: " FontWeight="SemiBold"/>
+                        <Run Text="{Binding TotalSent}"/>
+                    </TextBlock>
+                    <TextBlock VerticalAlignment="Center" Margin="0,0,15,0">
+                        <Run Text="成功: " FontWeight="SemiBold"/>
+                        <Run Text="{Binding SuccessCount}" Foreground="#2ECC71"/>
+                    </TextBlock>
+                    <TextBlock VerticalAlignment="Center">
+                        <Run Text="失敗: " FontWeight="SemiBold"/>
+                        <Run Text="{Binding FailureCount}" Foreground="#E74C3C"/>
+                    </TextBlock>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 中間: 控制面板 -->
+        <Grid Grid.Row="1" Margin="10,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- 手動發送 -->
+            <Border Grid.Column="0" Background="White" Padding="15" Margin="0,0,5,10">
+                <StackPanel>
+                    <TextBlock Text="📋 手動發送" FontSize="14" FontWeight="Bold" Margin="0,0,0,10"/>
+
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0" Text="{Binding ManualTraceCode}" Padding="6" Margin="0,0,5,0"/>
+                        <Button Grid.Column="1" Content="生成 TraceCode" Command="{Binding GenerateRandomTraceCodeCommand}"
+                                Style="{StaticResource ButtonStyle}" Padding="8,4" FontSize="10"/>
+                    </Grid>
+
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0" Text="{Binding ManualLotNo}" Padding="6" Margin="0,0,5,0"/>
+                        <Button Grid.Column="1" Content="生成 LotNo" Command="{Binding GenerateRandomLotNoCommand}"
+                                Style="{StaticResource ButtonStyle}" Padding="8,4" FontSize="10"/>
+                    </Grid>
+
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0" Text="{Binding ManualResult}" Padding="6" Margin="0,0,5,0"/>
+                        <Button Grid.Column="1" Content="隨機結果" Command="{Binding GenerateRandomResultCommand}"
+                                Style="{StaticResource ButtonStyle}" Padding="8,4" FontSize="10"/>
+                    </Grid>
+
+                    <Button Content="🚀 發送數據" Command="{Binding SendManualDataCommand}"
+                            Style="{StaticResource ButtonStyle}" Background="#27AE60" Height="35"/>
+                </StackPanel>
+            </Border>
+
+            <!-- 批量發送 -->
+            <Border Grid.Column="1" Background="White" Padding="15" Margin="5,0,5,10">
+                <StackPanel>
+                    <TextBlock Text="📦 批量發送" FontSize="14" FontWeight="Bold" Margin="0,0,0,10"/>
+
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="數量:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <Slider Grid.Column="1" Minimum="1" Maximum="100" Value="{Binding BatchCount}"
+                                TickFrequency="10" IsSnapToTickEnabled="True" VerticalAlignment="Center"/>
+                    </Grid>
+                    <TextBlock Text="{Binding BatchCount, StringFormat='當前: {0} 筆'}" FontSize="10" Foreground="Gray" Margin="0,0,0,8"/>
+
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="間隔(ms):" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <Slider Grid.Column="1" Minimum="0" Maximum="1000" Value="{Binding BatchDelayMs}"
+                                TickFrequency="100" IsSnapToTickEnabled="True" VerticalAlignment="Center"/>
+                    </Grid>
+                    <TextBlock Text="{Binding BatchDelayMs, StringFormat='當前: {0} ms'}" FontSize="10" Foreground="Gray" Margin="0,0,0,8"/>
+
+                    <Button Content="📤 批量發送" Command="{Binding SendBatchDataCommand}"
+                            Style="{StaticResource ButtonStyle}" Background="#9B59B6" Height="35"/>
+                </StackPanel>
+            </Border>
+
+            <!-- 自動發送 -->
+            <Border Grid.Column="2" Background="White" Padding="15" Margin="5,0,0,10">
+                <StackPanel>
+                    <TextBlock Text="🔄 自動發送" FontSize="14" FontWeight="Bold" Margin="0,0,0,10"/>
+
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="間隔(秒):" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <Slider Grid.Column="1" Minimum="1" Maximum="60" Value="{Binding AutoSendIntervalSeconds}"
+                                TickFrequency="5" IsSnapToTickEnabled="True" VerticalAlignment="Center"/>
+                    </Grid>
+                    <TextBlock Text="{Binding AutoSendIntervalSeconds, StringFormat='當前: {0} 秒'}" FontSize="10" Foreground="Gray" Margin="0,0,0,8"/>
+
+                    <Button Command="{Binding ToggleAutoSendCommand}" Height="35">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource ButtonStyle}">
+                                <Setter Property="Content" Value="▶️ 啟動自動發送"/>
+                                <Setter Property="Background" Value="#F39C12"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsAutoSending}" Value="True">
+                                        <Setter Property="Content" Value="⏹️ 停止自動發送"/>
+                                        <Setter Property="Background" Value="#E74C3C"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- 底部: 歷史記錄 -->
+        <Border Grid.Row="2" Background="White" Padding="15" Margin="10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" Margin="0,0,0,10">
+                    <TextBlock Text="📊 發送歷史 (最新 100 條)" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <Button Content="🗑️ 清空" Command="{Binding ClearHistoryCommand}"
+                            Style="{StaticResource ButtonStyle}" Background="#E67E22"
+                            Padding="8,4" FontSize="10" HorizontalAlignment="Right"/>
+                </Grid>
+
+                <DataGrid Grid.Row="1" ItemsSource="{Binding SubmitHistory}"
+                          AutoGenerateColumns="False" IsReadOnly="True"
+                          GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E8E8E8"
+                          HeadersVisibility="Column" SelectionMode="Single">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="時間" Binding="{Binding SentTimeText}" Width="80"/>
+                        <DataGridTextColumn Header="TraceCode" Binding="{Binding TraceCode}" Width="180"/>
+                        <DataGridTextColumn Header="狀態" Binding="{Binding StatusText}" Width="60"/>
+                        <DataGridTextColumn Header="耗時(ms)" Binding="{Binding ElapsedMs}" Width="80"/>
+                        <DataGridTextColumn Header="錯誤訊息" Binding="{Binding ErrorMessage}" Width="*"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

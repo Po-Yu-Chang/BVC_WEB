@@ -1,0 +1,29 @@
+{
+  "rowNo": "1",
+  "traceCode": "TRACE-20251120-0001",
+  "lotNo": "LOT-202511-001",
+  "procName": "鑽孔",
+  "devName": "鑽孔機-01",
+  "userName": "操作員A",
+  "workClass": "日班",
+  "paramData": [
+    {
+      "name": "孔徑",
+      "value": "5.00"
+    }
+  ],
+  "benchmarks": [
+    {
+      "name": "孔徑",
+      "upperLimit": "10.0",
+      "lowerLimit": "9.5"
+    }
+  ],
+  "otherData": [
+    {
+      "key": "檢測結果",
+      "value": "OK"
+    }
+  ],
+  "inspectionTime": "2025-11-20T16:00:00"
+}

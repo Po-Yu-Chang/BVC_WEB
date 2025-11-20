@@ -35,6 +35,12 @@ public partial class MainViewModel : ObservableObject
     private QueueViewModel _queueViewModel;
 
     /// <summary>
+    /// 追溯碼校驗視圖模型
+    /// </summary>
+    [ObservableProperty]
+    private TraceVerificationViewModel _traceVerificationViewModel;
+
+    /// <summary>
     /// 視窗是否可見
     /// </summary>
     [ObservableProperty]
@@ -59,6 +65,7 @@ public partial class MainViewModel : ObservableObject
     public string TabHistory => _localizationService.GetString("TabHistory");
     public string TabQueue => _localizationService.GetString("TabQueue");
     public string TabCommands => _localizationService.GetString("TabCommands");
+    public string TabTraceVerification => _localizationService.GetString("TraceVerification_TabTitle");
 
     // 語言選項
     public string LanguageTitle => _localizationService.GetString("Language_Title");
@@ -104,6 +111,34 @@ public partial class MainViewModel : ObservableObject
     public string HistoryColumnRetryCount => _localizationService.GetString("History_ColumnRetryCount");
     public string HistoryColumnError => _localizationService.GetString("History_ColumnError");
 
+    // 追溯碼校驗頁面
+    public string TraceVerificationPageTitle => _localizationService.GetString("TraceVerification_PageTitle");
+    public string TraceVerificationPageDescription => _localizationService.GetString("TraceVerification_PageDescription");
+    public string TraceVerificationWorkOrderLabel => _localizationService.GetString("TraceVerification_WorkOrderLabel");
+    public string TraceVerificationWorkOrderPlaceholder => _localizationService.GetString("TraceVerification_WorkOrderPlaceholder");
+    public string TraceVerificationTraceCodeLabel => _localizationService.GetString("TraceVerification_TraceCodeLabel");
+    public string TraceVerificationTraceCodeHint => _localizationService.GetString("TraceVerification_TraceCodeHint");
+    public string TraceVerificationTraceCodePlaceholder => _localizationService.GetString("TraceVerification_TraceCodePlaceholder");
+    public string TraceVerificationVerifyButton => _localizationService.GetString("TraceVerification_VerifyButton");
+    public string TraceVerificationClearButton => _localizationService.GetString("TraceVerification_ClearButton");
+    public string TraceVerificationResultTitle => _localizationService.GetString("TraceVerification_ResultTitle");
+    public string TraceVerificationStatisticsTitle => _localizationService.GetString("TraceVerification_StatisticsTitle");
+    public string TraceVerificationSuccessCount => _localizationService.GetString("TraceVerification_SuccessCount");
+    public string TraceVerificationFailureCount => _localizationService.GetString("TraceVerification_FailureCount");
+    public string TraceVerificationLastVerification => _localizationService.GetString("TraceVerification_LastVerification");
+    public string TraceVerificationNoVerification => _localizationService.GetString("TraceVerification_NoVerification");
+    public string TraceVerificationResetStatistics => _localizationService.GetString("TraceVerification_ResetStatistics");
+
+    // 歷史資料頁面
+    public string HistoryEquipmentToMiddlewareTab => _localizationService.GetString("History_EquipmentToMiddlewareTab");
+    public string HistoryMiddlewareToMesTab => _localizationService.GetString("History_MiddlewareToMesTab");
+    public string HistoryHeaderTimestamp => _localizationService.GetString("History_HeaderTimestamp");
+    public string HistoryHeaderUploadTime => _localizationService.GetString("History_HeaderUploadTime");
+    public string HistoryHeaderTraceCode => _localizationService.GetString("History_HeaderTraceCode");
+    public string HistoryHeaderEquipmentName => _localizationService.GetString("History_HeaderEquipmentName");
+    public string HistoryHeaderStatus => _localizationService.GetString("History_HeaderStatus");
+    public string HistoryHeaderErrorMessage => _localizationService.GetString("History_HeaderErrorMessage");
+
     /// <summary>
     /// 建構函式，初始化主視圖模型
     /// </summary>
@@ -113,6 +148,7 @@ public partial class MainViewModel : ObservableObject
         StatusViewModel statusViewModel,
         HistoryViewModel historyViewModel,
         QueueViewModel queueViewModel,
+        TraceVerificationViewModel traceVerificationViewModel,
         ILogger<MainViewModel> logger)
     {
         _apiClient = apiClient;
@@ -120,6 +156,7 @@ public partial class MainViewModel : ObservableObject
         StatusViewModel = statusViewModel;
         HistoryViewModel = historyViewModel;
         QueueViewModel = queueViewModel;
+        TraceVerificationViewModel = traceVerificationViewModel;
         _logger = logger;
 
         // 訂閱語言變更事件
@@ -162,6 +199,9 @@ public partial class MainViewModel : ObservableObject
     public async Task InitializeAsync()
     {
         _logger.LogInformation("Initializing main view model");
+
+        // 初始化 StatusViewModel（從 SQLite 載入佇列統計資料）
+        await StatusViewModel.InitializeAsync();
 
         // 啟動所有子視圖模型的定期更新
         await StatusViewModel.StartPeriodicRefreshAsync();
@@ -245,5 +285,30 @@ public partial class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(HistoryColumnStatus));
         OnPropertyChanged(nameof(HistoryColumnRetryCount));
         OnPropertyChanged(nameof(HistoryColumnError));
+        OnPropertyChanged(nameof(TabTraceVerification));
+        OnPropertyChanged(nameof(TraceVerificationPageTitle));
+        OnPropertyChanged(nameof(TraceVerificationPageDescription));
+        OnPropertyChanged(nameof(TraceVerificationWorkOrderLabel));
+        OnPropertyChanged(nameof(TraceVerificationWorkOrderPlaceholder));
+        OnPropertyChanged(nameof(TraceVerificationTraceCodeLabel));
+        OnPropertyChanged(nameof(TraceVerificationTraceCodeHint));
+        OnPropertyChanged(nameof(TraceVerificationTraceCodePlaceholder));
+        OnPropertyChanged(nameof(TraceVerificationVerifyButton));
+        OnPropertyChanged(nameof(TraceVerificationClearButton));
+        OnPropertyChanged(nameof(TraceVerificationResultTitle));
+        OnPropertyChanged(nameof(TraceVerificationStatisticsTitle));
+        OnPropertyChanged(nameof(TraceVerificationSuccessCount));
+        OnPropertyChanged(nameof(TraceVerificationFailureCount));
+        OnPropertyChanged(nameof(TraceVerificationLastVerification));
+        OnPropertyChanged(nameof(TraceVerificationNoVerification));
+        OnPropertyChanged(nameof(TraceVerificationResetStatistics));
+        OnPropertyChanged(nameof(HistoryEquipmentToMiddlewareTab));
+        OnPropertyChanged(nameof(HistoryMiddlewareToMesTab));
+        OnPropertyChanged(nameof(HistoryHeaderTimestamp));
+        OnPropertyChanged(nameof(HistoryHeaderUploadTime));
+        OnPropertyChanged(nameof(HistoryHeaderTraceCode));
+        OnPropertyChanged(nameof(HistoryHeaderEquipmentName));
+        OnPropertyChanged(nameof(HistoryHeaderStatus));
+        OnPropertyChanged(nameof(HistoryHeaderErrorMessage));
     }
 }

@@ -332,4 +332,106 @@
   <data name="Header_Subtitle" xml:space="preserve">
     <value>Real-time Monitoring Dashboard</value>
   </data>
+
+  <!-- 追溯碼校驗頁面 -->
+  <data name="TraceVerification_TabTitle" xml:space="preserve">
+    <value>追溯碼校驗</value>
+  </data>
+  <data name="TraceVerification_PageTitle" xml:space="preserve">
+    <value>🔍 追溯碼校驗</value>
+  </data>
+  <data name="TraceVerification_PageDescription" xml:space="preserve">
+    <value>掃描或輸入工單號和板號，系統將自動驗證是否混批</value>
+  </data>
+  <data name="TraceVerification_WorkOrderLabel" xml:space="preserve">
+    <value>工單號</value>
+  </data>
+  <data name="TraceVerification_WorkOrderPlaceholder" xml:space="preserve">
+    <value>請輸入或掃描工單號...</value>
+  </data>
+  <data name="TraceVerification_TraceCodeLabel" xml:space="preserve">
+    <value>板號 / 追溯碼</value>
+  </data>
+  <data name="TraceVerification_TraceCodeHint" xml:space="preserve">
+    <value>(可輸入多個，用逗號或換行分隔)</value>
+  </data>
+  <data name="TraceVerification_TraceCodePlaceholder" xml:space="preserve">
+    <value>請輸入或掃描板號/追溯碼...</value>
+  </data>
+  <data name="TraceVerification_VerifyButton" xml:space="preserve">
+    <value>驗證</value>
+  </data>
+  <data name="TraceVerification_ClearButton" xml:space="preserve">
+    <value>清除</value>
+  </data>
+  <data name="TraceVerification_ResultTitle" xml:space="preserve">
+    <value>驗證結果</value>
+  </data>
+  <data name="TraceVerification_StatisticsTitle" xml:space="preserve">
+    <value>統計資訊</value>
+  </data>
+  <data name="TraceVerification_SuccessCount" xml:space="preserve">
+    <value>✓ 驗證成功</value>
+  </data>
+  <data name="TraceVerification_FailureCount" xml:space="preserve">
+    <value>✗ 驗證失敗</value>
+  </data>
+  <data name="TraceVerification_LastVerification" xml:space="preserve">
+    <value>⏱ 最後驗證</value>
+  </data>
+  <data name="TraceVerification_NoVerification" xml:space="preserve">
+    <value>尚未驗證</value>
+  </data>
+  <data name="TraceVerification_ResetStatistics" xml:space="preserve">
+    <value>重置統計</value>
+  </data>
+  <data name="TraceVerification_Verifying" xml:space="preserve">
+    <value>正在驗證...</value>
+  </data>
+  <data name="TraceVerification_ErrorWorkOrderEmpty" xml:space="preserve">
+    <value>請輸入工單號</value>
+  </data>
+  <data name="TraceVerification_ErrorTraceCodeEmpty" xml:space="preserve">
+    <value>請輸入板號/追溯碼</value>
+  </data>
+  <data name="TraceVerification_ErrorInvalidTraceCode" xml:space="preserve">
+    <value>請輸入有效的板號/追溯碼</value>
+  </data>
+  <data name="TraceVerification_SuccessMessage" xml:space="preserve">
+    <value>✓ 驗證成功</value>
+  </data>
+  <data name="TraceVerification_FailureMessage" xml:space="preserve">
+    <value>✗ 驗證失敗</value>
+  </data>
+  <data name="TraceVerification_StatisticsReset" xml:space="preserve">
+    <value>統計已重置</value>
+  </data>
+
+  <!-- 歷史資料頁面 (子分頁) -->
+  <data name="History_EquipmentToMiddlewareTab" xml:space="preserve">
+    <value>設備 → 中介軟體</value>
+  </data>
+  <data name="History_MiddlewareToMesTab" xml:space="preserve">
+    <value>中介軟體 → MES Cloud</value>
+  </data>
+
+  <!-- 歷史資料 DataGrid 欄位標題 -->
+  <data name="History_HeaderTimestamp" xml:space="preserve">
+    <value>時間戳記</value>
+  </data>
+  <data name="History_HeaderUploadTime" xml:space="preserve">
+    <value>上傳時間</value>
+  </data>
+  <data name="History_HeaderTraceCode" xml:space="preserve">
+    <value>追溯碼</value>
+  </data>
+  <data name="History_HeaderEquipmentName" xml:space="preserve">
+    <value>設備名稱</value>
+  </data>
+  <data name="History_HeaderStatus" xml:space="preserve">
+    <value>狀態</value>
+  </data>
+  <data name="History_HeaderErrorMessage" xml:space="preserve">
+    <value>錯誤訊息</value>
+  </data>
 </root>

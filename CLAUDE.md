@@ -4,21 +4,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-MES Middleware Service - A production-grade Windows Service and WPF desktop application that bridges equipment data with the MES cloud system via shared memory IPC. Built with .NET 9 following strict Test-Driven Development (TDD) practices.
+MES Middleware Service - A production-grade Windows Service and WPF desktop application that bridges equipment data with the MES cloud system via HTTP REST API. Built with .NET 9 following strict Test-Driven Development (TDD) practices.
+
+**Architecture Version**: v2.0 (Web API) - Migrated from v1.0 (Shared Memory IPC)
 
 ## Technology Stack
 
 **Core Platform**: .NET 9
-- **Backend**: Windows Service (Microsoft.Extensions.Hosting.WindowsServices)
+- **Backend**: ASP.NET Core Web API + Windows Service (Kestrel embedded web server)
 - **Frontend**: WPF Desktop Application (net9.0-windows)
 - **Testing**: xUnit 2.x + FluentAssertions + Moq
 
 **Key Dependencies**:
+- ASP.NET Core 9 (Web API, Controllers, Middleware)
+- Kestrel (embedded web server)
+- System.Threading.Channels (bounded in-memory queue)
 - Entity Framework Core 9 + SQLite (offline queue persistence)
 - Hangfire 1.8.x (background job retry processing)
-- FluentValidation 11.x (inspection data validation)
+- FluentValidation 11.x (HTTP request validation)
 - Serilog 3.x (structured logging)
-- System.IO.MemoryMappedFiles (Windows shared memory IPC)
+- Swashbuckle.AspNetCore 10.x (Swagger/OpenAPI documentation)
 - CommunityToolkit.Mvvm (MVVM framework for WPF)
 
 ## Solution Structure
@@ -27,27 +32,37 @@ MES Middleware Service - A production-grade Windows Service and WPF desktop appl
 MesMiddleware.sln
 ├── src/
 │   ├── MesMiddleware.Service/          # Windows Service (backend)
+│   │   ├── Controllers/                # ASP.NET Core Controllers
+│   │   │   ├── InspectionController.cs # POST /api/inspection/submit
+│   │   │   └── StatusController.cs     # GET /api/status, /api/status/history
 │   │   ├── Services/
-│   │   │   ├── SharedMemory/           # IPC layer (MemoryMappedFile + EventWaitHandle)
-│   │   │   ├── WebApi/                 # HTTP client + JWT authentication
-│   │   │   ├── Queue/                  # Offline upload queue with retry logic
-│   │   │   └── HostedServices/         # BackgroundService implementations
+│   │   │   ├── HostedServices/         # BackgroundService implementations
+│   │   │   │   └── InspectionChannelProcessor.cs  # Processes Channel queue
+│   │   │   ├── WebApi/                 # MES Cloud API client + JWT
+│   │   │   └── Queue/                  # SQLite offline queue + Hangfire
 │   │   ├── Data/                       # EF Core DbContext + Migrations
 │   │   ├── Models/                     # Domain entities
-│   │   └── Validation/                 # FluentValidation validators
+│   │   ├── Validation/                 # FluentValidation validators
+│   │   └── Program.cs                  # ASP.NET Core WebApplication entry
 │   ├── MesMiddleware.Monitor/          # WPF desktop monitoring UI
 │   │   ├── ViewModels/                 # MVVM ViewModels
 │   │   ├── Views/                      # XAML views
-│   │   ├── Services/                   # API client for service communication
+│   │   ├── Services/                   # HTTP API client (polling)
 │   │   └── Resources/                  # i18n resources (zh-TW, zh-CN, en)
 │   └── MesMiddleware.Shared/           # Shared models and contracts
-└── tests/
-    ├── MesMiddleware.Service.Tests/
-    │   ├── Contract/                   # JSON schema validation tests
-    │   ├── Integration/                # Shared memory IPC, WebAPI, offline queue tests
-    │   └── Unit/                       # Service logic, validators, ViewModels
-    └── MesMiddleware.Monitor.Tests/
-        └── Unit/                       # ViewModel unit tests
+├── tests/
+│   ├── MesMiddleware.Service.Tests/
+│   │   ├── Contract/                   # JSON schema validation tests (5 tests)
+│   │   ├── Integration/                # HTTP endpoint, database tests (19 tests)
+│   │   └── Unit/                       # Service logic, validators (30 tests)
+│   └── MesMiddleware.Monitor.Tests/
+│       └── Unit/                       # ViewModel unit tests (26 tests)
+├── .archive/                           # Archived files
+│   ├── SharedMemory/                   # v1.0 shared memory code (removed)
+│   └── old-docs/                       # v1.0 documentation (archived)
+├── SRS.md                              # Software Requirements Specification (main doc)
+├── COVERAGE_ANALYSIS.md                # Test coverage analysis
+└── README.md                           # Quick start guide
 ```
 
 ## Commands
@@ -121,40 +136,39 @@ dotnet run
 
 ## Architecture
 
-### Shared Memory IPC Protocol
+### HTTP REST API Protocol
 
-The system uses Windows MemoryMappedFile + EventWaitHandle for inter-process communication:
+The system uses standard HTTP REST API for equipment-to-middleware communication:
 
-**Data Flow (Equipment → Middleware → WebAPI)**:
-1. Equipment writes JSON to `MES_INSPECTION_DATA` shared memory segment
-2. Equipment signals `MES_DATA_READY` EventWaitHandle
-3. Middleware reads data, validates, and uploads to WebAPI
-4. On failure, data is queued to SQLite with exponential backoff retry
+**Data Flow (Equipment → Middleware → MES Cloud)**:
+1. Equipment POSTs JSON to `http://localhost:5100/api/inspection/submit`
+2. Middleware validates request (FluentValidation)
+3. Data written to Channel<InspectionRecord> (Tier 1: in-memory queue, capacity 1000)
+4. InspectionChannelProcessor reads from channel and uploads to MES Cloud API
+5. On success: Log statistics (TotalReceived++, SuccessfulUploads++)
+6. On failure: Save to SQLite queue (Tier 2: persistent storage)
+7. Hangfire schedules retry job with exponential backoff (Tier 3: 2s, 4s, 8s, 16s, 32s)
 
-**Memory Layout**:
-```
-Byte 0-3:   Data length (int32, little-endian)
-Byte 4-N:   UTF-8 JSON string
-```
-
-**Shared Memory Segments**:
-- `MES_INSPECTION_DATA` (10MB) - Equipment → Middleware inspection data
-- `MES_EQUIPMENT_CMD` (10MB) - Middleware → Equipment commands (User Story 3 - NOT IMPLEMENTED)
-- `MES_EQUIPMENT_CMD_ACK` (10MB) - Equipment → Middleware acknowledgments (User Story 3 - NOT IMPLEMENTED)
+**Three-Tier Queue Architecture**:
+- **Tier 1**: Channel<InspectionRecord> - High-speed in-memory buffer (1000 items, BoundedChannelFullMode.Wait)
+- **Tier 2**: SQLite UploadQueue - Persistent offline storage
+- **Tier 3**: Hangfire - Background job retry with exponential backoff (max 5 retries)
 
 ### Service Architecture
 
 **Windows Service (MesMiddleware.Service)**:
-- `MiddlewareHostedService` - Main BackgroundService orchestrating IPC monitoring
-- `SharedMemoryMonitor` - Monitors shared memory segments for incoming data
-- `MesWebApiClient` - HTTP client with JWT authentication and retry logic
-- `UploadQueueService` - SQLite-backed offline queue with Hangfire retry jobs
-- `TokenService` - Manages JWT token caching and automatic refresh
+- `InspectionController` - POST /api/inspection/submit endpoint
+- `StatusController` - GET /api/status, /api/status/history endpoints
+- `InspectionChannelProcessor` - BackgroundService reading from Channel queue
+- `MesWebApiClient` - MES Cloud API client with JWT auth + Polly retry
+- `UploadQueueService` - SQLite queue management + Hangfire job scheduling
+- `TokenService` - JWT token caching and automatic refresh
 
 **WPF Monitor (MesMiddleware.Monitor)**:
 - MVVM architecture with CommunityToolkit.Mvvm
+- `MiddlewareApiClient` - HTTP polling client (polls GET /api/status every 2 seconds)
 - `StatusViewModel` - Connection status indicators (Green/Yellow/Red)
-- `HistoryViewModel` - Upload history with filtering (last 1000 records)
+- `HistoryViewModel` - Upload history display (last 100 records)
 - `TrayIconService` - System tray integration with balloon notifications
 - Multi-language support (zh-TW, zh-CN, en) via .resx files
 
@@ -201,8 +215,8 @@ The `COVERAGE_ANALYSIS.md` file provides ultra-thorough requirement-to-test mapp
 dotnet test
 
 # Verify specific user story coverage
-dotnet test --filter "FullyQualifiedName~SharedMemoryIpcTests"     # US1: Shared Memory
-dotnet test --filter "FullyQualifiedName~WebApiUploadTests"        # US1: WebAPI Upload
+dotnet test --filter "FullyQualifiedName~InspectionEndpointTests"  # US1: HTTP API Endpoint
+dotnet test --filter "FullyQualifiedName~WebApiUploadTests"        # US1: MES Cloud Upload
 dotnet test --filter "FullyQualifiedName~OfflineQueueTests"        # US1: Offline Queue
 dotnet test --filter "FullyQualifiedName~StatusViewModelTests"     # US2: WPF Status UI
 dotnet test --filter "FullyQualifiedName~HistoryViewModelTests"    # US2: WPF History UI
@@ -218,19 +232,22 @@ dotnet test --filter "FullyQualifiedName~HistoryViewModelTests"    # US2: WPF Hi
 
 ```json
 {
+  "Urls": "http://localhost:5100",
   "WebApi": {
     "BaseUrl": "https://your-mes-api.com",
     "Username": "middleware_user",
-    "Password": "your_password"
-  },
-  "SharedMemory": {
-    "InspectionSegmentName": "MES_INSPECTION_DATA",
-    "CommandSegmentName": "MES_EQUIPMENT_CMD",
-    "SegmentSizeMB": 10
-  },
-  "MachineInfo": {
+    "Password": "your_password",
     "MachineNumber": "MACHINE-01",
-    "IpAddress": "192.168.1.100"
+    "MachineIp": "192.168.1.100"
+  },
+  "InspectionChannel": {
+    "Capacity": 1000,
+    "FullMode": "Wait"
+  },
+  "Queue": {
+    "DatabasePath": "Data/queue.db",
+    "MaxRetries": 5,
+    "RetryDelaySeconds": 2
   }
 }
 ```
@@ -265,26 +282,32 @@ curl http://localhost:5000/health
 
 Hangfire dashboard for background job monitoring:
 ```
-http://localhost:5000/hangfire
+http://localhost:5100/hangfire
+```
+
+Swagger/OpenAPI interactive documentation:
+```
+http://localhost:5100/swagger
 ```
 
 ## Common Development Tasks
 
-### Adding a New Shared Memory Segment
+### Adding a New HTTP API Endpoint
 
-1. Add segment configuration to `appsettings.json`
-2. Create model in `MesMiddleware.Shared/Models/`
-3. Write contract tests for JSON serialization/deserialization
-4. Implement reader/writer in `Services/SharedMemory/`
-5. Update `MiddlewareHostedService` to monitor new segment
-6. Add integration tests for IPC flow
+1. Create controller in `Controllers/` (e.g., `NewFeatureController.cs`)
+2. Write contract tests for request/response models
+3. Implement FluentValidation validator for request DTO
+4. Add controller action method (e.g., POST /api/newfeature)
+5. Write integration tests with WebApplicationFactory
+6. Update Swagger documentation attributes
+7. Update DI registration in `Program.cs` if needed
 
-### Adding a New WebAPI Endpoint
+### Adding a New MES Cloud API Call
 
 1. Add endpoint method to `IMesWebApiClient` interface
 2. Write integration tests with WireMock.Net
 3. Implement method in `MesWebApiClient.cs`
-4. Add authentication/retry logic
+4. Add authentication/retry logic (Polly policies)
 5. Update DI registration in `Program.cs`
 
 ### Adding a New WPF View
@@ -297,27 +320,39 @@ http://localhost:5000/hangfire
 
 ## Known Limitations
 
-1. **Windows-only**: MemoryMappedFile, EventWaitHandle, and WPF are Windows-specific
-2. **Single instance**: One middleware service per machine (shared memory namespace is machine-local)
-3. **User Story 3 not implemented**: Bidirectional command control (Middleware → Equipment) is missing (0% complete, 14 tasks remaining)
-4. **SQLite concurrency**: Use SQL Server/PostgreSQL for production if WPF Monitor and Service run concurrently
+1. **Windows-only**: WPF is Windows-specific (backend HTTP API is cross-platform compatible)
+2. **Single instance**: One middleware service per machine (localhost HTTP endpoint)
+3. **User Story 3 not implemented**: Bidirectional command control is deferred (requires WebSocket/SSE for real-time bidirectional communication)
+4. **SQLite concurrency**: Consider SQL Server/PostgreSQL for production if high concurrent access is needed
 
 ## Documentation
 
-- **README.md**: Comprehensive user guide with quickstart, heterogeneous system integration (C#/LabVIEW examples)
-- **specs/002-shared-memory-middleware/**: Complete feature specifications
-  - `spec.md`: Functional requirements (FR-001 to FR-026)
-  - `plan.md`: Implementation plan with TDD workflow
-  - `tasks.md`: Task breakdown (79 tasks, 65 completed)
-  - `data-model.md`: Database schema
-- **COVERAGE_ANALYSIS.md**: Ultra-thorough test-to-requirement mapping (see above)
-- **FINAL_COVERAGE_REPORT.md**: Project completion summary
+**Primary Documentation**:
+- **SRS.md** ⭐ - Software Requirements Specification (200+ pages):
+  - Complete functional requirements (FR-001 to FR-018)
+  - Non-functional requirements (NFR-001 to NFR-017)
+  - Full API specification (Swagger/OpenAPI format)
+  - Data models with validation rules
+  - Deployment guide (installation, upgrade, rollback)
+  - Migration guide (v1.0 Shared Memory → v2.0 Web API)
+  - Equipment integration examples (C#, LabVIEW)
+- **README.md** - Quick start guide with system overview
+- **COVERAGE_ANALYSIS.md** - Test-to-requirement mapping (80 tests, 85% coverage)
+- **CLAUDE.md** - This file (Claude Code project guidance)
+
+**Archived Documentation** (v1.0):
+- **.archive/old-docs/** - Old shared memory architecture specs
+  - `spec-v1-shared-memory.md`: Original functional requirements
+  - `plan-v1.md`: Original implementation plan
+  - `tasks-v1.md`: Original task breakdown (79 tasks)
+  - `data-model-v1.md`: Original database schema
 
 ## Performance Metrics
 
-- Shared memory read latency: < 100ms (target: < 1s)
-- WebAPI upload latency: < 500ms (target: < 2s)
-- Command write latency: < 50ms (target: < 1s)
+- HTTP endpoint response time: < 100ms p95 (target: < 200ms)
+- Channel write latency: < 1ms p99 (target: < 5ms)
+- MES Cloud API upload latency: < 500ms (target: < 2s)
+- WPF status polling latency: < 50ms p95 (target: < 100ms)
 - Test execution time: 1-2 seconds (target: < 5s)
 
 ## Troubleshooting
@@ -325,18 +360,21 @@ http://localhost:5000/hangfire
 ### Service Won't Start
 - Check Windows Event Viewer: `Application and Services Logs > MesMiddleware`
 - Verify .NET 9 runtime is installed
-- Check firewall for port 5000 (health check endpoint)
+- Check firewall for port 5100 (HTTP endpoint)
+- Verify port 5100 is not already in use: `netstat -ano | findstr :5100`
 
-### Shared Memory Errors
-- Ensure equipment creates segment first (use `CreateOrOpen` not `OpenExisting`)
-- Verify segment names match exactly (case-sensitive)
-- Check EventWaitHandle is signaled after write
+### HTTP API Endpoint Errors
+- Test endpoint: `curl http://localhost:5100/health`
+- Check Swagger UI: `http://localhost:5100/swagger`
+- Review service logs: `logs/middleware-service-*.log`
+- Verify JSON payload matches InspectionRecord schema
 
-### WebAPI Connection Failures
-- Verify `appsettings.json` WebAPI URL
-- Test network connectivity: `ping your-api-domain.com`
-- Check credentials are correct
-- Review WebAPI logs for authentication errors
+### MES Cloud API Connection Failures
+- Verify `appsettings.json` WebApi.BaseUrl
+- Test network connectivity: `ping your-mes-api-domain.com`
+- Check JWT credentials are correct
+- Review MES Cloud API logs for authentication errors
+- Check Hangfire dashboard for retry status: `http://localhost:5100/hangfire`
 
 ### Database Locked (SQLite)
 - Stop WPF Monitor (it shares the same SQLite database)

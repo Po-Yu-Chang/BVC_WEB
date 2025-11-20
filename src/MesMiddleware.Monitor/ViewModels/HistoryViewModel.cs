@@ -19,7 +19,19 @@ public partial class HistoryViewModel : ObservableObject
     private Task? _refreshTask;
 
     /// <summary>
-    /// 上傳記錄集合
+    /// 設備到中介軟體的上傳記錄集合
+    /// </summary>
+    [ObservableProperty]
+    private ObservableCollection<UploadRecord> _equipmentToMiddlewareRecords = new();
+
+    /// <summary>
+    /// 中介軟體到 MES Cloud 的上傳記錄集合
+    /// </summary>
+    [ObservableProperty]
+    private ObservableCollection<UploadRecord> _middlewareToMesRecords = new();
+
+    /// <summary>
+    /// 上傳記錄集合（舊版，保留相容性）
     /// </summary>
     [ObservableProperty]
     private ObservableCollection<UploadRecord> _uploadRecords = new();
@@ -87,25 +99,39 @@ public partial class HistoryViewModel : ObservableObject
         IsRefreshing = true;
         try
         {
-            // 從 API 客戶端取得上傳歷史（最多 1000 筆）
-            var history = await _apiClient.GetUploadHistoryAsync(maxRecords: 1000);
+            // 並行載入兩個歷史記錄
+            var equipmentTask = _apiClient.GetUploadHistoryAsync(maxRecords: 1000);
+            var mesTask = _apiClient.GetMesUploadHistoryAsync(maxRecords: 100);
 
-            // 清空並更新上傳記錄集合
-            UploadRecords.Clear();
-            foreach (var item in history)
+            await Task.WhenAll(equipmentTask, mesTask);
+
+            // 更新設備到中介軟體的記錄
+            EquipmentToMiddlewareRecords.Clear();
+            foreach (var item in equipmentTask.Result)
             {
-                UploadRecords.Add(item);
+                EquipmentToMiddlewareRecords.Add(item);
             }
 
-            // 清空並更新篩選後的記錄集合
-            FilteredRecords.Clear();
-            foreach (var item in history)
+            // 更新中介軟體到 MES Cloud 的記錄
+            MiddlewareToMesRecords.Clear();
+            foreach (var item in mesTask.Result)
             {
+                MiddlewareToMesRecords.Add(item);
+            }
+
+            // 保持舊版相容性 - 使用設備到中介軟體的記錄
+            UploadRecords.Clear();
+            FilteredRecords.Clear();
+            foreach (var item in equipmentTask.Result)
+            {
+                UploadRecords.Add(item);
                 FilteredRecords.Add(item);
             }
 
             ErrorMessage = string.Empty;
-            _logger.LogDebug("History loaded: {Count} items", UploadRecords.Count);
+            _logger.LogDebug("History loaded: Equipment={EquipmentCount}, MES={MesCount}",
+                EquipmentToMiddlewareRecords.Count,
+                MiddlewareToMesRecords.Count);
         }
         catch (Exception ex)
         {

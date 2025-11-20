@@ -1,0 +1,10 @@
+﻿<Application x:Class="MesMiddleware.Simulator.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:MesMiddleware.Simulator">
+    <Application.Resources>
+        <!-- Value Converters -->
+        <local:BoolToStatusConverter x:Key="BoolToStatusConverter"/>
+        <local:InverseBoolConverter x:Key="InverseBoolConverter"/>
+    </Application.Resources>
+</Application>

@@ -191,4 +191,52 @@ public class UploadQueueService : IUploadQueueService
             })
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<List<UploadHistoryItem>> GetRecentHistoryAsync(
+        int limit = 100,
+        CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.QueuedUploads
+            .OrderByDescending(q => q.QueuedAt)
+            .Take(limit)
+            .Select(q => new UploadHistoryItem
+            {
+                Id = (int)(q.Id.GetHashCode() & 0x7FFFFFFF), // Convert Guid to int for display
+                TraceCode = q.TraceCodeOrLotNo ?? "N/A",
+                RowNo = q.MachineNumber ?? "N/A",
+                CreatedAt = q.QueuedAt,
+                Status = q.Status,
+                RetryCount = q.RetryCount,
+                LastErrorMessage = q.LastError
+            })
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<bool> RetryUploadAsync(int id, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // Find queue entry by hashed ID (this is a simplified approach)
+            var queueEntry = await _dbContext.QueuedUploads
+                .FirstOrDefaultAsync(q => (q.Id.GetHashCode() & 0x7FFFFFFF) == id, cancellationToken);
+
+            if (queueEntry == null)
+            {
+                _logger.LogWarning("Queue entry with display ID {Id} not found", id);
+                return false;
+            }
+
+            // Trigger immediate retry via Hangfire
+            _hangfireClient.Enqueue<IUploadQueueService>(
+                service => service.RetryQueuedUploadAsync(queueEntry.Id));
+
+            _logger.LogInformation("Manual retry triggered for queue entry {QueueId}", queueEntry.Id);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to trigger manual retry for ID {Id}", id);
+            return false;
+        }
+    }
 }

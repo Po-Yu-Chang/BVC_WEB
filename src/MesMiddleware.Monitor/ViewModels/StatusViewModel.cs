@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MesMiddleware.Monitor.Models;
 using MesMiddleware.Monitor.Services;
@@ -13,6 +14,7 @@ namespace MesMiddleware.Monitor.ViewModels;
 public partial class StatusViewModel : ObservableObject
 {
     private readonly IMiddlewareApiClient _apiClient;
+    private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<StatusViewModel> _logger;
     private CancellationTokenSource? _refreshCts;
     private Task? _refreshTask;
@@ -61,19 +63,19 @@ public partial class StatusViewModel : ObservableObject
     private bool _isRunning;
 
     /// <summary>
-    /// Web API 是否已連線
+    /// MES Cloud API 是否已連線
     /// </summary>
     [ObservableProperty]
     private bool _isWebApiConnected;
 
     /// <summary>
-    /// 共享記憶體是否活躍
+    /// Shared Memory 是否啟用 (v1.0 功能已移除，固定為 false)
     /// </summary>
     [ObservableProperty]
-    private bool _isSharedMemoryActive;
+    private bool _isSharedMemoryActive = false;
 
     /// <summary>
-    /// 總共接收的資料筆數
+    /// 總共接收的資料筆數 (透過 HTTP API 提交)
     /// </summary>
     [ObservableProperty]
     private int _totalDataReceived;
@@ -111,10 +113,41 @@ public partial class StatusViewModel : ObservableObject
     /// <summary>
     /// 建構函式，初始化狀態視圖模型
     /// </summary>
-    public StatusViewModel(IMiddlewareApiClient apiClient, ILogger<StatusViewModel> logger)
+    public StatusViewModel(IMiddlewareApiClient apiClient, IServiceProvider serviceProvider, ILogger<StatusViewModel> logger)
     {
         _apiClient = apiClient;
+        _serviceProvider = serviceProvider;
         _logger = logger;
+    }
+
+    /// <summary>
+    /// 初始化狀態資料（在應用程式啟動時呼叫）
+    /// 從 SQLite 載入佇列統計資料
+    /// </summary>
+    public async Task InitializeAsync()
+    {
+        try
+        {
+            // 從 SQLite 載入佇列統計資料（使用 scope）
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var queueService = scope.ServiceProvider.GetRequiredService<IUploadQueueService>();
+                var stats = await queueService.GetStatisticsAsync();
+
+                // 更新「佇列中」的數量（待重試 + 處理中）
+                QueuedUploads = stats.PendingCount + stats.ProcessingCount;
+
+                _logger.LogInformation("初始化完成 - 佇列中: {QueuedUploads}, 待處理: {PendingCount}, 處理中: {ProcessingCount}, 超過重試次數: {MaxRetriesExceeded}",
+                    QueuedUploads, stats.PendingCount, stats.ProcessingCount, stats.MaxRetriesExceededCount);
+            }
+
+            // 首次刷新狀態
+            await RefreshStatusAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "初始化狀態時發生錯誤");
+        }
     }
 
     /// <summary>
@@ -135,6 +168,22 @@ public partial class StatusViewModel : ObservableObject
             LastPingTime = status.LastPingTimestamp;
             QueueDepth = status.QueueDepth;
 
+            // 更新統計數據
+            TotalDataReceived = status.TotalReceived;
+            SuccessfulUploads = status.SuccessfulUploads;
+
+            // 從 SQLite 載入實際的佇列統計資料（包含待重試項目，使用 scope）
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var queueService = scope.ServiceProvider.GetRequiredService<IUploadQueueService>();
+                var queueStats = await queueService.GetStatisticsAsync();
+                QueuedUploads = queueStats.PendingCount + queueStats.ProcessingCount;
+            }
+
+            // 更新燈號狀態
+            IsRunning = status.Status != "Disconnected" && status.Status != "Error";
+            IsWebApiConnected = status.Status == "Connected";
+
             // 根據連線狀態設定狀態顏色
             StatusColor = status.Status switch
             {
@@ -144,14 +193,20 @@ public partial class StatusViewModel : ObservableObject
                 _ => "Gray"
             };
 
+            // 更新最後更新時間
+            LastUpdated = DateTime.Now;
+
             ErrorMessage = string.Empty;
-            _logger.LogDebug("Status refreshed: {Status}", ConnectionStatus);
+            _logger.LogDebug("Status refreshed: {Status}, Running={IsRunning}, WebAPI={IsWebApiConnected}",
+                ConnectionStatus, IsRunning, IsWebApiConnected);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to refresh status");
             ConnectionStatus = "Error";
             StatusColor = "Red";
+            IsRunning = false;
+            IsWebApiConnected = false;
             ErrorMessage = ex.Message;
         }
         finally

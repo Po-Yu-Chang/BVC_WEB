@@ -10,16 +10,18 @@ namespace MesMiddleware.Service.Services.WebApi;
 /// Token service implementation with in-memory caching and automatic refresh.
 /// Caches token for 8 hours (typical WebAPI token lifetime).
 /// Thread-safe using SemaphoreSlim for token refresh synchronization.
+/// **Token 儲存在靜態變數中，讓所有 HTTP 請求共享同一個 Token**
 /// </summary>
 public class TokenService : ITokenService
 {
     private readonly HttpClient _httpClient;
     private readonly WebApiOptions _options;
     private readonly ILogger<TokenService> _logger;
-    private readonly SemaphoreSlim _refreshLock = new(1, 1);
 
-    private string? _cachedToken;
-    private DateTime _tokenExpiresAt = DateTime.MinValue;
+    // 靜態變數：Token 全局共享，所有服務實例共用
+    private static string? _cachedToken;
+    private static DateTime _tokenExpiresAt = DateTime.MinValue;
+    private static readonly SemaphoreSlim _refreshLock = new(1, 1);
 
     public TokenService(
         IHttpClientFactory httpClientFactory,
@@ -50,30 +52,38 @@ public class TokenService : ITokenService
                 return _cachedToken;
             }
 
-            _logger.LogInformation("Requesting new access token from WebAPI for machine {MachineNumber}",
+            _logger.LogInformation("Requesting new access token from MES Cloud for machine {MachineNumber}",
                 _options.MachineNumber);
 
-            // Request new token from WebAPI
+            // Request new token from MES Cloud (根據 PDF 文檔規範)
+            // URL: POST /CimforceTraceMgrDev/api/prtmac/prtmacuserlogin
             var loginRequest = new
             {
-                machineNumber = _options.MachineNumber,
-                machineIp = _options.MachineIp
+                PrtMacNo = _options.MachineNumber  // 注意：大寫 P, M, N (根據 PDF 規範)
             };
 
-            var response = await _httpClient.PostAsJsonAsync("/api/auth/login", loginRequest, cancellationToken);
+            var request = new HttpRequestMessage(HttpMethod.Post, "/CimforceTraceMgrDev/api/prtmac/prtmacuserlogin")
+            {
+                Content = JsonContent.Create(loginRequest)
+            };
+
+            // Add Referrer header (required by MES Cloud API - PDF 規範)
+            request.Headers.Add("Referrer", _options.MachineIp);
+
+            var response = await _httpClient.SendAsync(request, cancellationToken);
             response.EnsureSuccessStatusCode();
 
             var loginResponse = await response.Content.ReadFromJsonAsync<TokenResponse>(cancellationToken);
 
-            if (loginResponse?.Success != true || string.IsNullOrEmpty(loginResponse.AccessToken))
+            if (loginResponse?.Success != true || string.IsNullOrEmpty(loginResponse.Token))
             {
-                throw new InvalidOperationException($"WebAPI login failed: {loginResponse?.Message ?? "Unknown error"}");
+                throw new InvalidOperationException($"MES Cloud login failed: {loginResponse?.Msg ?? "Unknown error"}");
             }
 
-            _cachedToken = loginResponse.AccessToken;
-            _tokenExpiresAt = DateTime.UtcNow.AddHours(8); // Token lifetime from WebAPI spec
+            _cachedToken = loginResponse.Token;  // 注意：使用 Token 欄位，不是 AccessToken
+            _tokenExpiresAt = DateTime.UtcNow.AddHours(8); // Token 長期有效 (根據 PDF 文檔)
 
-            _logger.LogInformation("Successfully obtained access token (expires at {ExpiresAt})", _tokenExpiresAt);
+            _logger.LogInformation("Successfully obtained access token from MES Cloud (expires at {ExpiresAt})", _tokenExpiresAt);
 
             return _cachedToken;
         }
@@ -107,10 +117,25 @@ public class TokenService : ITokenService
         return _tokenExpiresAt > DateTime.UtcNow.AddMinutes(5);
     }
 
+    /// <summary>
+    /// MES Cloud 登錄 API 回應 DTO (根據 PDF 文檔第 3 頁)
+    /// </summary>
     private class TokenResponse
     {
         public bool Success { get; set; }
-        public string? AccessToken { get; set; }
-        public string? Message { get; set; }
+        public TokenData? Data { get; set; }
+        public string? Msg { get; set; }
+        public string? Code { get; set; }
+
+        // 便捷屬性：直接存取 Token
+        public string? Token => Data?.Token;
+    }
+
+    private class TokenData
+    {
+        public string? PrtMacNo { get; set; }
+        public string? IpAddr { get; set; }
+        public string? Token { get; set; }
+        public string? SysUserId { get; set; }
     }
 }

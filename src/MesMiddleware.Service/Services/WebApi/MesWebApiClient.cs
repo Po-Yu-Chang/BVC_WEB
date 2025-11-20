@@ -1,6 +1,9 @@
 using FluentValidation;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MesMiddleware.Shared.Models;
+using MesMiddleware.Service.Controllers;
+using MesMiddleware.Service.Models;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text;
@@ -48,8 +51,9 @@ public class MesWebApiClient : IMesWebApiClient
             // Get authentication token
             var token = await _tokenService.GetAccessTokenAsync(cancellationToken);
 
-            // Prepare request
-            var request = new HttpRequestMessage(HttpMethod.Post, "/api/inspection/upload")
+            // Prepare request (根據 PDF 文檔第 4 頁規範)
+            // URL: POST /CimforceTraceMgrDev/api/v1/MesTrace/TraceData/AddData3
+            var request = new HttpRequestMessage(HttpMethod.Post, "/CimforceTraceMgrDev/api/v1/MesTrace/TraceData/AddData3")
             {
                 Content = JsonContent.Create(data, options: new JsonSerializerOptions
                 {
@@ -57,6 +61,7 @@ public class MesWebApiClient : IMesWebApiClient
                 })
             };
 
+            // Add accessToken header (required by MES Cloud API - PDF 規範)
             request.Headers.Add("accessToken", token);
 
             _logger.LogInformation("Uploading inspection data for {TraceCodeOrLot} (RowNo: {RowNo})",
@@ -142,45 +147,80 @@ public class MesWebApiClient : IMesWebApiClient
         }
     }
 
-    /// <summary>
-    /// Sends command acknowledgment from equipment back to WebAPI.
-    /// Part of User Story 3 (Bidirectional Command & Control) - T063.
-    /// </summary>
-    public async Task<bool> SendCommandAcknowledgmentAsync(CommandAcknowledgment acknowledgment, CancellationToken cancellationToken = default)
+    public async Task<TraceVerificationResponse> VerifyTraceCodesAsync(
+        TraceVerificationRequest request,
+        CancellationToken cancellationToken = default)
     {
         try
         {
-            _logger.LogInformation("Sending command acknowledgment to WebAPI: CommandId={CommandId}, Status={Status}",
-                acknowledgment.CommandId, acknowledgment.Status);
-
-            // Get access token
+            // Get authentication token
             var token = await _tokenService.GetAccessTokenAsync(cancellationToken);
 
-            // POST /api/equipment/command/ack
-            var request = new HttpRequestMessage(HttpMethod.Post, "/api/equipment/command/ack");
-            request.Headers.Add("Authorization", $"Bearer {token}");
+            _logger.LogInformation("Calling MES Cloud trace verification API for work order {WorkOrder}, codes count: {Count}",
+                request.WoNum, request.Codes?.Count ?? 0);
 
-            var jsonContent = JsonSerializer.Serialize(acknowledgment);
-            request.Content = new StringContent(jsonContent, Encoding.UTF8, System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json"));
-
-            var response = await _httpClient.SendAsync(request, cancellationToken);
-
-            if (response.IsSuccessStatusCode)
+            // Prepare HTTP request to MES Cloud
+            // URL: POST http://{ip}:{port}/CimforceTraceMgrDev/api/transcode/checkcode
+            var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/CimforceTraceMgrDev/api/transcode/checkcode")
             {
-                _logger.LogInformation("Command acknowledgment sent successfully: CommandId={CommandId}",
-                    acknowledgment.CommandId);
-                return true;
+                Content = JsonContent.Create(request, options: new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                })
+            };
+
+            // Add accessToken header (required by MES Cloud API)
+            httpRequest.Headers.Add("accessToken", token);
+
+            // Send request
+            var response = await _httpClient.SendAsync(httpRequest, cancellationToken);
+
+            // Handle 401 Unauthorized - token may have expired
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                _logger.LogWarning("Received 401 Unauthorized from MES Cloud, refreshing token and retrying");
+                await _tokenService.RefreshTokenAsync(cancellationToken);
+
+                // Retry with new token
+                token = await _tokenService.GetAccessTokenAsync(cancellationToken);
+                httpRequest.Headers.Remove("accessToken");
+                httpRequest.Headers.Add("accessToken", token);
+
+                response = await _httpClient.SendAsync(httpRequest, cancellationToken);
             }
 
-            _logger.LogWarning("Failed to send command acknowledgment: CommandId={CommandId}, StatusCode={StatusCode}",
-                acknowledgment.CommandId, response.StatusCode);
-            return false;
+            // Parse response
+            var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            var verificationResponse = JsonSerializer.Deserialize<TraceVerificationResponse>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            if (verificationResponse == null)
+            {
+                _logger.LogError("Failed to parse MES Cloud trace verification response");
+                return new TraceVerificationResponse
+                {
+                    Success = false,
+                    Msg = "無法解析 MES Cloud API 回應",
+                    Code = "500"
+                };
+            }
+
+            _logger.LogInformation("MES Cloud trace verification result: Success={Success}, Code={Code}, Message={Message}",
+                verificationResponse.Success, verificationResponse.Code, verificationResponse.Msg);
+
+            return verificationResponse;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error sending command acknowledgment: CommandId={CommandId}",
-                acknowledgment.CommandId);
-            return false;
+            _logger.LogError(ex, "Failed to call MES Cloud trace verification API");
+            return new TraceVerificationResponse
+            {
+                Success = false,
+                Msg = $"呼叫 MES Cloud API 失敗: {ex.Message}",
+                Code = "500"
+            };
         }
     }
 

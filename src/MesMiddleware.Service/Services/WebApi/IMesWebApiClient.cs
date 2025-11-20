@@ -1,4 +1,5 @@
 using MesMiddleware.Shared.Models;
+using MesMiddleware.Service.Controllers;
 
 namespace MesMiddleware.Service.Services.WebApi;
 
@@ -25,11 +26,22 @@ public interface IMesWebApiClient
     Task<bool> CheckConnectionAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Sends command acknowledgment from equipment back to WebAPI.
-    /// Part of User Story 3 (Bidirectional Command & Control).
+    /// Verifies trace codes belong to specified work order (混批檢測).
+    /// Forwards request to MES Cloud trace verification API.
     /// </summary>
-    /// <param name="acknowledgment">Command acknowledgment from equipment</param>
+    /// <param name="request">Trace verification request</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>True if acknowledgment was successfully sent, false otherwise</returns>
-    Task<bool> SendCommandAcknowledgmentAsync(CommandAcknowledgment acknowledgment, CancellationToken cancellationToken = default);
+    /// <returns>Verification result</returns>
+    Task<TraceVerificationResponse> VerifyTraceCodesAsync(TraceVerificationRequest request, CancellationToken cancellationToken = default);
+}
+
+/// <summary>
+/// 追溯碼校驗回應 DTO
+/// </summary>
+public class TraceVerificationResponse
+{
+    public bool Success { get; set; }
+    public object? Data { get; set; }
+    public string? Msg { get; set; }
+    public string? Code { get; set; }
 }

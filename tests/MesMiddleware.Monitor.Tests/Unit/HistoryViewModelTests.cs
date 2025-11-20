@@ -47,6 +47,10 @@ public class HistoryViewModelTests
         mockApiClient
             .Setup(x => x.GetUploadHistoryAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(testRecords);
+        // Mock GetMesUploadHistoryAsync to return empty list
+        mockApiClient
+            .Setup(x => x.GetMesUploadHistoryAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<UploadRecord>());
 
         var viewModel = new HistoryViewModel(mockApiClient.Object, CreateMockLogger().Object);
 
@@ -85,6 +89,10 @@ public class HistoryViewModelTests
         mockApiClient
             .Setup(x => x.GetUploadHistoryAsync(1000, It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockRecords.Take(1000).ToList());
+        // Mock GetMesUploadHistoryAsync to return empty list
+        mockApiClient
+            .Setup(x => x.GetMesUploadHistoryAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<UploadRecord>());
 
         var viewModel = new HistoryViewModel(mockApiClient.Object, CreateMockLogger().Object);
 
@@ -111,6 +119,10 @@ public class HistoryViewModelTests
         mockApiClient
             .Setup(x => x.GetUploadHistoryAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(testRecords);
+        // Mock GetMesUploadHistoryAsync to return empty list
+        mockApiClient
+            .Setup(x => x.GetMesUploadHistoryAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<UploadRecord>());
 
         var viewModel = new HistoryViewModel(mockApiClient.Object, CreateMockLogger().Object);
         await viewModel.LoadHistoryAsync();
@@ -140,6 +152,10 @@ public class HistoryViewModelTests
         mockApiClient
             .Setup(x => x.GetUploadHistoryAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(testRecords);
+        // Mock GetMesUploadHistoryAsync to return empty list
+        mockApiClient
+            .Setup(x => x.GetMesUploadHistoryAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<UploadRecord>());
 
         var viewModel = new HistoryViewModel(mockApiClient.Object, CreateMockLogger().Object);
         await viewModel.LoadHistoryAsync();
@@ -167,6 +183,10 @@ public class HistoryViewModelTests
         mockApiClient
             .Setup(x => x.GetUploadHistoryAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(testRecords);
+        // Mock GetMesUploadHistoryAsync to return empty list
+        mockApiClient
+            .Setup(x => x.GetMesUploadHistoryAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<UploadRecord>());
 
         var viewModel = new HistoryViewModel(mockApiClient.Object, CreateMockLogger().Object);
         await viewModel.LoadHistoryAsync();

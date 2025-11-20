@@ -6,12 +6,12 @@ using MesMiddleware.Service.Data;
 using MesMiddleware.Service.Models;
 using MesMiddleware.Service.Services.HostedServices;
 using MesMiddleware.Service.Services.Queue;
-using MesMiddleware.Service.Services.SharedMemory;
 using MesMiddleware.Service.Services.WebApi;
 using MesMiddleware.Service.Validation;
 using MesMiddleware.Shared.Models;
 using Serilog;
 using System.Net.Http.Headers;
+using System.Threading.Channels;
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
@@ -25,18 +25,29 @@ Log.Logger = new LoggerConfiguration()
 
 try
 {
-    Log.Information("Starting MES Middleware Service");
+    Log.Information("Starting MES Middleware Service with Web API host");
 
-    var builder = Host.CreateApplicationBuilder(args);
+    var builder = WebApplication.CreateBuilder(args);
 
     // Configure Serilog
     builder.Services.AddSerilog();
 
+    // Add ASP.NET Core services
+    builder.Services.AddControllers();
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen();
+
     // Configure options from appsettings.json
-    builder.Services.Configure<SharedMemoryOptions>(
-        builder.Configuration.GetSection(SharedMemoryOptions.SectionName));
     builder.Services.Configure<WebApiOptions>(
         builder.Configuration.GetSection(WebApiOptions.SectionName));
+
+    // Configure in-memory channel for inspection data (replaces shared memory)
+    var channelOptions = new BoundedChannelOptions(1000)
+    {
+        FullMode = BoundedChannelFullMode.Wait // Wait if channel is full (backpressure)
+    };
+    var inspectionChannel = Channel.CreateBounded<InspectionRecord>(channelOptions);
+    builder.Services.AddSingleton(inspectionChannel);
 
     // Configure EF Core with SQLite
     var queueDbPath = builder.Configuration["Queue:DatabasePath"] ?? "Data/queue.db";
@@ -77,15 +88,13 @@ try
     // Register validators
     builder.Services.AddScoped<IValidator<InspectionRecord>, InspectionDataValidator>();
 
-    // Register services
-    builder.Services.AddSingleton<ISharedMemoryMonitor, SharedMemoryMonitor>();
-    builder.Services.AddSingleton<ISharedMemoryWriter, SharedMemoryWriter>(); // US3: Bidirectional commands
+    // Register services (removed SharedMemoryMonitor/Writer)
     builder.Services.AddSingleton<ITokenService, TokenService>();
     builder.Services.AddScoped<IMesWebApiClient, MesWebApiClient>();
     builder.Services.AddScoped<IUploadQueueService, UploadQueueService>();
 
-    // Register hosted service (main middleware orchestration)
-    builder.Services.AddHostedService<MiddlewareHostedService>();
+    // Register hosted service (replaces MiddlewareHostedService)
+    builder.Services.AddHostedService<InspectionChannelProcessor>();
 
     // Configure Windows Service hosting
     builder.Services.AddWindowsService(options =>
@@ -93,17 +102,31 @@ try
         options.ServiceName = "MesMiddlewareService";
     });
 
-    var host = builder.Build();
+    var app = builder.Build();
+
+    // Configure HTTP request pipeline
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+
+    app.UseAuthorization();
+    app.MapControllers();
+
+    // Map Hangfire dashboard
+    app.MapHangfireDashboard();
 
     // Ensure database is created and migrations applied
-    using (var scope = host.Services.CreateScope())
+    using (var scope = app.Services.CreateScope())
     {
         var dbContext = scope.ServiceProvider.GetRequiredService<MiddlewareDbContext>();
         dbContext.Database.Migrate();
         Log.Information("Database migrations applied successfully");
     }
 
-    await host.RunAsync();
+    Log.Information("Web API listening on configured URLs (check appsettings.json)");
+    await app.RunAsync();
 }
 catch (Exception ex)
 {
@@ -114,3 +137,6 @@ finally
 {
     Log.CloseAndFlush();
 }
+
+// Make Program class public for integration tests (WebApplicationFactory)
+public partial class Program { }

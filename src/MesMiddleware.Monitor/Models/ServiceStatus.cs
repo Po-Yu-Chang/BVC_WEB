@@ -11,14 +11,9 @@ public class ServiceStatus
     public bool IsRunning { get; set; }
 
     /// <summary>
-    /// Web API 是否已連線
+    /// MES Cloud API 是否已連線
     /// </summary>
     public bool IsWebApiConnected { get; set; }
-
-    /// <summary>
-    /// 共享記憶體是否活躍
-    /// </summary>
-    public bool IsSharedMemoryActive { get; set; }
 
     /// <summary>
     /// 總共接收的資料筆數
