@@ -74,10 +74,12 @@ public class MesCloudConnectionMonitor : BackgroundService
         }
         catch (HttpRequestException ex)
         {
+            _tokenService.SetMesCloudConnectionStatus(false); // 明確設定為斷線
             _logger.LogWarning(ex, "Failed to connect to MES Cloud - HTTP request failed (will retry in {Interval})", _reconnectInterval);
         }
         catch (Exception ex)
         {
+            _tokenService.SetMesCloudConnectionStatus(false); // 明確設定為斷線
             _logger.LogError(ex, "Failed to connect to MES Cloud (will retry in {Interval})", _reconnectInterval);
         }
     }
