@@ -3,6 +3,7 @@ using Hangfire;
 using Hangfire.Storage.SQLite;
 using Microsoft.EntityFrameworkCore;
 using MesMiddleware.Service.Data;
+using MesMiddleware.Service.Middleware;
 using MesMiddleware.Service.Models;
 using MesMiddleware.Service.Services.Converters;
 using MesMiddleware.Service.Services.HostedServices;
@@ -108,12 +109,12 @@ try
 
     var app = builder.Build();
 
-    // Configure HTTP request pipeline
-    if (app.Environment.IsDevelopment())
-    {
-        app.UseSwagger();
-        app.UseSwaggerUI();
-    }
+    // Configure HTTP request pipeline (Swagger enabled in all environments)
+    app.UseSwagger();
+    app.UseSwaggerUI();
+
+    // 請求記錄 Middleware (用於除錯)
+    app.UseRequestLogging();
 
     app.UseAuthorization();
     app.MapControllers();

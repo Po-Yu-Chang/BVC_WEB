@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using MesMiddleware.Service.Services.Converters;
+using Microsoft.Extensions.Logging;
+using MesMiddleware.Monitor.Services.Converters;
 using MesMiddleware.Shared.Models;
 using MesMiddleware.Shared.Models.LabView;
 using System.Threading.Channels;
 
-namespace MesMiddleware.Service.Controllers;
+namespace MesMiddleware.Monitor.Controllers;
 
 /// <summary>
 /// API endpoint for LabVIEW equipment to submit inspection data.
@@ -73,17 +74,28 @@ public class LabViewController : ControllerBase
             // Convert to internal format
             var records = _converter.ToInspectionRecords(request);
 
-            // 更新設備活動時間 (讓 Monitor 知道設備已連線)
-            StatusController.UpdateDeviceActivity();
-
             // Write all records to channel
             foreach (var record in records)
             {
                 await _inspectionChannel.Writer.WriteAsync(record);
+
+                // Record to Device -> Monitor history
+                StatusController.AddDeviceToMonitorHistory(
+                    record.TraceCode ?? record.LotNo ?? "N/A",
+                    record.RowNo,
+                    "Received",
+                    null
+                );
+
                 _logger.LogInformation("LabVIEW data accepted: {TraceCodeOrLot} (DevName: {DevName})",
                     record.TraceCode ?? record.LotNo,
                     record.DevName);
             }
+
+            // Update device activity status
+            StatusController.UpdateDeviceActivity();
+            StatusController.IncrementReceived();
+            StatusController.UpdateLastActivity();
 
             // Return MES-compatible success response
             return Accepted(new

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MesMiddleware.Monitor.Controllers;
 using MesMiddleware.Monitor.Services;
+using MesMiddleware.Monitor.Services.Converters;
 using MesMiddleware.Monitor.Validation;
 using MesMiddleware.Shared.Models;
 using FluentValidation;
@@ -60,6 +61,9 @@ public class WebApiHostService : BackgroundService
 
             // Register validator
             builder.Services.AddScoped<IValidator<InspectionRecord>, InspectionDataValidator>();
+
+            // Register LabVIEW data converter
+            builder.Services.AddSingleton<ILabViewDataConverter, LabViewDataConverter>();
 
             _webApp = builder.Build();
 

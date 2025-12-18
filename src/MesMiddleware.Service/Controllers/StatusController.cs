@@ -27,11 +27,30 @@ public class StatusController : ControllerBase
     private static DateTime _lastActivity = DateTime.UtcNow;
     private static string _connectionStatus = "Unknown";
 
+    // 設備連線追蹤
+    private static DateTime _lastDeviceActivity = DateTime.MinValue;
+    private static readonly TimeSpan DeviceConnectionTimeout = TimeSpan.FromSeconds(30); // 30 秒內沒收到資料視為斷線
+
     public static void IncrementReceived() => Interlocked.Increment(ref _totalReceived);
     public static void IncrementSuccessful() => Interlocked.Increment(ref _successfulUploads);
     public static void IncrementQueued() => Interlocked.Increment(ref _queuedUploads);
     public static void UpdateLastActivity() => _lastActivity = DateTime.UtcNow;
     public static void UpdateConnectionStatus(string status) => _connectionStatus = status;
+
+    /// <summary>
+    /// 更新設備活動時間（當收到設備資料時呼叫）
+    /// </summary>
+    public static void UpdateDeviceActivity()
+    {
+        _lastDeviceActivity = DateTime.UtcNow;
+        _lastActivity = DateTime.UtcNow;
+        Interlocked.Increment(ref _totalReceived);
+    }
+
+    /// <summary>
+    /// 檢查設備是否連線（30 秒內有收到資料）
+    /// </summary>
+    public static bool IsDeviceConnected() => (DateTime.UtcNow - _lastDeviceActivity) < DeviceConnectionTimeout;
 
     public StatusController(
         IUploadQueueService queueService,
@@ -55,13 +74,18 @@ public class StatusController : ControllerBase
     {
         try
         {
-            // Check WebAPI connectivity
-            var isConnected = await _webApiClient.CheckConnectionAsync(CancellationToken.None);
+            // 設備連線狀態 (30 秒內有收到資料)
+            var deviceConnected = IsDeviceConnected();
+
+            // MES Cloud 連線狀態
+            var mesCloudConnected = await _webApiClient.CheckConnectionAsync(CancellationToken.None);
 
             return Ok(new
             {
-                connectionStatus = isConnected ? "Connected" : "Disconnected",
+                // 主要連線狀態 = 設備連線狀態 (用於 Monitor 顯示 "設備 → 中介軟體")
+                connectionStatus = deviceConnected ? "Connected" : "Disconnected",
                 lastActivity = _lastActivity,
+                lastDeviceActivity = _lastDeviceActivity,
                 statistics = new
                 {
                     totalReceived = _totalReceived,
@@ -69,7 +93,9 @@ public class StatusController : ControllerBase
                     queuedUploads = _queuedUploads,
                     currentQueueSize = await GetQueueSizeAsync()
                 },
-                timestamp = DateTime.UtcNow
+                timestamp = DateTime.UtcNow,
+                // MES Cloud 連線狀態 (用於 Monitor 顯示 "中介軟體 → MES Cloud")
+                mesCloudStatus = mesCloudConnected ? "Connected" : "Disconnected"
             });
         }
         catch (Exception ex)

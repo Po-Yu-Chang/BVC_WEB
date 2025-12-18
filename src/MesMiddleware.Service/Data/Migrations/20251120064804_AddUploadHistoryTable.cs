@@ -11,11 +11,9 @@ namespace MesMiddleware.Service.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "CommandAcknowledgments");
-
-            migrationBuilder.DropTable(
-                name: "Commands");
+            // 只在表存在時刪除 (使用 SQL 直接執行)
+            migrationBuilder.Sql("DROP TABLE IF EXISTS CommandAcknowledgments;");
+            migrationBuilder.Sql("DROP TABLE IF EXISTS Commands;");
 
             migrationBuilder.CreateTable(
                 name: "UploadHistory",
