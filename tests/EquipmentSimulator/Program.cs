@@ -243,13 +243,13 @@ static InspectionRecord GenerateInspectionRecord()
         {
             new OtherDataItem
             {
-                Name = "Temperature",
+                Key = "Temperature",
                 Value = (25.0 + Random.Shared.NextDouble() * 5).ToString("F1"),
                 Unit = "°C"
             },
             new OtherDataItem
             {
-                Name = "Humidity",
+                Key = "Humidity",
                 Value = (40.0 + Random.Shared.NextDouble() * 20).ToString("F1"),
                 Unit = "%"
             }

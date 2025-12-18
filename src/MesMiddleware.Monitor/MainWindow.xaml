@@ -7,7 +7,7 @@
         xmlns:views="clr-namespace:MesMiddleware.Monitor.Views"
         xmlns:tb="http://www.hardcodet.net/taskbar"
         mc:Ignorable="d"
-        Title="{Binding WindowTitle}" Height="700" Width="1200"
+        Title="{Binding WindowTitle}" Height="800" Width="1200"
         WindowStartupLocation="CenterScreen"
         Closing="Window_Closing"
         StateChanged="Window_StateChanged">

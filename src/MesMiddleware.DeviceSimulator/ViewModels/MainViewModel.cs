@@ -1,20 +1,23 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MesMiddleware.DeviceSimulator.Services;
-using MesMiddleware.Shared.Models;
+using MesMiddleware.Shared.Models.LabView;
 using System.Collections.ObjectModel;
 using System.Windows;
 
 namespace MesMiddleware.DeviceSimulator.ViewModels;
 
 /// <summary>
-/// 設備端模擬器主視圖模型
+/// 設備端模擬器主視圖模型 - 使用 LabVIEW 格式發送資料
 /// </summary>
 public partial class MainViewModel : ObservableObject
 {
-    private readonly InspectionDataGenerator _dataGenerator;
     private readonly MiddlewareApiClient _apiClient;
     private System.Timers.Timer? _autoSendTimer;
+    private int _sequenceCounter = 1;
+    private readonly Random _random = new();
+
+    #region 連接狀態
 
     [ObservableProperty]
     private string _serverUrl = "http://localhost:5100";
@@ -31,18 +34,59 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private int _failureCount = 0;
 
+    #endregion
+
+    #region LabVIEW 基本欄位
+
+    [ObservableProperty]
+    private string _procName = "W3-ET";
+
+    [ObservableProperty]
+    private string _devName = "W3-WTYKJ-001";
+
+    [ObservableProperty]
+    private string _userName = "53900";
+
+    [ObservableProperty]
+    private string _workClass = "A";
+
+    [ObservableProperty]
+    private string _traceCode = "";
+
+    [ObservableProperty]
+    private string _lotNo = "";
+
+    [ObservableProperty]
+    private string _partNumber = "3FIA98338D01";
+
+    [ObservableProperty]
+    private string _remark = "";
+
+    #endregion
+
+    #region DataGrid 資料集合
+
+    [ObservableProperty]
+    private ObservableCollection<EditableParamDataItem> _paramDataItems;
+
+    [ObservableProperty]
+    private ObservableCollection<EditableBenchmarkItem> _benchmarkItems;
+
+    [ObservableProperty]
+    private ObservableCollection<EditableOtherDataItem> _otherDataItems;
+
+    #endregion
+
+    #region 發送歷史與控制
+
     [ObservableProperty]
     private ObservableCollection<SubmitResultViewModel> _submitHistory = new();
 
-    // 手動發送表單
     [ObservableProperty]
-    private string _manualTraceCode = "";
+    private string _previewJson = "";
 
     [ObservableProperty]
-    private string _manualLotNo = "";
-
-    [ObservableProperty]
-    private string _manualResult = "OK";
+    private string _lastResponseJson = "";
 
     // 批量發送設定
     [ObservableProperty]
@@ -58,11 +102,30 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private int _autoSendIntervalSeconds = 5;
 
+    // 選擇的歷史項目
+    [ObservableProperty]
+    private SubmitResultViewModel? _selectedHistoryItem;
+
+    #endregion
+
     public MainViewModel()
     {
-        _dataGenerator = new InspectionDataGenerator();
         _apiClient = new MiddlewareApiClient();
+
+        // 初始化預設資料
+        _paramDataItems = LabViewDataTemplates.GetDefaultParamData();
+        _benchmarkItems = LabViewDataTemplates.GetDefaultBenchmarks();
+        _otherDataItems = LabViewDataTemplates.GetDefaultOtherData();
+
+        // 生成初始 TraceCode 和 LotNo
+        GenerateRandomTraceCode();
+        GenerateRandomLotNo();
+
+        // 更新預覽
+        UpdatePreviewJson();
     }
+
+    #region 連接測試
 
     [RelayCommand]
     private async Task TestConnectionAsync()
@@ -74,7 +137,7 @@ public partial class MainViewModel : ObservableObject
 
             if (IsConnected)
             {
-                MessageBox.Show($"連接成功!\n\n服務器: {ServerUrl}", "連接測試",
+                MessageBox.Show($"連接成功!\n\n服務器: {ServerUrl}\nAPI: /api/labview/submit", "連接測試",
                     MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
@@ -91,44 +154,182 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
+    #endregion
+
+    #region 資料生成
+
     [RelayCommand]
     private void GenerateRandomTraceCode()
     {
-        ManualTraceCode = _dataGenerator.GenerateRandomTraceCode();
+        var date = DateTime.Now.ToString("yyyyMMdd");
+        TraceCode = $"O{_random.Next(1000000, 9999999)}T{date}{_sequenceCounter:D2}";
+        _sequenceCounter++;
+        UpdatePreviewJson();
     }
 
     [RelayCommand]
     private void GenerateRandomLotNo()
     {
-        ManualLotNo = _dataGenerator.GenerateRandomLotNo();
+        var batch = _random.Next(1000, 9999);
+        LotNo = $"{batch:D5}156-00{_random.Next(100, 999)}-N";
+        UpdatePreviewJson();
     }
 
     [RelayCommand]
-    private void GenerateRandomResult()
+    private void UpdateCheckTime()
     {
-        ManualResult = _dataGenerator.GenerateRandomResult();
-    }
-
-    [RelayCommand]
-    private async Task SendManualDataAsync()
-    {
-        if (string.IsNullOrWhiteSpace(ManualTraceCode) || string.IsNullOrWhiteSpace(ManualLotNo))
+        var checkTimeItem = OtherDataItems.FirstOrDefault(x => x.Code == "CheckTime");
+        if (checkTimeItem != null)
         {
-            MessageBox.Show("請先生成 TraceCode 和 LotNo!", "提示",
+            checkTimeItem.Value = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        }
+        UpdatePreviewJson();
+    }
+
+    [RelayCommand]
+    private void RandomizeResult()
+    {
+        // 隨機設定 Result (80% PASS, 10% OPEN, 10% LEAK)
+        var resultItem = ParamDataItems.FirstOrDefault(x => x.Code == "Result");
+        if (resultItem != null)
+        {
+            var rand = _random.Next(100);
+            resultItem.Value = rand < 80 ? "PASS" : (rand < 90 ? "OPEN" : "LEAK");
+        }
+
+        // 更新 CheckQty, DefectQty, OkQty
+        var checkQty = _random.Next(1, 10);
+        var defectQty = resultItem?.Value != "PASS" ? _random.Next(1, checkQty + 1) : 0;
+        var okQty = checkQty - defectQty;
+
+        SetParamValue("CheckQty", checkQty.ToString());
+        SetParamValue("DefectQty", defectQty.ToString());
+        SetParamValue("OkQty", okQty.ToString());
+
+        UpdatePreviewJson();
+    }
+
+    private void SetParamValue(string code, string value)
+    {
+        var item = ParamDataItems.FirstOrDefault(x => x.Code == code);
+        if (item != null)
+        {
+            item.Value = value;
+        }
+    }
+
+    #endregion
+
+    #region 資料集合操作
+
+    [RelayCommand]
+    private void AddParamDataItem()
+    {
+        ParamDataItems.Add(new EditableParamDataItem("NewCode", "NewName", "0", "", "Description"));
+        UpdatePreviewJson();
+    }
+
+    [RelayCommand]
+    private void RemoveParamDataItem(EditableParamDataItem? item)
+    {
+        if (item != null)
+        {
+            ParamDataItems.Remove(item);
+            UpdatePreviewJson();
+        }
+    }
+
+    [RelayCommand]
+    private void AddBenchmarkItem()
+    {
+        BenchmarkItems.Add(new EditableBenchmarkItem("NewCode", "NewName", "0", "um", "Description"));
+        UpdatePreviewJson();
+    }
+
+    [RelayCommand]
+    private void RemoveBenchmarkItem(EditableBenchmarkItem? item)
+    {
+        if (item != null)
+        {
+            BenchmarkItems.Remove(item);
+            UpdatePreviewJson();
+        }
+    }
+
+    [RelayCommand]
+    private void AddOtherDataItem()
+    {
+        OtherDataItems.Add(new EditableOtherDataItem("NewCode", "NewName", "", "", "Description"));
+        UpdatePreviewJson();
+    }
+
+    [RelayCommand]
+    private void RemoveOtherDataItem(EditableOtherDataItem? item)
+    {
+        if (item != null)
+        {
+            OtherDataItems.Remove(item);
+            UpdatePreviewJson();
+        }
+    }
+
+    [RelayCommand]
+    private void ResetToDefaults()
+    {
+        var result = MessageBox.Show("確定要重置所有資料為預設值嗎？", "確認",
+            MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+        if (result == MessageBoxResult.Yes)
+        {
+            ParamDataItems = LabViewDataTemplates.GetDefaultParamData();
+            BenchmarkItems = LabViewDataTemplates.GetDefaultBenchmarks();
+            OtherDataItems = LabViewDataTemplates.GetDefaultOtherData();
+
+            ProcName = "W3-ET";
+            DevName = "W3-WTYKJ-001";
+            UserName = "53900";
+            WorkClass = "A";
+            PartNumber = "3FIA98338D01";
+            Remark = "";
+
+            GenerateRandomTraceCode();
+            GenerateRandomLotNo();
+            UpdatePreviewJson();
+        }
+    }
+
+    #endregion
+
+    #region 發送資料
+
+    [RelayCommand]
+    private async Task SendDataAsync()
+    {
+        if (string.IsNullOrWhiteSpace(TraceCode) && string.IsNullOrWhiteSpace(LotNo))
+        {
+            MessageBox.Show("請先生成 TraceCode 或 LotNo!", "提示",
                 MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
         try
         {
-            var record = _dataGenerator.GenerateSingle(ManualTraceCode, ManualLotNo, ManualResult);
-            var result = await _apiClient.SubmitInspectionAsync(record);
+            // 更新 CheckTime
+            UpdateCheckTime();
+
+            var request = BuildCurrentRequest();
+            _apiClient.SetBaseUrl(ServerUrl);
+            var result = await _apiClient.SubmitLabViewDataAsync(request);
 
             AddSubmitResult(result);
             UpdateStatistics();
+            LastResponseJson = result.ResponseMessage;
 
             if (result.IsSuccess)
             {
+                // 自動生成新的 TraceCode
+                GenerateRandomTraceCode();
+
                 MessageBox.Show($"發送成功!\n\nTraceCode: {result.TraceCode}\n耗時: {result.ElapsedMs}ms",
                     "成功", MessageBoxButton.OK, MessageBoxImage.Information);
             }
@@ -157,8 +358,18 @@ public partial class MainViewModel : ObservableObject
 
         try
         {
-            var records = _dataGenerator.GenerateBatch(BatchCount);
-            var results = await _apiClient.SubmitBatchAsync(records, BatchDelayMs);
+            _apiClient.SetBaseUrl(ServerUrl);
+            var requests = new List<LabViewInspectionRequest>();
+
+            for (int i = 0; i < BatchCount; i++)
+            {
+                GenerateRandomTraceCode();
+                RandomizeResult();
+                UpdateCheckTime();
+                requests.Add(BuildCurrentRequest());
+            }
+
+            var results = await _apiClient.SubmitBatchAsync(requests, BatchDelayMs);
 
             foreach (var result in results)
             {
@@ -209,6 +420,38 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
+    private async Task AutoSendDataAsync()
+    {
+        try
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                GenerateRandomTraceCode();
+                RandomizeResult();
+                UpdateCheckTime();
+            });
+
+            var request = Application.Current.Dispatcher.Invoke(() => BuildCurrentRequest());
+            _apiClient.SetBaseUrl(ServerUrl);
+            var result = await _apiClient.SubmitLabViewDataAsync(request);
+
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                AddSubmitResult(result);
+                UpdateStatistics();
+                LastResponseJson = result.ResponseMessage;
+            });
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"自動發送失敗: {ex.Message}");
+        }
+    }
+
+    #endregion
+
+    #region 歷史記錄
+
     [RelayCommand]
     private void ClearHistory()
     {
@@ -224,22 +467,19 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    private async Task AutoSendDataAsync()
+    [RelayCommand]
+    private void ViewHistoryDetail()
     {
-        try
+        if (SelectedHistoryItem != null)
         {
-            var record = _dataGenerator.GenerateSingle();
-            var result = await _apiClient.SubmitInspectionAsync(record);
-
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                AddSubmitResult(result);
-                UpdateStatistics();
-            });
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"自動發送失敗: {ex.Message}");
+            MessageBox.Show(
+                $"TraceCode: {SelectedHistoryItem.TraceCode}\n" +
+                $"時間: {SelectedHistoryItem.SentTimeText}\n" +
+                $"狀態: {SelectedHistoryItem.StatusText}\n" +
+                $"耗時: {SelectedHistoryItem.ElapsedMs}ms\n\n" +
+                $"請求 JSON:\n{SelectedHistoryItem.RequestJson}\n\n" +
+                $"錯誤訊息: {SelectedHistoryItem.ErrorMessage}",
+                "詳細資訊", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
 
@@ -252,7 +492,8 @@ public partial class MainViewModel : ObservableObject
             StatusText = result.StatusText,
             ElapsedMs = result.ElapsedMs,
             ErrorMessage = result.ErrorMessage,
-            IsSuccess = result.IsSuccess
+            IsSuccess = result.IsSuccess,
+            RequestJson = result.RequestJson
         };
 
         // 保持最新 100 條記錄
@@ -270,6 +511,34 @@ public partial class MainViewModel : ObservableObject
         SuccessCount = SubmitHistory.Count(r => r.IsSuccess);
         FailureCount = SubmitHistory.Count(r => !r.IsSuccess);
     }
+
+    #endregion
+
+    #region 輔助方法
+
+    private LabViewInspectionRequest BuildCurrentRequest()
+    {
+        return _apiClient.BuildLabViewRequest(
+            ProcName, DevName, UserName, WorkClass,
+            TraceCode, LotNo, PartNumber, Remark,
+            ParamDataItems, BenchmarkItems, OtherDataItems);
+    }
+
+    [RelayCommand]
+    private void UpdatePreviewJson()
+    {
+        try
+        {
+            var request = BuildCurrentRequest();
+            PreviewJson = _apiClient.GetPreviewJson(request);
+        }
+        catch (Exception ex)
+        {
+            PreviewJson = $"Error: {ex.Message}";
+        }
+    }
+
+    #endregion
 }
 
 /// <summary>
@@ -283,6 +552,7 @@ public class SubmitResultViewModel
     public long ElapsedMs { get; set; }
     public string ErrorMessage { get; set; } = string.Empty;
     public bool IsSuccess { get; set; }
+    public string RequestJson { get; set; } = string.Empty;
 
     public string SentTimeText => SentTime.ToString("HH:mm:ss");
 }

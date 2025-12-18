@@ -11,10 +11,8 @@ public class InspectionDataValidator : AbstractValidator<InspectionRecord>
 {
     public InspectionDataValidator()
     {
-        // Required fields
-        RuleFor(x => x.RowNo)
-            .NotEmpty()
-            .WithMessage("RowNo is required");
+        // RowNo is optional (LabVIEW may or may not send it)
+        // No validation needed for RowNo
 
         RuleFor(x => x.ProcName)
             .NotEmpty()

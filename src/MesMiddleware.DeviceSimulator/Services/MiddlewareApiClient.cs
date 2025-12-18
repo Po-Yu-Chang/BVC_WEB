@@ -1,23 +1,30 @@
-using MesMiddleware.Shared.Models;
-using Newtonsoft.Json;
+using MesMiddleware.DeviceSimulator.ViewModels;
+using MesMiddleware.Shared.Models.LabView;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 
 namespace MesMiddleware.DeviceSimulator.Services;
 
 /// <summary>
 /// Middleware API 客戶端 - 負責與 MesMiddleware.Service 通訊
+/// 使用 LabVIEW 格式發送資料到 /api/labview/submit
 /// </summary>
 public class MiddlewareApiClient
 {
     private readonly HttpClient _httpClient;
     private string _baseUrl = "http://localhost:5100";
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = true
+    };
 
     public MiddlewareApiClient()
     {
         _httpClient = new HttpClient
         {
-            Timeout = TimeSpan.FromSeconds(10)
+            Timeout = TimeSpan.FromSeconds(30)
         };
     }
 
@@ -30,33 +37,50 @@ public class MiddlewareApiClient
     }
 
     /// <summary>
-    /// 提交檢測數據
+    /// 使用 LabVIEW 格式提交檢測數據
     /// </summary>
-    public async Task<SubmitResult> SubmitInspectionAsync(InspectionRecord record)
+    public async Task<SubmitResult> SubmitLabViewDataAsync(LabViewInspectionRequest request)
     {
         var result = new SubmitResult
         {
-            TraceCode = record.TraceCode,
+            TraceCode = request.Data.FirstOrDefault()?.TraceCode ?? "N/A",
             SentTime = DateTime.Now
         };
 
         try
         {
-            var json = JsonConvert.SerializeObject(record);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var json = JsonSerializer.Serialize(request, JsonOptions);
+            result.RequestJson = json;
 
-            var response = await _httpClient.PostAsync($"{_baseUrl}/api/inspection/submit", content);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsync($"{_baseUrl}/api/labview/submit", content);
 
             result.ResponseTime = DateTime.Now;
             result.StatusCode = (int)response.StatusCode;
-            result.IsSuccess = response.IsSuccessStatusCode;
 
             var responseBody = await response.Content.ReadAsStringAsync();
             result.ResponseMessage = responseBody;
 
-            if (!response.IsSuccessStatusCode)
+            // 解析 MES 格式的回應
+            try
             {
-                result.ErrorMessage = $"HTTP {result.StatusCode}: {responseBody}";
+                var mesResponse = JsonSerializer.Deserialize<MesApiResponse>(responseBody, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+                result.IsSuccess = mesResponse?.Success == true || response.IsSuccessStatusCode;
+                if (!result.IsSuccess)
+                {
+                    result.ErrorMessage = mesResponse?.Msg ?? $"HTTP {result.StatusCode}";
+                }
+            }
+            catch
+            {
+                result.IsSuccess = response.IsSuccessStatusCode;
+                if (!result.IsSuccess)
+                {
+                    result.ErrorMessage = $"HTTP {result.StatusCode}: {responseBody}";
+                }
             }
         }
         catch (HttpRequestException ex)
@@ -82,15 +106,78 @@ public class MiddlewareApiClient
     }
 
     /// <summary>
+    /// 從 ViewModel 資料建立 LabVIEW 請求
+    /// </summary>
+    public LabViewInspectionRequest BuildLabViewRequest(
+        string procName,
+        string devName,
+        string userName,
+        string workClass,
+        string traceCode,
+        string lotNo,
+        string partNumber,
+        string remark,
+        IEnumerable<EditableParamDataItem> paramData,
+        IEnumerable<EditableBenchmarkItem> benchmarks,
+        IEnumerable<EditableOtherDataItem> otherData)
+    {
+        var request = new LabViewInspectionRequest
+        {
+            IsVerifyLot = false,
+            Data = new List<LabViewInspectionData>
+            {
+                new LabViewInspectionData
+                {
+                    RowNo = "1",
+                    ProcName = procName,
+                    DevName = devName,
+                    UserName = userName,
+                    WorkClass = workClass,
+                    TraceCode = traceCode,
+                    LotNo = lotNo,
+                    PartNumber = partNumber,
+                    Remark = remark,
+                    ParamData = paramData.Select(p => new LabViewParamDataItem
+                    {
+                        Code = p.Code,
+                        Name = p.Name,
+                        Value = p.Value,
+                        Unit = p.Unit,
+                        Desc = p.Desc
+                    }).ToList(),
+                    Benchmarks = benchmarks.Select(b => new LabViewBenchmarkItem
+                    {
+                        Code = b.Code,
+                        Name = b.Name,
+                        Value = b.Value,
+                        Unit = b.Unit,
+                        Desc = b.Desc
+                    }).ToList(),
+                    OtherData = otherData.Select(o => new LabViewOtherDataItem
+                    {
+                        Code = o.Code,
+                        Name = o.Name,
+                        Value = o.Value,
+                        Unit = o.Unit,
+                        Desc = o.Desc
+                    }).ToList()
+                }
+            }
+        };
+
+        return request;
+    }
+
+    /// <summary>
     /// 批量提交檢測數據
     /// </summary>
-    public async Task<List<SubmitResult>> SubmitBatchAsync(List<InspectionRecord> records, int delayMs = 100)
+    public async Task<List<SubmitResult>> SubmitBatchAsync(List<LabViewInspectionRequest> requests, int delayMs = 100)
     {
         var results = new List<SubmitResult>();
 
-        foreach (var record in records)
+        foreach (var request in requests)
         {
-            var result = await SubmitInspectionAsync(record);
+            var result = await SubmitLabViewDataAsync(request);
             results.Add(result);
 
             if (delayMs > 0)
@@ -117,6 +204,25 @@ public class MiddlewareApiClient
             return false;
         }
     }
+
+    /// <summary>
+    /// 取得預覽 JSON 字串
+    /// </summary>
+    public string GetPreviewJson(LabViewInspectionRequest request)
+    {
+        return JsonSerializer.Serialize(request, JsonOptions);
+    }
+}
+
+/// <summary>
+/// MES API 回應格式
+/// </summary>
+public class MesApiResponse
+{
+    public bool Success { get; set; }
+    public string Code { get; set; } = string.Empty;
+    public string Msg { get; set; } = string.Empty;
+    public object? Data { get; set; }
 }
 
 /// <summary>
@@ -131,6 +237,7 @@ public class SubmitResult
     public bool IsSuccess { get; set; }
     public string ResponseMessage { get; set; } = string.Empty;
     public string ErrorMessage { get; set; } = string.Empty;
+    public string RequestJson { get; set; } = string.Empty;
 
     public long ElapsedMs => ResponseTime.HasValue
         ? (long)(ResponseTime.Value - SentTime).TotalMilliseconds

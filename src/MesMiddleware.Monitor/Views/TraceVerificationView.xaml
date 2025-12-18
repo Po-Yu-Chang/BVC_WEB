@@ -184,7 +184,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- 左側：輸入區 -->
-            <Border Grid.Column="0" Style="{StaticResource CompactCardStyle}" Margin="0,0,4,0" Padding="15,12">
+            <Border Grid.Column="0" Style="{StaticResource CompactCardStyle}" Margin="0,0,4,0" Padding="15,15,15,20">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -229,12 +229,12 @@
                     </StackPanel>
 
                     <!-- 按鈕區 -->
-                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,0">
-                        <Button Content="{Binding DataContext.TraceVerificationClearButton, RelativeSource={RelativeSource AncestorType=Window}}"
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
+                        <Button Content="清除"
                                 Style="{StaticResource SecondaryButtonStyle}"
                                 Command="{Binding ClearCommand}"
                                 Margin="0,0,10,0"/>
-                        <Button Content="{Binding DataContext.TraceVerificationVerifyButton, RelativeSource={RelativeSource AncestorType=Window}}"
+                        <Button Content="驗證"
                                 Style="{StaticResource PrimaryButtonStyle}"
                                 Command="{Binding VerifyCommand}"
                                 IsEnabled="{Binding IsVerifying, Converter={StaticResource InverseBooleanConverter}}"/>

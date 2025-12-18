@@ -7,7 +7,12 @@ namespace MesMiddleware.Shared.Models;
 public class OtherDataItem
 {
     /// <summary>
-    /// Metadata key/identifier (e.g., "Temperature", "Humidity", "EquipmentMode")
+    /// Code/identifier (e.g., "CheckTime")
+    /// </summary>
+    public string? Code { get; set; }
+
+    /// <summary>
+    /// Metadata key/identifier (e.g., "CheckTime", "Temperature")
     /// </summary>
     public required string Key { get; set; }
 
@@ -17,17 +22,12 @@ public class OtherDataItem
     public required string Value { get; set; }
 
     /// <summary>
-    /// Data type hint (e.g., "string", "number", "datetime", "boolean")
-    /// </summary>
-    public string? Type { get; set; }
-
-    /// <summary>
     /// Unit of measurement (if applicable)
     /// </summary>
     public string? Unit { get; set; }
 
     /// <summary>
-    /// Additional description or notes
+    /// Description/notes
     /// </summary>
-    public string? Description { get; set; }
+    public string? Desc { get; set; }
 }

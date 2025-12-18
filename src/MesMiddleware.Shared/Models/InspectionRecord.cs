@@ -42,6 +42,16 @@ public class InspectionRecord
     public string? LotNo { get; set; }
 
     /// <summary>
+    /// Part number (e.g., "3FIA98338D01")
+    /// </summary>
+    public string? PartNumber { get; set; }
+
+    /// <summary>
+    /// Remarks/notes
+    /// </summary>
+    public string? Remark { get; set; }
+
+    /// <summary>
     /// Measured parameter data (measurements, values, results)
     /// </summary>
     public List<ParamDataItem> ParamData { get; set; } = new();

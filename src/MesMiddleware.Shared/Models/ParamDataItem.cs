@@ -7,6 +7,11 @@ namespace MesMiddleware.Shared.Models;
 public class ParamDataItem
 {
     /// <summary>
+    /// Parameter code/identifier (e.g., "Result", "DefectQty", "OkQty", "CheckQty")
+    /// </summary>
+    public string? Code { get; set; }
+
+    /// <summary>
     /// Parameter name/identifier (e.g., "HoleDiameter", "Depth", "Position")
     /// </summary>
     public required string Name { get; set; }
@@ -27,7 +32,7 @@ public class ParamDataItem
     public string? Status { get; set; }
 
     /// <summary>
-    /// Additional metadata or notes about this measurement
+    /// Description/notes about this measurement
     /// </summary>
-    public string? Notes { get; set; }
+    public string? Desc { get; set; }
 }

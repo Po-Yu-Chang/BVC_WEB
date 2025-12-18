@@ -29,39 +29,77 @@ MES Middleware Service - A production-grade Windows Service and WPF desktop appl
 ## Solution Structure
 
 ```
-MesMiddleware.sln
-├── src/
-│   ├── MesMiddleware.Service/          # Windows Service (backend)
+S-世運盲孔機Web/
+├── src/                                # Source code
+│   ├── MesMiddleware.Service/          # Windows Service (backend API)
 │   │   ├── Controllers/                # ASP.NET Core Controllers
 │   │   │   ├── InspectionController.cs # POST /api/inspection/submit
-│   │   │   └── StatusController.cs     # GET /api/status, /api/status/history
+│   │   │   ├── LabViewController.cs    # POST /api/labview/submit (LabVIEW format)
+│   │   │   └── StatusController.cs     # GET /api/status
 │   │   ├── Services/
-│   │   │   ├── HostedServices/         # BackgroundService implementations
-│   │   │   │   └── InspectionChannelProcessor.cs  # Processes Channel queue
+│   │   │   ├── Converters/             # LabVIEW ↔ MES format converters
+│   │   │   ├── HostedServices/         # Background services
 │   │   │   ├── WebApi/                 # MES Cloud API client + JWT
 │   │   │   └── Queue/                  # SQLite offline queue + Hangfire
 │   │   ├── Data/                       # EF Core DbContext + Migrations
-│   │   ├── Models/                     # Domain entities
-│   │   ├── Validation/                 # FluentValidation validators
-│   │   └── Program.cs                  # ASP.NET Core WebApplication entry
-│   ├── MesMiddleware.Monitor/          # WPF desktop monitoring UI
+│   │   └── Validation/                 # FluentValidation validators
+│   │
+│   ├── MesMiddleware.Monitor/          # WPF monitoring dashboard
 │   │   ├── ViewModels/                 # MVVM ViewModels
 │   │   ├── Views/                      # XAML views
-│   │   ├── Services/                   # HTTP API client (polling)
+│   │   ├── Services/                   # API client, tray icon, localization
 │   │   └── Resources/                  # i18n resources (zh-TW, zh-CN, en)
-│   └── MesMiddleware.Shared/           # Shared models and contracts
-├── tests/
+│   │
+│   ├── MesMiddleware.Shared/           # Shared models and contracts
+│   │   └── Models/
+│   │       ├── LabView/                # LabVIEW request DTOs
+│   │       └── MesApi/                 # MES Cloud API DTOs
+│   │
+│   ├── MesMiddleware.DeviceSimulator/  # Equipment simulator (LabVIEW format)
+│   │   ├── ViewModels/                 # DataGrid editable items
+│   │   └── Services/                   # API client
+│   │
+│   ├── MesMiddleware.Simulator/        # MES Cloud API simulator
+│   │   └── Controllers/                # Mock MES endpoints
+│   │
+│   └── MesMiddleware.LabViewBridge/    # .NET Framework 4.7.2 bridge for LabVIEW
+│
+├── tests/                              # Unit and integration tests
 │   ├── MesMiddleware.Service.Tests/
-│   │   ├── Contract/                   # JSON schema validation tests (5 tests)
-│   │   ├── Integration/                # HTTP endpoint, database tests (19 tests)
-│   │   └── Unit/                       # Service logic, validators (30 tests)
-│   └── MesMiddleware.Monitor.Tests/
-│       └── Unit/                       # ViewModel unit tests (26 tests)
-├── .archive/                           # Archived files
-│   ├── SharedMemory/                   # v1.0 shared memory code (removed)
-│   └── old-docs/                       # v1.0 documentation (archived)
-├── SRS.md                              # Software Requirements Specification (main doc)
-├── COVERAGE_ANALYSIS.md                # Test coverage analysis
+│   ├── MesMiddleware.Monitor.Tests/
+│   └── EquipmentSimulator/
+│
+├── docs/                               # Documentation
+│   ├── architecture/                   # System architecture docs
+│   │   └── SRS.md                      # Software Requirements Specification
+│   ├── labview/                        # LabVIEW integration guides
+│   │   ├── LabVIEW_Quick_Reference.md
+│   │   └── LabVIEW整合操作手冊.docx
+│   └── archive/                        # Historical documents
+│
+├── specs/                              # Feature specifications
+│   ├── 1-mes-trace-integration/        # MES trace data spec
+│   └── 002-shared-memory-middleware/   # Legacy shared memory spec
+│
+├── tools/                              # Development tools and scripts
+│   ├── package_executables.py          # Build release package
+│   └── create_labview_manual.py        # Generate LabVIEW docs
+│
+├── release/                            # Release builds
+│   ├── Release_Package/                # Deployable files
+│   └── Release_Package.exe             # Self-extracting archive
+│
+├── .archive/                           # Archived v1.0 code
+│   ├── SharedMemory/                   # v1.0 shared memory implementation
+│   ├── SharedMemory_Services/          # v1.0 services
+│   └── old-docs/                       # v1.0 documentation
+│
+├── .claude/                            # Claude Code configuration
+├── .specify/                           # Speckit templates
+├── .github/                            # GitHub workflows
+│
+├── S-世運盲孔機Web.sln                  # Visual Studio solution
+├── CLAUDE.md                           # Claude Code project guide
 └── README.md                           # Quick start guide
 ```
 

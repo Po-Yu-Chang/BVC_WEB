@@ -4,6 +4,7 @@ using Hangfire.Storage.SQLite;
 using Microsoft.EntityFrameworkCore;
 using MesMiddleware.Service.Data;
 using MesMiddleware.Service.Models;
+using MesMiddleware.Service.Services.Converters;
 using MesMiddleware.Service.Services.HostedServices;
 using MesMiddleware.Service.Services.Queue;
 using MesMiddleware.Service.Services.WebApi;
@@ -87,6 +88,9 @@ try
 
     // Register validators
     builder.Services.AddScoped<IValidator<InspectionRecord>, InspectionDataValidator>();
+
+    // Register converters
+    builder.Services.AddScoped<ILabViewDataConverter, LabViewDataConverter>();
 
     // Register services (removed SharedMemoryMonitor/Writer)
     builder.Services.AddSingleton<ITokenService, TokenService>();

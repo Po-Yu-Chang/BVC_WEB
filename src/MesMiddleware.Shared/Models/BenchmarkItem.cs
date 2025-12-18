@@ -7,9 +7,29 @@ namespace MesMiddleware.Shared.Models;
 public class BenchmarkItem
 {
     /// <summary>
+    /// Benchmark code/identifier (e.g., "Defect_Qty_01", "Check_Param_01")
+    /// </summary>
+    public string? Code { get; set; }
+
+    /// <summary>
     /// Benchmark name/identifier (corresponds to ParamDataItem)
     /// </summary>
     public required string Name { get; set; }
+
+    /// <summary>
+    /// Benchmark value
+    /// </summary>
+    public string? Value { get; set; }
+
+    /// <summary>
+    /// Unit of measurement (should match ParamDataItem unit)
+    /// </summary>
+    public string? Unit { get; set; }
+
+    /// <summary>
+    /// Description/notes about this benchmark
+    /// </summary>
+    public string? Desc { get; set; }
 
     /// <summary>
     /// Upper specification limit (maximum acceptable value)
@@ -27,17 +47,7 @@ public class BenchmarkItem
     public string? Target { get; set; }
 
     /// <summary>
-    /// Unit of measurement (should match ParamDataItem unit)
-    /// </summary>
-    public string? Unit { get; set; }
-
-    /// <summary>
     /// Tolerance value (acceptable deviation from target)
     /// </summary>
     public string? Tolerance { get; set; }
-
-    /// <summary>
-    /// Additional notes about this benchmark
-    /// </summary>
-    public string? Notes { get; set; }
 }
