@@ -24,4 +24,14 @@ public interface ITokenService
     /// Checks if current cached token is still valid.
     /// </summary>
     bool IsTokenValid();
+
+    /// <summary>
+    /// 檢查 MES Cloud 是否實際連線（不只是 Token 是否有效）
+    /// </summary>
+    bool IsMesCloudConnected();
+
+    /// <summary>
+    /// 設定 MES Cloud 連線狀態（供上傳服務呼叫）
+    /// </summary>
+    void SetMesCloudConnectionStatus(bool connected);
 }

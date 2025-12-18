@@ -23,6 +23,10 @@ public class TokenService : ITokenService
     private static DateTime _tokenExpiresAt = DateTime.MinValue;
     private static readonly SemaphoreSlim _refreshLock = new(1, 1);
 
+    // MES Cloud 實際連線狀態（不只是 Token 是否有效）
+    private static bool _isMesCloudConnected = false;
+    private static DateTime _lastMesCloudCheck = DateTime.MinValue;
+
     public TokenService(
         IHttpClientFactory httpClientFactory,
         IOptions<WebApiOptions> options,
@@ -82,6 +86,8 @@ public class TokenService : ITokenService
 
             _cachedToken = loginResponse.Token;  // 注意：使用 Token 欄位，不是 AccessToken
             _tokenExpiresAt = DateTime.UtcNow.AddHours(8); // Token 長期有效 (根據 PDF 文檔)
+            _isMesCloudConnected = true; // 成功連線
+            _lastMesCloudCheck = DateTime.UtcNow;
 
             _logger.LogInformation("Successfully obtained access token from MES Cloud (expires at {ExpiresAt})", _tokenExpiresAt);
 
@@ -89,6 +95,8 @@ public class TokenService : ITokenService
         }
         catch (Exception ex)
         {
+            _isMesCloudConnected = false; // 連線失敗
+            _lastMesCloudCheck = DateTime.UtcNow;
             _logger.LogError(ex, "Failed to obtain access token from MES Cloud");
             throw;
         }
@@ -115,6 +123,23 @@ public class TokenService : ITokenService
 
         // Consider token invalid if it expires within next 5 minutes (buffer for safety)
         return _tokenExpiresAt > DateTime.UtcNow.AddMinutes(5);
+    }
+
+    /// <summary>
+    /// 檢查 MES Cloud 是否實際連線（不只是 Token 是否有效）
+    /// </summary>
+    public bool IsMesCloudConnected()
+    {
+        return _isMesCloudConnected;
+    }
+
+    /// <summary>
+    /// 設定 MES Cloud 連線狀態（供上傳服務呼叫）
+    /// </summary>
+    public void SetMesCloudConnectionStatus(bool connected)
+    {
+        _isMesCloudConnected = connected;
+        _lastMesCloudCheck = DateTime.UtcNow;
     }
 
     /// <summary>

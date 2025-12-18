@@ -106,31 +106,15 @@ public class StatusController : ControllerBase
     /// </summary>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetStatus()
+    public IActionResult GetStatus()
     {
         try
         {
             // 檢查設備是否連線（10 秒內有收到資料）
             var deviceConnected = IsDeviceConnected();
 
-            // 檢查 MES Cloud 連線狀態
-            var mesCloudConnected = _tokenService.IsTokenValid();
-
-            // 如果沒有 token，嘗試取得（不阻塞）
-            if (!mesCloudConnected)
-            {
-                _ = Task.Run(async () =>
-                {
-                    try
-                    {
-                        await _tokenService.GetAccessTokenAsync(CancellationToken.None);
-                    }
-                    catch
-                    {
-                        // Ignore
-                    }
-                });
-            }
+            // 檢查 MES Cloud 實際連線狀態（不只是 Token 是否有效）
+            var mesCloudConnected = _tokenService.IsMesCloudConnected();
 
             // Device 連線狀態決定整體狀態
             var connectionStatus = deviceConnected ? "Connected" : "Disconnected";
