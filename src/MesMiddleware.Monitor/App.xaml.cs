@@ -237,6 +237,10 @@ public partial class App : Application
 
         Log.Information("Hangfire RecurringJob configured: process-pending-queue (every 5 seconds)");
 
+        // 啟動時立即觸發一次處理所有待處理項目（不等待第一個週期）
+        BackgroundJob.Enqueue<RetryUploadJob>(job => job.ProcessPendingQueueAsync(CancellationToken.None));
+        Log.Information("Triggered immediate queue processing on startup");
+
         // Start hosted services in background
         _ = Task.Run(async () =>
         {

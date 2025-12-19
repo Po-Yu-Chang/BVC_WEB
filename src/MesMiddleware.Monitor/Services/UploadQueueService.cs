@@ -84,9 +84,10 @@ public class UploadQueueService : IUploadQueueService
 
     public async Task<List<UploadQueueItem>> GetPendingItemsAsync(int maxItems = 100, CancellationToken cancellationToken = default)
     {
+        // 取得所有 Pending 狀態的項目（不再檢查 NextRetryAt，確保所有待處理項目都會被處理）
         return await _dbContext.UploadQueue
-            .Where(q => q.Status == "Pending" && q.NextRetryAt <= DateTime.UtcNow)
-            .OrderBy(q => q.NextRetryAt)
+            .Where(q => q.Status == "Pending")
+            .OrderBy(q => q.CreatedAt)
             .Take(maxItems)
             .ToListAsync(cancellationToken);
     }
