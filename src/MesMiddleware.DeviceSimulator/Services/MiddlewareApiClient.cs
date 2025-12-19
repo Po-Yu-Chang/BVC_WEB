@@ -128,7 +128,6 @@ public class MiddlewareApiClient
             {
                 new LabViewInspectionData
                 {
-                    RowNo = "1",
                     ProcName = procName,
                     DevName = devName,
                     UserName = userName,

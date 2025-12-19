@@ -62,15 +62,13 @@ public class InspectionController : ControllerBase
             // Write to in-memory channel (fast, non-blocking)
             await _inspectionChannel.Writer.WriteAsync(data);
 
-            _logger.LogInformation("Inspection data accepted: {TraceCodeOrLot} (RowNo: {RowNo})",
-                data.TraceCode ?? data.LotNo,
-                data.RowNo);
+            _logger.LogInformation("Inspection data accepted: {TraceCodeOrLot}",
+                data.TraceCode ?? data.LotNo);
 
             return Accepted(new
             {
                 message = "Inspection data accepted for processing",
-                traceCode = data.TraceCode ?? data.LotNo,
-                rowNo = data.RowNo
+                traceCode = data.TraceCode ?? data.LotNo
             });
         }
         catch (Exception ex)

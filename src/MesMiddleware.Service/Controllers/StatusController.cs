@@ -121,7 +121,6 @@ public class StatusController : ControllerBase
             {
                 timestamp = h.CreatedAt,
                 traceCode = h.TraceCode,
-                rowNo = h.RowNo,
                 status = h.Status,
                 errorMessage = h.LastErrorMessage,
                 retryCount = h.RetryCount

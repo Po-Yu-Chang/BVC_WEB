@@ -285,7 +285,6 @@ public class WebApiUploadTests : IDisposable
     {
         return new InspectionRecord
         {
-            RowNo = "TEST001",
             ProcName = "Test Inspection",
             DevName = "TEST-MACHINE-01",
             UserName = "test_operator",

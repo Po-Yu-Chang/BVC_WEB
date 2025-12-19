@@ -27,9 +27,6 @@ public class LabViewInspectionRequest
 /// </summary>
 public class LabViewInspectionData
 {
-    [JsonPropertyName("rowNo")]
-    public string? RowNo { get; set; }
-
     [JsonPropertyName("procName")]
     public string? ProcName { get; set; }
 

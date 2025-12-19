@@ -21,6 +21,11 @@ public class StatusViewModelTests
         return new Mock<ILogger<StatusViewModel>>();
     }
 
+    private static Mock<IServiceProvider> CreateMockServiceProvider()
+    {
+        return new Mock<IServiceProvider>();
+    }
+
     [Fact]
     public void StatusViewModel_ShouldImplementINotifyPropertyChanged()
     {
@@ -36,7 +41,7 @@ public class StatusViewModelTests
         var mockLogger = CreateMockLogger();
 
         // Act
-        var viewModel = new StatusViewModel(mockApiClient.Object, mockLogger.Object);
+        var viewModel = new StatusViewModel(mockApiClient.Object, CreateMockServiceProvider().Object, mockLogger.Object);
 
         // Assert
         viewModel.Should().BeAssignableTo<INotifyPropertyChanged>(
@@ -58,7 +63,7 @@ public class StatusViewModelTests
                 QueueDepth = 0
             });
 
-        var viewModel = new StatusViewModel(mockApiClient.Object, CreateMockLogger().Object);
+        var viewModel = new StatusViewModel(mockApiClient.Object, CreateMockServiceProvider().Object, CreateMockLogger().Object);
 
         // Act
         await viewModel.RefreshStatusAsync();
@@ -83,7 +88,7 @@ public class StatusViewModelTests
                 LastPingTimestamp = DateTime.UtcNow.AddMinutes(-5)
             });
 
-        var viewModel = new StatusViewModel(mockApiClient.Object, CreateMockLogger().Object);
+        var viewModel = new StatusViewModel(mockApiClient.Object, CreateMockServiceProvider().Object, CreateMockLogger().Object);
 
         // Act
         await viewModel.RefreshStatusAsync();
@@ -106,7 +111,7 @@ public class StatusViewModelTests
                 LastPingTimestamp = DateTime.UtcNow.AddSeconds(-10)
             });
 
-        var viewModel = new StatusViewModel(mockApiClient.Object, CreateMockLogger().Object);
+        var viewModel = new StatusViewModel(mockApiClient.Object, CreateMockServiceProvider().Object, CreateMockLogger().Object);
 
         // Act
         await viewModel.RefreshStatusAsync();
@@ -129,7 +134,7 @@ public class StatusViewModelTests
                 LastPingTimestamp = DateTime.UtcNow
             });
 
-        var viewModel = new StatusViewModel(mockApiClient.Object, CreateMockLogger().Object);
+        var viewModel = new StatusViewModel(mockApiClient.Object, CreateMockServiceProvider().Object, CreateMockLogger().Object);
 
         var propertyChangedEvents = new List<string>();
         viewModel.PropertyChanged += (sender, args) =>
@@ -155,7 +160,7 @@ public class StatusViewModelTests
             .Setup(x => x.GetConnectionStatusAsync(It.IsAny<CancellationToken>()))
             .ThrowsAsync(new HttpRequestException("Service unavailable"));
 
-        var viewModel = new StatusViewModel(mockApiClient.Object, CreateMockLogger().Object);
+        var viewModel = new StatusViewModel(mockApiClient.Object, CreateMockServiceProvider().Object, CreateMockLogger().Object);
 
         // Act
         await viewModel.RefreshStatusAsync();
@@ -184,7 +189,7 @@ public class StatusViewModelTests
                 };
             });
 
-        var viewModel = new StatusViewModel(mockApiClient.Object, CreateMockLogger().Object);
+        var viewModel = new StatusViewModel(mockApiClient.Object, CreateMockServiceProvider().Object, CreateMockLogger().Object);
 
         // Act - Start auto-refresh with 100ms interval (for testing)
         viewModel.StartAutoRefresh(TimeSpan.FromMilliseconds(100));

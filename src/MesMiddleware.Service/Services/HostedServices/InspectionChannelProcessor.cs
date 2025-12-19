@@ -85,9 +85,8 @@ public class InspectionChannelProcessor : BackgroundService
         StatusController.IncrementReceived();
         StatusController.UpdateLastActivity();
 
-        _logger.LogInformation("Processing inspection data: {TraceCodeOrLot} (RowNo: {RowNo})",
-            data.TraceCode ?? data.LotNo,
-            data.RowNo);
+        _logger.LogInformation("Processing inspection data: {TraceCodeOrLot}",
+            data.TraceCode ?? data.LotNo);
 
         try
         {

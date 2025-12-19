@@ -78,7 +78,7 @@ static void SendRecord(MemoryMappedFile segment, EventWaitHandle eventSignal, Mu
     {
         var record = GenerateInspectionRecord();
 
-        Console.Write($"Sending record {record.RowNo}... ");
+        Console.Write($"Sending record {record.TraceCode}... ");
 
         WriteToSharedMemory(segment, mutex, record);
         eventSignal.Set();
@@ -98,7 +98,7 @@ static void SendBatch(MemoryMappedFile segment, EventWaitHandle eventSignal, Mut
     for (int i = 0; i < count; i++)
     {
         var record = GenerateInspectionRecord();
-        Console.Write($"  {i + 1}/{count}: Record {record.RowNo}... ");
+        Console.Write($"  {i + 1}/{count}: Record {record.TraceCode}... ");
 
         try
         {
@@ -131,7 +131,7 @@ static async Task SendContinuousAsync(MemoryMappedFile segment, EventWaitHandle 
         {
             WriteToSharedMemory(segment, mutex, record);
             eventSignal.Set();
-            Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Sent record {count}: {record.RowNo}");
+            Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Sent record {count}: {record.TraceCode}");
         }
         catch (Exception ex)
         {
@@ -179,11 +179,9 @@ static void WriteToSharedMemory(MemoryMappedFile segment, Mutex mutex, Inspectio
 static InspectionRecord GenerateInspectionRecord()
 {
     var timestamp = DateTime.UtcNow;
-    var rowNo = $"{timestamp:yyyyMMddHHmmssfff}";
 
     return new InspectionRecord
     {
-        RowNo = rowNo,
         ProcName = "Final Inspection",
         DevName = $"VISION_SYSTEM_{Random.Shared.Next(1, 4):D2}",
         UserName = $"OP{Random.Shared.Next(1, 10):D3}",

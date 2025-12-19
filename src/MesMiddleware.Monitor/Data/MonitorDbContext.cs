@@ -30,7 +30,6 @@ public class MonitorDbContext : DbContext
         modelBuilder.Entity<UploadQueueItem>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.RowNo).IsRequired().HasMaxLength(50);
             entity.Property(e => e.TraceCode).HasMaxLength(100);
             entity.Property(e => e.LotNo).HasMaxLength(100);
             entity.Property(e => e.ProcName).HasMaxLength(100);
@@ -50,7 +49,6 @@ public class MonitorDbContext : DbContext
         modelBuilder.Entity<UploadHistory>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.RowNo).IsRequired().HasMaxLength(50);
             entity.Property(e => e.TraceCode).HasMaxLength(100);
             entity.Property(e => e.LotNo).HasMaxLength(100);
             entity.Property(e => e.Status).IsRequired().HasMaxLength(50);

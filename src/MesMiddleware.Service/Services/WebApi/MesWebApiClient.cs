@@ -64,9 +64,8 @@ public class MesWebApiClient : IMesWebApiClient
             // Add accessToken header (required by MES Cloud API - PDF 規範)
             request.Headers.Add("accessToken", token);
 
-            _logger.LogInformation("Uploading inspection data for {TraceCodeOrLot} (RowNo: {RowNo})",
-                data.TraceCode ?? data.LotNo,
-                data.RowNo);
+            _logger.LogInformation("Uploading inspection data for {TraceCodeOrLot}",
+                data.TraceCode ?? data.LotNo);
 
             // Send request
             var response = await _httpClient.SendAsync(request, cancellationToken);

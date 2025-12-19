@@ -144,7 +144,7 @@ public class MiddlewareApiClient : IMiddlewareApiClient
                 Id = Guid.NewGuid(), // Generate GUID since API returns int ID
                 Timestamp = item.Timestamp,
                 TraceCode = item.TraceCode,
-                EquipmentName = item.RowNo, // Map RowNo to EquipmentName
+                EquipmentName = string.Empty,
                 Status = item.Status,
                 ErrorMessage = item.ErrorMessage
             }).ToList();
@@ -191,7 +191,7 @@ public class MiddlewareApiClient : IMiddlewareApiClient
                 Id = Guid.NewGuid(),
                 Timestamp = item.Timestamp,
                 TraceCode = item.TraceCode,
-                EquipmentName = item.RowNo, // Map RowNo to EquipmentName
+                EquipmentName = string.Empty,
                 Status = item.Status,
                 ErrorMessage = item.ErrorMessage
             }).ToList();
@@ -358,7 +358,6 @@ public class MiddlewareApiClient : IMiddlewareApiClient
     {
         public DateTime Timestamp { get; set; }
         public string TraceCode { get; set; } = string.Empty;
-        public string RowNo { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
         public int RetryCount { get; set; }
         public string? ErrorMessage { get; set; }

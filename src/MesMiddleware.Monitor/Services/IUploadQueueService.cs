@@ -41,7 +41,7 @@ public interface IUploadQueueService
     /// <summary>
     /// 記錄上傳歷史
     /// </summary>
-    Task AddHistoryAsync(string? traceCode, string? lotNo, string rowNo, string status, string? errorMessage, int retryCount, string source, int? queueItemId = null, CancellationToken cancellationToken = default);
+    Task AddHistoryAsync(string? traceCode, string? lotNo, string status, string? errorMessage, int retryCount, string source, int? queueItemId = null, CancellationToken cancellationToken = default);
 }
 
 /// <summary>

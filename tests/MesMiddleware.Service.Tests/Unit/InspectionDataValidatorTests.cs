@@ -22,10 +22,9 @@ public class InspectionDataValidatorTests
     [Fact]
     public void Validate_WithAllRequiredFields_ShouldPass()
     {
-        // Arrange - FR-009: Required fields: rowNo, procName, devName, userName, workClass, traceCode OR lotNo
+        // Arrange - FR-009: Required fields: procName, devName, userName, workClass, traceCode OR lotNo
         var validRecord = new InspectionRecord
         {
-            RowNo = "ROW001",
             ProcName = "Blind Hole Inspection",
             DevName = "AOI-MACHINE-01",
             UserName = "operator01",
@@ -45,36 +44,11 @@ public class InspectionDataValidatorTests
     }
 
     [Fact]
-    public void Validate_WithMissingRowNo_ShouldFail()
-    {
-        // Arrange
-        var invalidRecord = new InspectionRecord
-        {
-            RowNo = string.Empty, // Missing required field
-            ProcName = "Test",
-            DevName = "MACHINE-01",
-            UserName = "operator",
-            WorkClass = "Day",
-            TraceCode = "TRACE001",
-            ParamData = new List<ParamDataItem>(),
-            Benchmarks = new List<BenchmarkItem>(),
-            OtherData = new List<OtherDataItem>()
-        };
-
-        // Act
-        var result = _validator.TestValidate(invalidRecord);
-
-        // Assert - FR-009: rowNo is required
-        result.ShouldHaveValidationErrorFor(x => x.RowNo);
-    }
-
-    [Fact]
     public void Validate_WithMissingProcName_ShouldFail()
     {
         // Arrange
         var invalidRecord = new InspectionRecord
         {
-            RowNo = "ROW001",
             ProcName = null!, // Missing required field
             DevName = "MACHINE-01",
             UserName = "operator",
@@ -98,7 +72,6 @@ public class InspectionDataValidatorTests
         // Arrange
         var invalidRecord = new InspectionRecord
         {
-            RowNo = "ROW001",
             ProcName = "Test",
             DevName = "", // Missing required field
             UserName = "operator",
@@ -122,7 +95,6 @@ public class InspectionDataValidatorTests
         // Arrange
         var invalidRecord = new InspectionRecord
         {
-            RowNo = "ROW001",
             ProcName = "Test",
             DevName = "MACHINE-01",
             UserName = null!, // Missing required field
@@ -146,7 +118,6 @@ public class InspectionDataValidatorTests
         // Arrange
         var invalidRecord = new InspectionRecord
         {
-            RowNo = "ROW001",
             ProcName = "Test",
             DevName = "MACHINE-01",
             UserName = "operator",
@@ -170,7 +141,6 @@ public class InspectionDataValidatorTests
         // Arrange - FR-009: traceCode OR lotNo is required (at least one must be present)
         var invalidRecord = new InspectionRecord
         {
-            RowNo = "ROW001",
             ProcName = "Test",
             DevName = "MACHINE-01",
             UserName = "operator",
@@ -197,7 +167,6 @@ public class InspectionDataValidatorTests
         // Arrange - FR-009: traceCode OR lotNo (TraceCode is present, LotNo is null)
         var validRecord = new InspectionRecord
         {
-            RowNo = "ROW001",
             ProcName = "Test",
             DevName = "MACHINE-01",
             UserName = "operator",
@@ -222,7 +191,6 @@ public class InspectionDataValidatorTests
         // Arrange - FR-009: traceCode OR lotNo (LotNo is present, TraceCode is null)
         var validRecord = new InspectionRecord
         {
-            RowNo = "ROW002",
             ProcName = "AVI Inspection",
             DevName = "AVI-MACHINE-02",
             UserName = "operator02",
@@ -247,7 +215,6 @@ public class InspectionDataValidatorTests
         // Arrange - Having both is also valid
         var validRecord = new InspectionRecord
         {
-            RowNo = "ROW003",
             ProcName = "Test",
             DevName = "MACHINE-01",
             UserName = "operator",
@@ -272,7 +239,6 @@ public class InspectionDataValidatorTests
         // Arrange - Empty arrays are valid (not all inspections have paramData/benchmarks/otherData)
         var validRecord = new InspectionRecord
         {
-            RowNo = "ROW004",
             ProcName = "Quick Check",
             DevName = "QC-MACHINE",
             UserName = "qc_operator",
@@ -297,7 +263,6 @@ public class InspectionDataValidatorTests
         // Arrange - Simulate MiddlewareHostedService validating before upload
         var invalidRecord = new InspectionRecord
         {
-            RowNo = "",           // Invalid
             ProcName = "Test",
             DevName = "MACHINE-01",
             UserName = null!,     // Invalid
@@ -317,7 +282,6 @@ public class InspectionDataValidatorTests
         validationResult.Errors.Should().HaveCountGreaterThan(0, "multiple validation errors should be detected");
 
         // Verify specific errors
-        validationResult.Errors.Should().Contain(e => e.PropertyName == "RowNo");
         validationResult.Errors.Should().Contain(e => e.PropertyName == "UserName");
     }
 }

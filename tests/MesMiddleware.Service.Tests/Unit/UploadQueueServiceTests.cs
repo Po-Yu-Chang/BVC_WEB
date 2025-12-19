@@ -42,7 +42,6 @@ public class UploadQueueServiceTests : IDisposable
 
         var testData = new InspectionRecord
         {
-            RowNo = "TEST001",
             ProcName = "Test",
             DevName = "MACHINE-01",
             UserName = "operator",
@@ -87,7 +86,6 @@ public class UploadQueueServiceTests : IDisposable
 
         var testData = new InspectionRecord
         {
-            RowNo = "TEST001",
             ProcName = "Test",
             DevName = "MACHINE-01",
             UserName = "operator",

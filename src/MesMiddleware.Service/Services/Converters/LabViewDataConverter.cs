@@ -47,7 +47,6 @@ public class LabViewDataConverter : ILabViewDataConverter
         {
             var record = new InspectionRecord
             {
-                RowNo = data.RowNo ?? "1",
                 ProcName = data.ProcName ?? string.Empty,
                 DevName = data.DevName ?? string.Empty,
                 UserName = data.UserName ?? string.Empty,

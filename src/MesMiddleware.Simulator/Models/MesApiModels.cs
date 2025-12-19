@@ -52,9 +52,6 @@ public class TraceDataRequest
 /// </summary>
 public class TraceData
 {
-    [JsonPropertyName("rowNo")]
-    public int RowNo { get; set; }
-
     [JsonPropertyName("procName")]
     public string ProcName { get; set; } = string.Empty;
 

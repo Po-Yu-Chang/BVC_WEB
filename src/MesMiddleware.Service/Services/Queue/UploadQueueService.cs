@@ -203,7 +203,6 @@ public class UploadQueueService : IUploadQueueService
             {
                 Id = (int)(q.Id.GetHashCode() & 0x7FFFFFFF), // Convert Guid to int for display
                 TraceCode = q.TraceCodeOrLotNo ?? "N/A",
-                RowNo = q.MachineNumber ?? "N/A",
                 CreatedAt = q.QueuedAt,
                 Status = q.Status,
                 RetryCount = q.RetryCount,

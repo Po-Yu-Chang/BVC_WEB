@@ -7,11 +7,6 @@ namespace MesMiddleware.Shared.Models;
 public class InspectionRecord
 {
     /// <summary>
-    /// Row number (sequence ID) for this inspection record
-    /// </summary>
-    public required string RowNo { get; set; }
-
-    /// <summary>
     /// Process name (e.g., "Blind Hole Inspection", "AOI", "AVI")
     /// </summary>
     public required string ProcName { get; set; }

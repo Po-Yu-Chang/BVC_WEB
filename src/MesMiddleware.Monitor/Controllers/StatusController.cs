@@ -52,13 +52,12 @@ public class StatusController : ControllerBase
     /// <summary>
     /// 記錄 Device → Monitor 歷史（設備發送資料到 Monitor）
     /// </summary>
-    public static void AddDeviceToMonitorHistory(string traceCode, string rowNo, string status, string? errorMessage = null)
+    public static void AddDeviceToMonitorHistory(string traceCode, string status, string? errorMessage = null)
     {
         _deviceToMonitorHistory.Enqueue(new HistoryItem
         {
             Timestamp = DateTime.UtcNow,
             TraceCode = traceCode,
-            RowNo = rowNo,
             Status = status,
             ErrorMessage = errorMessage,
             RetryCount = 0
@@ -73,13 +72,12 @@ public class StatusController : ControllerBase
     /// <summary>
     /// 記錄 Monitor → MES Cloud 歷史（Monitor 上傳到雲端）
     /// </summary>
-    public static void AddMonitorToCloudHistory(string traceCode, string rowNo, string status, string? errorMessage = null)
+    public static void AddMonitorToCloudHistory(string traceCode, string status, string? errorMessage = null)
     {
         _monitorToCloudHistory.Enqueue(new HistoryItem
         {
             Timestamp = DateTime.UtcNow,
             TraceCode = traceCode,
-            RowNo = rowNo,
             Status = status,
             ErrorMessage = errorMessage,
             RetryCount = 0
@@ -157,7 +155,6 @@ public class StatusController : ControllerBase
             {
                 timestamp = h.Timestamp,
                 traceCode = h.TraceCode,
-                rowNo = h.RowNo,
                 status = h.Status,
                 errorMessage = h.ErrorMessage,
                 retryCount = h.RetryCount
@@ -182,7 +179,6 @@ public class StatusController : ControllerBase
             {
                 timestamp = h.Timestamp,
                 traceCode = h.TraceCode,
-                rowNo = h.RowNo,
                 status = h.Status,
                 errorMessage = h.ErrorMessage,
                 retryCount = h.RetryCount
@@ -196,7 +192,6 @@ public class StatusController : ControllerBase
     {
         public DateTime Timestamp { get; set; }
         public string TraceCode { get; set; } = string.Empty;
-        public string RowNo { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
         public string? ErrorMessage { get; set; }
         public int RetryCount { get; set; }

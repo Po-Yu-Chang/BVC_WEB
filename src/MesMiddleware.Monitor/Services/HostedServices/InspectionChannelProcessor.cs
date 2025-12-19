@@ -103,9 +103,8 @@ public class InspectionChannelProcessor : BackgroundService
         StatusController.IncrementReceived();
         StatusController.UpdateLastActivity();
 
-        _logger.LogInformation("Processing inspection data: {TraceCodeOrLot} (RowNo: {RowNo})",
-            data.TraceCode ?? data.LotNo,
-            data.RowNo);
+        _logger.LogInformation("Processing inspection data: {TraceCodeOrLot}",
+            data.TraceCode ?? data.LotNo);
 
         try
         {
@@ -118,7 +117,6 @@ public class InspectionChannelProcessor : BackgroundService
                 // 記錄到 Monitor → MES Cloud 歷史
                 StatusController.AddMonitorToCloudHistory(
                     data.TraceCode ?? data.LotNo ?? "N/A",
-                    data.RowNo,
                     "Success",
                     null
                 );
@@ -129,7 +127,6 @@ public class InspectionChannelProcessor : BackgroundService
                     await queueService.AddHistoryAsync(
                         data.TraceCode,
                         data.LotNo,
-                        data.RowNo,
                         "Success",
                         null,
                         0,
@@ -146,7 +143,6 @@ public class InspectionChannelProcessor : BackgroundService
                 // 記錄到 Monitor → MES Cloud 歷史（失敗）
                 StatusController.AddMonitorToCloudHistory(
                     data.TraceCode ?? data.LotNo ?? "N/A",
-                    data.RowNo,
                     "Queued",
                     "Upload failed - saved to queue for retry"
                 );
@@ -166,7 +162,6 @@ public class InspectionChannelProcessor : BackgroundService
             // 記錄到 Monitor → MES Cloud 歷史（異常）
             StatusController.AddMonitorToCloudHistory(
                 data.TraceCode ?? data.LotNo ?? "N/A",
-                data.RowNo,
                 "Queued",
                 $"Exception: {ex.Message} - saved to queue for retry"
             );
@@ -196,7 +191,6 @@ public class InspectionChannelProcessor : BackgroundService
                 {
                     new
                     {
-                        rowNo = int.TryParse(data.RowNo, out var rowNoInt) ? rowNoInt : 0,
                         traceCode = data.TraceCode,
                         lotNo = data.LotNo,
                         procName = data.ProcName,

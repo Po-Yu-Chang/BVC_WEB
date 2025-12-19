@@ -82,7 +82,6 @@ public class LabViewController : ControllerBase
                 // Record to Device -> Monitor history
                 StatusController.AddDeviceToMonitorHistory(
                     record.TraceCode ?? record.LotNo ?? "N/A",
-                    record.RowNo,
                     "Received",
                     null
                 );

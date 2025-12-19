@@ -12,10 +12,6 @@ public class InspectionDataValidator : AbstractValidator<InspectionRecord>
     public InspectionDataValidator()
     {
         // Required fields
-        RuleFor(x => x.RowNo)
-            .NotEmpty()
-            .WithMessage("RowNo is required");
-
         RuleFor(x => x.ProcName)
             .NotEmpty()
             .WithMessage("ProcName (process name) is required");

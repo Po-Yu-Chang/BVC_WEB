@@ -81,8 +81,7 @@ public class OfflineQueueTests : IDisposable
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
         deserializedData.Should().NotBeNull();
-        deserializedData!.RowNo.Should().Be(testData.RowNo);
-        deserializedData.TraceCode.Should().Be(testData.TraceCode);
+        deserializedData!.TraceCode.Should().Be(testData.TraceCode);
 
         // Verify Hangfire job was scheduled for retry in 2 seconds
         mockHangfireClient.Verify(
@@ -302,7 +301,6 @@ public class OfflineQueueTests : IDisposable
         {
             await Task.Delay(10); // Ensure different timestamps
             var data = CreateTestInspectionRecord();
-            data.RowNo = $"ROW{i:D3}";
             data.TraceCode = $"TRACE_{i}";
             var queueId = await queueService.QueueUploadAsync(data, $"Error {i}", CancellationToken.None);
             queueIds.Add(queueId);
@@ -346,7 +344,6 @@ public class OfflineQueueTests : IDisposable
     {
         return new InspectionRecord
         {
-            RowNo = "TEST_ROW_001",
             ProcName = "Queue Test Inspection",
             DevName = "TEST-MACHINE",
             UserName = "test_operator",

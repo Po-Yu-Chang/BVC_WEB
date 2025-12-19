@@ -21,11 +21,6 @@ public class UploadHistory
     public string? LotNo { get; set; }
 
     /// <summary>
-    /// 站別編號
-    /// </summary>
-    public string RowNo { get; set; } = string.Empty;
-
-    /// <summary>
     /// 上傳時間
     /// </summary>
     public DateTime UploadedAt { get; set; }

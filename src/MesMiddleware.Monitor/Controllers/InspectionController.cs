@@ -65,7 +65,6 @@ public class InspectionController : ControllerBase
             // 記錄到 Device → Monitor 歷史
             StatusController.AddDeviceToMonitorHistory(
                 data.TraceCode ?? data.LotNo ?? "N/A",
-                data.RowNo,
                 "Received",
                 null
             );
@@ -75,15 +74,13 @@ public class InspectionController : ControllerBase
             // 更新設備活動時間（用於判斷設備是否連線）
             StatusController.UpdateDeviceActivity();
 
-            _logger.LogInformation("Inspection data accepted: {TraceCodeOrLot} (RowNo: {RowNo})",
-                data.TraceCode ?? data.LotNo,
-                data.RowNo);
+            _logger.LogInformation("Inspection data accepted: {TraceCodeOrLot}",
+                data.TraceCode ?? data.LotNo);
 
             return Accepted(new
             {
                 message = "Inspection data accepted for processing",
-                traceCode = data.TraceCode ?? data.LotNo,
-                rowNo = data.RowNo
+                traceCode = data.TraceCode ?? data.LotNo
             });
         }
         catch (Exception ex)

@@ -21,11 +21,6 @@ public class UploadQueueItem
     public string? LotNo { get; set; }
 
     /// <summary>
-    /// 站別編號
-    /// </summary>
-    public string RowNo { get; set; } = string.Empty;
-
-    /// <summary>
     /// 製程名稱
     /// </summary>
     public string? ProcName { get; set; }

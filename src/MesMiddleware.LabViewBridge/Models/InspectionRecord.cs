@@ -13,11 +13,6 @@ namespace MesMiddleware.LabViewBridge.Models
     public class InspectionRecord
     {
         /// <summary>
-        /// Row number (sequence ID) for this inspection record.
-        /// </summary>
-        public string RowNo { get; set; }
-
-        /// <summary>
         /// Process name (e.g., "Blind Hole Inspection", "AOI", "AVI").
         /// </summary>
         public string ProcName { get; set; }
@@ -69,7 +64,6 @@ namespace MesMiddleware.LabViewBridge.Models
 
         public InspectionRecord()
         {
-            RowNo = string.Empty;
             ProcName = string.Empty;
             DevName = string.Empty;
             UserName = string.Empty;

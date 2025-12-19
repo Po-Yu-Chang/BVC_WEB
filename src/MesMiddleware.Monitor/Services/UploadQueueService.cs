@@ -46,7 +46,6 @@ public class UploadQueueService : IUploadQueueService
             {
                 TraceCode = data.TraceCode,
                 LotNo = data.LotNo,
-                RowNo = data.RowNo,
                 ProcName = data.ProcName,
                 DevName = data.DevName,
                 UserName = data.UserName,
@@ -111,7 +110,6 @@ public class UploadQueueService : IUploadQueueService
             await AddHistoryAsync(
                 item.TraceCode,
                 item.LotNo,
-                item.RowNo,
                 "Success",
                 null,
                 item.RetryCount,
@@ -176,7 +174,6 @@ public class UploadQueueService : IUploadQueueService
     public async Task AddHistoryAsync(
         string? traceCode,
         string? lotNo,
-        string rowNo,
         string status,
         string? errorMessage,
         int retryCount,
@@ -188,7 +185,6 @@ public class UploadQueueService : IUploadQueueService
         {
             TraceCode = traceCode,
             LotNo = lotNo,
-            RowNo = rowNo,
             UploadedAt = DateTime.UtcNow,
             Status = status,
             ErrorMessage = errorMessage,
@@ -299,7 +295,6 @@ public class RetryUploadJob
             {
                 TraceCode = item.TraceCode,
                 LotNo = item.LotNo,
-                RowNo = item.RowNo ?? string.Empty,
                 ProcName = item.ProcName ?? string.Empty,
                 DevName = item.DevName ?? string.Empty,
                 UserName = item.UserName ?? string.Empty,
@@ -354,7 +349,6 @@ public class RetryUploadJob
                 {
                     new
                     {
-                        rowNo = int.TryParse(data.RowNo, out var rowNoInt) ? rowNoInt : 0,
                         traceCode = data.TraceCode,
                         lotNo = data.LotNo,
                         procName = data.ProcName,

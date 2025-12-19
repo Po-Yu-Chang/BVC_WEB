@@ -58,7 +58,6 @@ public class InspectionDataGenerator
 
         return new InspectionRecord
         {
-            RowNo = _sequenceCounter.ToString(),
             TraceCode = traceCode,
             LotNo = lotNo,
             ProcName = ProcessNames[_random.Next(ProcessNames.Length)],
