@@ -2,6 +2,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MesMiddleware.Monitor.Services;
+using System.IO;
+using System.Reflection;
 using System.Windows;
 
 namespace MesMiddleware.Monitor.ViewModels;
@@ -80,6 +82,26 @@ public partial class MainViewModel : ObservableObject
     // 主標題
     public string HeaderTitle => _localizationService.GetString("Header_Title");
     public string HeaderSubtitle => _localizationService.GetString("Header_Subtitle");
+
+    // 版本資訊
+    public const string AppVersion = "v2.1.0";
+    public static string BuildDate => GetBuildDate();
+    public string VersionInfo => $"{AppVersion} | {BuildDate}";
+
+    private static string GetBuildDate()
+    {
+        try
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            var location = assembly.Location;
+            if (!string.IsNullOrEmpty(location))
+            {
+                return File.GetLastWriteTime(location).ToString("yyyy-MM-dd");
+            }
+        }
+        catch { }
+        return DateTime.Now.ToString("yyyy-MM-dd");
+    }
 
     // 服務狀態頁面
     public string StatusSectionTitle => _localizationService.GetString("Status_SectionTitle");

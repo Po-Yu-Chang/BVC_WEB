@@ -77,7 +77,8 @@ public class MiddlewareApiClient : IMiddlewareApiClient
                 };
             }
 
-            _logger.LogDebug("Monitor API status check: OK - {ConnectionStatus}", statusResponse.ConnectionStatus);
+            _logger.LogDebug("Monitor API status check: OK - Device={ConnectionStatus}, MesCloud={MesCloudStatus}",
+                statusResponse.ConnectionStatus, statusResponse.MesCloudStatus);
             return new ConnectionStatusDto
             {
                 Status = statusResponse.ConnectionStatus,
@@ -85,7 +86,8 @@ public class MiddlewareApiClient : IMiddlewareApiClient
                 QueueDepth = statusResponse.Statistics?.CurrentQueueSize ?? 0,
                 TotalReceived = statusResponse.Statistics?.TotalReceived ?? 0,
                 SuccessfulUploads = statusResponse.Statistics?.SuccessfulUploads ?? 0,
-                QueuedUploads = statusResponse.Statistics?.QueuedUploads ?? 0
+                QueuedUploads = statusResponse.Statistics?.QueuedUploads ?? 0,
+                MesCloudStatus = statusResponse.MesCloudStatus ?? "Disconnected"
             };
         }
         catch (HttpRequestException ex)
@@ -343,6 +345,7 @@ public class MiddlewareApiClient : IMiddlewareApiClient
         public DateTime LastActivity { get; set; }
         public StatisticsData? Statistics { get; set; }
         public DateTime Timestamp { get; set; }
+        public string? MesCloudStatus { get; set; }
     }
 
     private class StatisticsData

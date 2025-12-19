@@ -106,6 +106,10 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private SubmitResultViewModel? _selectedHistoryItem;
 
+    // Raw JSON 貼上發送
+    [ObservableProperty]
+    private string _rawJsonInput = "";
+
     #endregion
 
     public MainViewModel()
@@ -446,6 +450,49 @@ public partial class MainViewModel : ObservableObject
         {
             System.Diagnostics.Debug.WriteLine($"自動發送失敗: {ex.Message}");
         }
+    }
+
+    [RelayCommand]
+    private async Task SendRawJsonAsync()
+    {
+        if (string.IsNullOrWhiteSpace(RawJsonInput))
+        {
+            MessageBox.Show("請貼上 JSON 資料!", "提示",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        try
+        {
+            _apiClient.SetBaseUrl(ServerUrl);
+            var result = await _apiClient.SubmitRawJsonAsync(RawJsonInput);
+
+            AddSubmitResult(result);
+            UpdateStatistics();
+            LastResponseJson = result.ResponseMessage;
+
+            if (result.IsSuccess)
+            {
+                MessageBox.Show($"發送成功!\n\nTraceCode: {result.TraceCode}\n耗時: {result.ElapsedMs}ms",
+                    "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else
+            {
+                MessageBox.Show($"發送失敗!\n\n錯誤: {result.ErrorMessage}", "失敗",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"發送失敗: {ex.Message}", "錯誤",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    [RelayCommand]
+    private void ClearRawJson()
+    {
+        RawJsonInput = "";
     }
 
     #endregion

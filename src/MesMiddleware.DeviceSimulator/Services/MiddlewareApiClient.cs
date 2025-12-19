@@ -211,6 +211,87 @@ public class MiddlewareApiClient
     {
         return JsonSerializer.Serialize(request, JsonOptions);
     }
+
+    /// <summary>
+    /// 直接發送 Raw JSON 字串到 LabVIEW 端點
+    /// </summary>
+    public async Task<SubmitResult> SubmitRawJsonAsync(string rawJson)
+    {
+        var result = new SubmitResult
+        {
+            TraceCode = "RAW-JSON",
+            SentTime = DateTime.Now,
+            RequestJson = rawJson
+        };
+
+        try
+        {
+            // 嘗試解析 JSON 以取得 TraceCode
+            try
+            {
+                var request = JsonSerializer.Deserialize<LabViewInspectionRequest>(rawJson, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+                result.TraceCode = request?.Data?.FirstOrDefault()?.TraceCode ?? "RAW-JSON";
+            }
+            catch
+            {
+                // 解析失敗，使用預設值
+            }
+
+            var content = new StringContent(rawJson, Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsync($"{_baseUrl}/api/labview/submit", content);
+
+            result.ResponseTime = DateTime.Now;
+            result.StatusCode = (int)response.StatusCode;
+
+            var responseBody = await response.Content.ReadAsStringAsync();
+            result.ResponseMessage = responseBody;
+
+            // 解析 MES 格式的回應
+            try
+            {
+                var mesResponse = JsonSerializer.Deserialize<MesApiResponse>(responseBody, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+                result.IsSuccess = mesResponse?.Success == true || response.IsSuccessStatusCode;
+                if (!result.IsSuccess)
+                {
+                    result.ErrorMessage = mesResponse?.Msg ?? $"HTTP {result.StatusCode}";
+                }
+            }
+            catch
+            {
+                result.IsSuccess = response.IsSuccessStatusCode;
+                if (!result.IsSuccess)
+                {
+                    result.ErrorMessage = $"HTTP {result.StatusCode}: {responseBody}";
+                }
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            result.IsSuccess = false;
+            result.ErrorMessage = $"網絡錯誤: {ex.Message}";
+            result.ResponseTime = DateTime.Now;
+        }
+        catch (TaskCanceledException ex)
+        {
+            result.IsSuccess = false;
+            result.ErrorMessage = $"請求超時: {ex.Message}";
+            result.ResponseTime = DateTime.Now;
+        }
+        catch (Exception ex)
+        {
+            result.IsSuccess = false;
+            result.ErrorMessage = $"未知錯誤: {ex.Message}";
+            result.ResponseTime = DateTime.Now;
+        }
+
+        return result;
+    }
 }
 
 /// <summary>

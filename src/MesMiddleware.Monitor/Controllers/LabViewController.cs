@@ -91,10 +91,8 @@ public class LabViewController : ControllerBase
                     record.DevName);
             }
 
-            // Update device activity status
+            // Update device activity status (IncrementReceived is called in InspectionChannelProcessor)
             StatusController.UpdateDeviceActivity();
-            StatusController.IncrementReceived();
-            StatusController.UpdateLastActivity();
 
             // Return MES-compatible success response
             return Accepted(new

@@ -68,10 +68,8 @@ public class InspectionController : ControllerBase
                 "Received",
                 null
             );
-            StatusController.IncrementReceived();
-            StatusController.UpdateLastActivity();
 
-            // 更新設備活動時間（用於判斷設備是否連線）
+            // 更新設備活動時間（IncrementReceived is called in InspectionChannelProcessor）
             StatusController.UpdateDeviceActivity();
 
             _logger.LogInformation("Inspection data accepted: {TraceCodeOrLot}",

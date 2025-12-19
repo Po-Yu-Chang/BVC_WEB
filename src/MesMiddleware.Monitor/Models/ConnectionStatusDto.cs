@@ -34,4 +34,9 @@ public class ConnectionStatusDto
     /// 排隊上傳的筆數
     /// </summary>
     public int QueuedUploads { get; set; }
+
+    /// <summary>
+    /// MES Cloud 連線狀態: Connected(已連線)、Disconnected(已斷線)
+    /// </summary>
+    public string MesCloudStatus { get; set; } = string.Empty;
 }

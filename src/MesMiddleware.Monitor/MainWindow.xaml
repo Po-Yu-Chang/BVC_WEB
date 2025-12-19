@@ -274,6 +274,12 @@
                                Foreground="#ECF0F1"
                                Opacity="0.95"
                                TextAlignment="Center"/>
+                    <TextBlock Text="{Binding VersionInfo}"
+                               FontSize="12"
+                               Foreground="#ECF0F1"
+                               Opacity="0.7"
+                               Margin="0,8,0,0"
+                               TextAlignment="Center"/>
                 </StackPanel>
             </Grid>
         </Border>

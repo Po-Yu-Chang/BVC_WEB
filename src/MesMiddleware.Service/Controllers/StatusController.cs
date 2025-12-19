@@ -39,12 +39,12 @@ public class StatusController : ControllerBase
 
     /// <summary>
     /// 更新設備活動時間（當收到設備資料時呼叫）
+    /// 注意：不在此處計數，由 InspectionChannelProcessor 統一計數
     /// </summary>
     public static void UpdateDeviceActivity()
     {
         _lastDeviceActivity = DateTime.UtcNow;
         _lastActivity = DateTime.UtcNow;
-        Interlocked.Increment(ref _totalReceived);
     }
 
     /// <summary>

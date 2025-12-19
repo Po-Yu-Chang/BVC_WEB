@@ -181,8 +181,10 @@ public partial class StatusViewModel : ObservableObject
             }
 
             // 更新燈號狀態
-            IsRunning = status.Status != "Disconnected" && status.Status != "Error";
-            IsWebApiConnected = status.Status == "Connected";
+            // IsRunning = Device → Monitor 連線狀態
+            IsRunning = status.Status == "Connected";
+            // IsWebApiConnected = Monitor → MES Cloud 連線狀態
+            IsWebApiConnected = status.MesCloudStatus == "Connected";
 
             // 根據連線狀態設定狀態顏色
             StatusColor = status.Status switch
