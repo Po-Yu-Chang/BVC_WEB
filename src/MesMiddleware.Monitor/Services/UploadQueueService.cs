@@ -161,7 +161,7 @@ public class UploadQueueService : IUploadQueueService
     {
         var today = DateTime.UtcNow.Date;
 
-        return new QueueStatistics
+        var stats = new QueueStatistics
         {
             PendingCount = await _dbContext.UploadQueue.CountAsync(q => q.Status == "Pending", cancellationToken),
             ProcessingCount = await _dbContext.UploadQueue.CountAsync(q => q.Status == "Processing", cancellationToken),
@@ -169,6 +169,16 @@ public class UploadQueueService : IUploadQueueService
             MaxRetriesExceededCount = await _dbContext.UploadQueue.CountAsync(q => q.Status == "MaxRetriesExceeded", cancellationToken),
             TotalQueuedToday = await _dbContext.UploadQueue.CountAsync(q => q.CreatedAt >= today, cancellationToken)
         };
+
+        // Debug log - 顯示所有佇列項目狀態
+        var totalCount = await _dbContext.UploadQueue.CountAsync(cancellationToken);
+        if (totalCount > 0)
+        {
+            _logger.LogDebug("Queue stats: Total={Total}, Pending={Pending}, Processing={Processing}, Failed={Failed}",
+                totalCount, stats.PendingCount, stats.ProcessingCount, stats.FailedCount);
+        }
+
+        return stats;
     }
 
 

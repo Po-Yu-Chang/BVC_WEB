@@ -139,6 +139,9 @@ public class InspectionChannelProcessor : BackgroundService
             }
             else
             {
+                _logger.LogWarning("Upload failed for {TraceCodeOrLot}, error: {Error}. Saving to queue...",
+                    data.TraceCode ?? data.LotNo, errorMessage);
+
                 StatusController.IncrementQueued();
                 // 記錄到 Monitor → MES Cloud 歷史（失敗）
                 StatusController.AddMonitorToCloudHistory(
@@ -150,7 +153,9 @@ public class InspectionChannelProcessor : BackgroundService
                 using (var scope = _serviceProvider.CreateScope())
                 {
                     var queueService = scope.ServiceProvider.GetRequiredService<IUploadQueueService>();
+                    _logger.LogInformation("Calling EnqueueAsync for {TraceCodeOrLot}...", data.TraceCode ?? data.LotNo);
                     await queueService.EnqueueAsync(data, errorMessage ?? "MES Cloud upload failed", cancellationToken);
+                    _logger.LogInformation("EnqueueAsync completed for {TraceCodeOrLot}", data.TraceCode ?? data.LotNo);
                 }
                 _logger.LogWarning("Failed to upload inspection data for {TraceCodeOrLot} - saved to SQLite queue for retry",
                     data.TraceCode ?? data.LotNo);
