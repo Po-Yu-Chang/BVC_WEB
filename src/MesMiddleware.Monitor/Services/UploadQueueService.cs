@@ -197,6 +197,18 @@ public class UploadQueueService : IUploadQueueService
         _dbContext.UploadHistory.Add(history);
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task<int> ClearAllAsync(CancellationToken cancellationToken = default)
+    {
+        var count = await _dbContext.UploadQueue.CountAsync(cancellationToken);
+        if (count > 0)
+        {
+            _dbContext.UploadQueue.RemoveRange(_dbContext.UploadQueue);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation("Cleared all {Count} items from upload queue", count);
+        }
+        return count;
+    }
 }
 
 /// <summary>

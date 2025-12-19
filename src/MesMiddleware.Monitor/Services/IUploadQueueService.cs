@@ -42,6 +42,11 @@ public interface IUploadQueueService
     /// 記錄上傳歷史
     /// </summary>
     Task AddHistoryAsync(string? traceCode, string? lotNo, string status, string? errorMessage, int retryCount, string source, int? queueItemId = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 清除所有佇列項目
+    /// </summary>
+    Task<int> ClearAllAsync(CancellationToken cancellationToken = default);
 }
 
 /// <summary>

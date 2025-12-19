@@ -557,6 +557,15 @@
                                         <StackPanel>
                                             <TextBlock Text="{Binding StatusQueuedItems}" Style="{StaticResource LabelStyle}" Foreground="White" Opacity="0.9"/>
                                             <TextBlock Text="{Binding StatusViewModel.QueuedUploads}" Style="{StaticResource ValueStyle}" Foreground="White" FontSize="32"/>
+                                            <Button Content="清除佇列"
+                                                    Command="{Binding StatusViewModel.ClearQueueCommand}"
+                                                    Background="#E74C3C"
+                                                    Foreground="White"
+                                                    BorderThickness="0"
+                                                    Padding="8,4"
+                                                    Margin="0,5,0,0"
+                                                    FontSize="11"
+                                                    Cursor="Hand"/>
                                         </StackPanel>
                                         <Canvas Style="{StaticResource CurledCornerStyle}">
                                             <Path Data="{StaticResource FoldBackGeometry}" Fill="#30000000"/>

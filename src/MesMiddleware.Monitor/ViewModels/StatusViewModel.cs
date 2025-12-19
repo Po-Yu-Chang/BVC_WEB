@@ -292,4 +292,32 @@ public partial class StatusViewModel : ObservableObject
             }
         }
     }
+
+    /// <summary>
+    /// 清除佇列命令
+    /// </summary>
+    [RelayCommand]
+    private async Task ClearQueueAsync()
+    {
+        try
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var queueService = scope.ServiceProvider.GetRequiredService<IUploadQueueService>();
+                var count = await queueService.ClearAllAsync();
+                _logger.LogInformation("Cleared {Count} items from queue", count);
+            }
+
+            // 重設靜態計數器
+            Controllers.StatusController.ResetQueuedCount();
+
+            // 刷新狀態
+            QueuedUploads = 0;
+            await RefreshStatusAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to clear queue");
+        }
+    }
 }

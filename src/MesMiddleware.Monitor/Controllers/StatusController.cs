@@ -37,6 +37,7 @@ public class StatusController : ControllerBase
     public static void IncrementReceived() => Interlocked.Increment(ref _totalReceived);
     public static void IncrementSuccessful() => Interlocked.Increment(ref _successfulUploads);
     public static void IncrementQueued() => Interlocked.Increment(ref _queuedUploads);
+    public static void ResetQueuedCount() => Interlocked.Exchange(ref _queuedUploads, 0);
     public static void UpdateLastActivity() => _lastActivity = DateTime.UtcNow;
 
     /// <summary>
