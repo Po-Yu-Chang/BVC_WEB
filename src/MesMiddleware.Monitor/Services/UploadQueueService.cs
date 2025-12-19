@@ -317,12 +317,23 @@ public class RetryUploadJob
             if (uploadSucceeded)
             {
                 await _queueService.MarkAsSuccessAsync(queueItemId, cancellationToken);
+                Controllers.StatusController.IncrementSuccessful();
+                Controllers.StatusController.AddMonitorToCloudHistory(
+                    item.TraceCode ?? item.LotNo ?? "N/A",
+                    "Success (Retry)",
+                    null
+                );
                 _logger.LogInformation("Queue item {QueueItemId} ({TraceCode}) retry successful", queueItemId, item.TraceCode);
                 return true;
             }
             else
             {
                 await _queueService.MarkAsFailedAsync(queueItemId, "MES Cloud upload failed", cancellationToken);
+                Controllers.StatusController.AddMonitorToCloudHistory(
+                    item.TraceCode ?? item.LotNo ?? "N/A",
+                    "Failed (Retry)",
+                    "MES Cloud upload failed"
+                );
                 _logger.LogWarning("Queue item {QueueItemId} ({TraceCode}) retry failed - will retry later", queueItemId, item.TraceCode);
                 return false;
             }
