@@ -84,7 +84,7 @@ public partial class MainViewModel : ObservableObject
     public string HeaderSubtitle => _localizationService.GetString("Header_Subtitle");
 
     // 版本資訊
-    public const string AppVersion = "v2.1.0";
+    public const string AppVersion = "v2.2.0";
     public static string BuildDate => GetBuildDate();
     public string VersionInfo => $"{AppVersion} | {BuildDate}";
 

@@ -56,7 +56,7 @@ public class PrtMacController : ControllerBase
                 return Ok(new MesApiResponse<object>
                 {
                     Success = false,
-                    Data = null,
+                    Data = "",
                     Msg = $"本機台({request.PrtMacNo})IP({clientIp})與註冊電腦 IP 不匹配!",
                     Code = "300"
                 });
@@ -72,7 +72,7 @@ public class PrtMacController : ControllerBase
                 return Ok(new MesApiResponse<object>
                 {
                     Success = false,
-                    Data = null,
+                    Data = "",
                     Msg = $"本機台({request.PrtMacNo})IP({clientIp})與註冊電腦 IP 不匹配!",
                     Code = "300"
                 });
@@ -126,7 +126,7 @@ public class PrtMacController : ControllerBase
             return Ok(new MesApiResponse<object>
             {
                 Success = false,
-                Data = null,
+                Data = "",
                 Msg = $"系統錯誤: {ex.Message}",
                 Code = "500"
             });

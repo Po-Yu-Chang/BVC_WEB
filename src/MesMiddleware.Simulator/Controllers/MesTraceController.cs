@@ -46,7 +46,7 @@ public class MesTraceController : ControllerBase
                 return Ok(new MesApiResponse<object>
                 {
                     Success = false,
-                    Data = null,
+                    Data = "",
                     Msg = "缺少 accessToken",
                     Code = "401"
                 });
@@ -58,7 +58,7 @@ public class MesTraceController : ControllerBase
                 return Ok(new MesApiResponse<object>
                 {
                     Success = false,
-                    Data = null,
+                    Data = "",
                     Msg = "Token 無效或已過期",
                     Code = "401"
                 });
@@ -73,7 +73,7 @@ public class MesTraceController : ControllerBase
                 return Ok(new MesApiResponse<object>
                 {
                     Success = false,
-                    Data = null,
+                    Data = "",
                     Msg = "工單[202401-01-000]不存在",
                     Code = "-1"
                 });
@@ -109,7 +109,7 @@ public class MesTraceController : ControllerBase
             return Ok(new MesApiResponse<object>
             {
                 Success = true,
-                Data = null,
+                Data = "",
                 Msg = "上傳成功",
                 Code = "200"
             });
@@ -120,7 +120,7 @@ public class MesTraceController : ControllerBase
             return Ok(new MesApiResponse<object>
             {
                 Success = false,
-                Data = null,
+                Data = "",
                 Msg = $"系統錯誤: {ex.Message}",
                 Code = "500"
             });

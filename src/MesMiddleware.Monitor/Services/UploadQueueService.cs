@@ -42,6 +42,9 @@ public class UploadQueueService : IUploadQueueService
     {
         try
         {
+            _logger.LogWarning("MES Cloud upload failed - saving to SQLite offline queue: TraceCode={TraceCode}, LotNo={LotNo}, DevName={DevName}, Error={Error}",
+                data.TraceCode, data.LotNo, data.DevName, errorMessage);
+
             var queueItem = new UploadQueueItem
             {
                 TraceCode = data.TraceCode,
@@ -64,8 +67,8 @@ public class UploadQueueService : IUploadQueueService
             _dbContext.UploadQueue.Add(queueItem);
             await _dbContext.SaveChangesAsync(cancellationToken);
 
-            _logger.LogInformation("Enqueued failed upload to SQLite queue: {TraceCodeOrLot} (ID: {QueueItemId}), next retry at {NextRetryAt}",
-                data.TraceCode ?? data.LotNo, queueItem.Id, queueItem.NextRetryAt);
+            _logger.LogInformation("✓ Successfully saved to SQLite queue: {TraceCodeOrLot} (QueueID: {QueueItemId}), will retry at {NextRetryAt}",
+                data.TraceCode ?? data.LotNo, queueItem.Id, queueItem.NextRetryAt?.ToLocalTime());
 
             // 立即排程第一次重試（不等待週期性 job）
             var delay = TimeSpan.FromSeconds(_retryDelaySeconds);
@@ -73,12 +76,13 @@ public class UploadQueueService : IUploadQueueService
                 job => job.ProcessSingleRetryAsync(queueItem.Id, CancellationToken.None),
                 delay);
 
-            _logger.LogInformation("Scheduled immediate retry for queue item {QueueItemId} in {Delay}",
-                queueItem.Id, delay);
+            _logger.LogInformation("Scheduled immediate retry for queue item {QueueItemId} in {Delay}s",
+                queueItem.Id, delay.TotalSeconds);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to enqueue upload to SQLite queue");
+            _logger.LogError(ex, "✗ CRITICAL: Failed to save data to SQLite queue! TraceCode={TraceCode}, LotNo={LotNo}, DevName={DevName} - DATA LOSS RISK!",
+                data.TraceCode, data.LotNo, data.DevName);
         }
     }
 
@@ -94,11 +98,23 @@ public class UploadQueueService : IUploadQueueService
 
     public async Task MarkAsProcessingAsync(int queueItemId, CancellationToken cancellationToken = default)
     {
-        var item = await _dbContext.UploadQueue.FindAsync(new object[] { queueItemId }, cancellationToken);
-        if (item != null)
+        try
         {
-            item.Status = "Processing";
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            var item = await _dbContext.UploadQueue.FindAsync(new object[] { queueItemId }, cancellationToken);
+            if (item != null)
+            {
+                item.Status = "Processing";
+                await _dbContext.SaveChangesAsync(cancellationToken);
+                _logger.LogDebug("Queue item {QueueItemId} marked as Processing", queueItemId);
+            }
+            else
+            {
+                _logger.LogWarning("Cannot mark queue item {QueueItemId} as Processing - item not found in database", queueItemId);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to mark queue item {QueueItemId} as Processing", queueItemId);
         }
     }
 
@@ -128,33 +144,41 @@ public class UploadQueueService : IUploadQueueService
 
     public async Task MarkAsFailedAsync(int queueItemId, string errorMessage, CancellationToken cancellationToken = default)
     {
-        var item = await _dbContext.UploadQueue.FindAsync(new object[] { queueItemId }, cancellationToken);
-        if (item == null)
+        try
         {
-            return;
+            var item = await _dbContext.UploadQueue.FindAsync(new object[] { queueItemId }, cancellationToken);
+            if (item == null)
+            {
+                _logger.LogWarning("Cannot mark queue item {QueueItemId} as Failed - item not found in database", queueItemId);
+                return;
+            }
+
+            item.RetryCount++;
+            item.LastRetryAt = DateTime.UtcNow;
+            item.LastError = errorMessage;
+
+            // 補報機制：無限重試直到成功（無最大次數限制、無時間限制）
+            // 計算下次重試時間（固定間隔，不使用指數退避避免間隔過長）
+            int delaySeconds = _retryDelaySeconds; // 固定使用初始延遲（預設 2 秒）
+
+            item.NextRetryAt = DateTime.UtcNow.AddSeconds(delaySeconds);
+            item.Status = "Pending";
+
+            // 排程下次重試
+            var delay = TimeSpan.FromSeconds(delaySeconds);
+            _backgroundJobClient.Schedule<RetryUploadJob>(
+                job => job.ProcessSingleRetryAsync(queueItemId, CancellationToken.None),
+                delay);
+
+            _logger.LogWarning("Queue item {QueueItemId} ({TraceCode}) retry #{RetryCount} failed: {Error} - will retry at {NextRetryAt}",
+                queueItemId, item.TraceCode ?? item.LotNo, item.RetryCount, errorMessage, item.NextRetryAt?.ToLocalTime());
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
-
-        item.RetryCount++;
-        item.LastRetryAt = DateTime.UtcNow;
-        item.LastError = errorMessage;
-
-        // 補報機制：無限重試直到成功（無最大次數限制、無時間限制）
-        // 計算下次重試時間（固定間隔，不使用指數退避避免間隔過長）
-        int delaySeconds = _retryDelaySeconds; // 固定使用初始延遲（預設 2 秒）
-
-        item.NextRetryAt = DateTime.UtcNow.AddSeconds(delaySeconds);
-        item.Status = "Pending";
-
-        // 排程下次重試
-        var delay = TimeSpan.FromSeconds(delaySeconds);
-        _backgroundJobClient.Schedule<RetryUploadJob>(
-            job => job.ProcessSingleRetryAsync(queueItemId, CancellationToken.None),
-            delay);
-
-        _logger.LogInformation("Queue item {QueueItemId} retry failed (attempt {RetryCount}) - next retry in {Delay}",
-            queueItemId, item.RetryCount, delay);
-
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "✗ Failed to update queue item {QueueItemId} status in database - retry may be lost!", queueItemId);
+        }
     }
 
     public async Task<QueueStatistics> GetStatisticsAsync(CancellationToken cancellationToken = default)

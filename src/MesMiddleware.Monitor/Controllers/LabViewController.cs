@@ -53,7 +53,7 @@ public class LabViewController : ControllerBase
                     success = false,
                     code = "400",
                     msg = "No inspection data provided in request",
-                    data = (object?)null
+                    data = ""
                 });
             }
 
@@ -67,7 +67,7 @@ public class LabViewController : ControllerBase
                     success = false,
                     code = "400",
                     msg = string.Join("; ", errors),
-                    data = (object?)null
+                    data = ""
                 });
             }
 
@@ -99,8 +99,8 @@ public class LabViewController : ControllerBase
             {
                 success = true,
                 code = "200",
-                msg = $"上传成功 (Accepted {records.Count} records)",
-                data = (object?)null
+                msg = $" (Accepted {records.Count} records)",
+                data = ""
             });
         }
         catch (Exception ex)
@@ -111,7 +111,7 @@ public class LabViewController : ControllerBase
                 success = false,
                 code = "500",
                 msg = "Internal server error: " + ex.Message,
-                data = (object?)null
+                data = ""
             });
         }
     }

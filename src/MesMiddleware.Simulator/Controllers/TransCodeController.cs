@@ -45,7 +45,7 @@ public class TransCodeController : ControllerBase
                 return Ok(new MesApiResponse<object>
                 {
                     Success = false,
-                    Data = null,
+                    Data = "",
                     Msg = "缺少 accessToken",
                     Code = "401"
                 });
@@ -57,7 +57,7 @@ public class TransCodeController : ControllerBase
                 return Ok(new MesApiResponse<object>
                 {
                     Success = false,
-                    Data = null,
+                    Data = "",
                     Msg = "Token 無效或已過期",
                     Code = "401"
                 });
@@ -73,7 +73,7 @@ public class TransCodeController : ControllerBase
                 return Ok(new MesApiResponse<object>
                 {
                     Success = false,
-                    Data = null,
+                    Data = "",
                     Msg = $"驗證失敗:{failedCodes}。",
                     Code = "0"
                 });
@@ -89,7 +89,7 @@ public class TransCodeController : ControllerBase
             return Ok(new MesApiResponse<object>
             {
                 Success = true,
-                Data = null,
+                Data = "",
                 Msg = "驗證成功",
                 Code = "200"
             });
@@ -100,7 +100,7 @@ public class TransCodeController : ControllerBase
             return Ok(new MesApiResponse<object>
             {
                 Success = false,
-                Data = null,
+                Data = "",
                 Msg = $"系統錯誤: {ex.Message}",
                 Code = "500"
             });
