@@ -36,6 +36,11 @@ public partial class App : Application
     private IHost? _host;
 
     /// <summary>
+    /// Cancellation token source for hosted services
+    /// </summary>
+    private CancellationTokenSource? _hostCts;
+
+    /// <summary>
     /// Hangfire background job server
     /// </summary>
     private BackgroundJobServer? _hangfireServer;
@@ -79,9 +84,12 @@ public partial class App : Application
     /// <param name="services">服務集合</param>
     private void ConfigureServices(IServiceCollection services)
     {
+        // 取得 exe 所在目錄（而非當前工作目錄），確保從任何目錄執行都能找到設定檔
+        var exeDirectory = AppDomain.CurrentDomain.BaseDirectory;
+
         // 讀取 appsettings.json 配置文件
         var configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
+            .SetBasePath(exeDirectory)
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
             .Build();
 
@@ -98,7 +106,14 @@ public partial class App : Application
         services.Configure<WebApiOptions>(configuration.GetSection(WebApiOptions.SectionName));
 
         // 註冊 Entity Framework Core (SQLite)
+        // 將相對路徑轉換為絕對路徑，確保從任何目錄執行都能正確存取資料庫
         var connectionString = configuration.GetConnectionString("MonitorDatabase") ?? "Data Source=monitor.db";
+        if (connectionString.Contains("Data Source=") && !Path.IsPathRooted(connectionString.Replace("Data Source=", "")))
+        {
+            var dbFileName = connectionString.Replace("Data Source=", "");
+            var absoluteDbPath = Path.Combine(exeDirectory, dbFileName);
+            connectionString = $"Data Source={absoluteDbPath}";
+        }
         services.AddDbContext<MonitorDbContext>(options =>
             options.UseSqlite(connectionString));
 
@@ -169,9 +184,8 @@ public partial class App : Application
         // 註冊本地化服務
         services.AddSingleton<ILocalizationService, LocalizationService>();
 
-        // 註冊 Hosted Services (Web API + Channel Processor)
-        services.AddHostedService<WebApiHostService>();
-        services.AddHostedService<InspectionChannelProcessor>();
+        // 注意: Hosted Services 在 StartHostedServicesAsync 中由獨立的 _host 管理
+        // 不在主 DI 容器中註冊，避免重複實例化
 
         // 註冊 ViewModels
         services.AddSingleton<StatusViewModel>();
@@ -241,18 +255,11 @@ public partial class App : Application
         BackgroundJob.Enqueue<RetryUploadJob>(job => job.ProcessPendingQueueAsync(CancellationToken.None));
         Log.Information("Triggered immediate queue processing on startup");
 
-        // Start hosted services in background
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                await _host.RunAsync();
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Hosted services crashed");
-            }
-        });
+        // Create cancellation token source for host
+        _hostCts = new CancellationTokenSource();
+
+        // Start hosted services (使用 StartAsync 而不是 RunAsync，避免阻塞)
+        await _host.StartAsync(_hostCts.Token);
 
         Log.Information("Hosted services started (Web API on http://localhost:5100 + Channel Processor + MES Cloud Monitor + Hangfire)");
     }
@@ -261,24 +268,14 @@ public partial class App : Application
     /// 應用程式結束時的清理方法
     /// </summary>
     /// <param name="e">結束事件參數</param>
-    protected override async void OnExit(ExitEventArgs e)
+    protected override void OnExit(ExitEventArgs e)
     {
-        // Stop Hangfire server
-        _hangfireServer?.SendStop();
-        _hangfireServer?.Dispose();
+        Log.Information("Application exiting...");
 
-        // Stop hosted services
-        if (_host != null)
-        {
-            await _host.StopAsync(TimeSpan.FromSeconds(5));
-            _host.Dispose();
-        }
-
-        // 釋放服務提供者資源
-        _serviceProvider?.Dispose();
-        // 關閉並清空日誌緩衝
+        // 直接強制終止進程 - 不等待任何清理
+        // 這是最可靠的方式確保程序完全關閉
         Log.CloseAndFlush();
-        base.OnExit(e);
+        Environment.Exit(0);
     }
 }
 

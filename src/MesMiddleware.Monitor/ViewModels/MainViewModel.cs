@@ -59,8 +59,8 @@ public partial class MainViewModel : ObservableObject
     /// </summary>
     public ILocalizationService LocalizationService => _localizationService;
 
-    // 視窗標題
-    public string WindowTitle => _localizationService.GetString("WindowTitle");
+    // 視窗標題 (固定英文，不使用本地化)
+    public string WindowTitle => "MES_Middleware";
 
     // Tab 標題
     public string TabStatus => _localizationService.GetString("TabStatus");
@@ -247,6 +247,17 @@ public partial class MainViewModel : ObservableObject
         QueueViewModel.StopPeriodicRefresh();
 
         await Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// 同步停止所有定期刷新（用於關閉視窗時快速停止）
+    /// </summary>
+    public void StopAllRefresh()
+    {
+        try { _localizationService.LanguageChanged -= OnLanguageChanged; } catch { }
+        try { StatusViewModel.StopPeriodicRefresh(); } catch { }
+        try { HistoryViewModel.StopPeriodicRefresh(); } catch { }
+        try { QueueViewModel.StopPeriodicRefresh(); } catch { }
     }
 
     /// <summary>

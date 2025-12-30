@@ -4,6 +4,8 @@ using Microsoft.Extensions.Logging;
 using MesMiddleware.Monitor.Services.Converters;
 using MesMiddleware.Shared.Models;
 using MesMiddleware.Shared.Models.LabView;
+using System.IO;
+using System.Text.Json;
 using System.Threading.Channels;
 
 namespace MesMiddleware.Monitor.Controllers;
@@ -19,6 +21,12 @@ public class LabViewController : ControllerBase
     private readonly ILabViewDataConverter _converter;
     private readonly Channel<InspectionRecord> _inspectionChannel;
     private readonly ILogger<LabViewController> _logger;
+
+    // LabVIEW 資料記錄相關
+    private static readonly object _logLock = new object();
+    private static readonly string _logDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "labview-logs");
+    private static DateTime _lastCleanup = DateTime.MinValue;
+    private static readonly int _retentionDays = 7;
 
     public LabViewController(
         ILabViewDataConverter converter,
@@ -44,6 +52,9 @@ public class LabViewController : ControllerBase
     {
         try
         {
+            // 記錄 LabVIEW 傳送的原始資料
+            LogLabViewDataToFile(request);
+
             // Validate request structure
             if (request.Data == null || request.Data.Count == 0)
             {
@@ -113,6 +124,110 @@ public class LabViewController : ControllerBase
                 msg = "Internal server error: " + ex.Message,
                 data = ""
             });
+        }
+    }
+
+    /// <summary>
+    /// 將 LabVIEW 傳送的資料記錄到檔案
+    /// 檔案命名格式: labview-YYYY-MM-DD.txt
+    /// </summary>
+    private void LogLabViewDataToFile(LabViewInspectionRequest request)
+    {
+        try
+        {
+            // 確保目錄存在
+            if (!Directory.Exists(_logDirectory))
+            {
+                Directory.CreateDirectory(_logDirectory);
+                _logger.LogInformation("Created LabVIEW log directory: {Directory}", _logDirectory);
+            }
+
+            // 產生以日期命名的檔案名稱
+            var today = DateTime.Now;
+            var filename = $"labview-{today:yyyy-MM-dd}.txt";
+            var filepath = Path.Combine(_logDirectory, filename);
+
+            // 序列化請求資料為 JSON
+            var jsonContent = JsonSerializer.Serialize(request, new JsonSerializerOptions
+            {
+                WriteIndented = false,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
+
+            // 取得 TraceCode 或 LotNo 用於記錄
+            var traceInfo = request.Data?.FirstOrDefault()?.TraceCode
+                ?? request.Data?.FirstOrDefault()?.LotNo
+                ?? "N/A";
+
+            // 組成記錄行 (含時間戳記和 TraceCode)
+            var logEntry = $"[{today:yyyy-MM-dd HH:mm:ss.fff}] [TraceCode: {traceInfo}] {jsonContent}{Environment.NewLine}";
+
+            // 執行緒安全寫入檔案
+            lock (_logLock)
+            {
+                System.IO.File.AppendAllText(filepath, logEntry);
+            }
+
+            _logger.LogDebug("LabVIEW data logged to file: {Filepath}", filepath);
+
+            // 每小時執行一次清理檢查（避免每次請求都檢查）
+            if ((DateTime.Now - _lastCleanup).TotalHours >= 1)
+            {
+                CleanupOldLogFiles();
+                _lastCleanup = DateTime.Now;
+            }
+        }
+        catch (Exception ex)
+        {
+            // 記錄失敗不應影響主要功能，只記錄警告
+            _logger.LogWarning(ex, "Failed to log LabVIEW data to file");
+        }
+    }
+
+    /// <summary>
+    /// 清理超過保留天數的舊記錄檔案
+    /// </summary>
+    private void CleanupOldLogFiles()
+    {
+        try
+        {
+            if (!Directory.Exists(_logDirectory))
+                return;
+
+            var cutoffDate = DateTime.Now.AddDays(-_retentionDays);
+            var files = Directory.GetFiles(_logDirectory, "labview-*.txt");
+            var deletedCount = 0;
+
+            foreach (var file in files)
+            {
+                try
+                {
+                    var fileInfo = new FileInfo(file);
+
+                    // 根據檔案最後寫入時間判斷是否過期
+                    if (fileInfo.LastWriteTime < cutoffDate)
+                    {
+                        System.IO.File.Delete(file);
+                        deletedCount++;
+                        _logger.LogInformation("Deleted old LabVIEW log file: {FileName} (LastWrite: {LastWrite})",
+                            fileInfo.Name, fileInfo.LastWriteTime);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to delete old log file: {File}", file);
+                }
+            }
+
+            if (deletedCount > 0)
+            {
+                _logger.LogInformation("LabVIEW log cleanup completed: deleted {Count} files older than {Days} days",
+                    deletedCount, _retentionDays);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to cleanup old LabVIEW log files");
         }
     }
 

@@ -51,16 +51,16 @@ public partial class MainWindow : Window
     /// <summary>
     /// 視窗關閉時的處理方法
     /// </summary>
-    private async void Window_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+    private void Window_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
-        // 立即釋放系統匣圖示
-        _trayIcon?.Dispose();
+        // 釋放系統匣圖示
+        try { _trayIcon?.Dispose(); } catch { }
 
-        // 關閉 ViewModel 資源（現在速度很快，不需等待）
-        await _viewModel.ShutdownAsync();
+        // 停止 ViewModel 的定期刷新
+        try { _viewModel.StopAllRefresh(); } catch { }
 
-        // 強制立即關閉應用程式
-        Application.Current.Shutdown();
+        // 強制終止進程
+        Environment.Exit(0);
     }
 
     /// <summary>
@@ -108,11 +108,11 @@ public partial class MainWindow : Window
         var exitMenuItem = new System.Windows.Controls.MenuItem();
         exitMenuItem.SetBinding(System.Windows.Controls.MenuItem.HeaderProperty,
             new System.Windows.Data.Binding("LocalizationService.TrayMenuExit") { Source = _viewModel });
-        exitMenuItem.Click += async (s, e) =>
+        exitMenuItem.Click += (s, e) =>
         {
-            _trayIcon.Dispose();
-            await _viewModel.ShutdownAsync();
-            Application.Current.Shutdown();
+            try { _trayIcon?.Dispose(); } catch { }
+            try { _viewModel.StopAllRefresh(); } catch { }
+            Environment.Exit(0);
         };
         contextMenu.Items.Add(exitMenuItem);
 

@@ -202,8 +202,8 @@ public class InspectionChannelProcessor : BackgroundService
                         devName = data.DevName,
                         userName = data.UserName,
                         workClass = data.WorkClass,
-                        partNumber = (string?)null,
-                        remark = (string?)null,
+                        partNumber = data.PartNumber,
+                        remark = data.Remark,
                         paramData = data.ParamData,
                         benchmarks = data.Benchmarks,
                         otherData = data.OtherData
