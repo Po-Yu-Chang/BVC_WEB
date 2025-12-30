@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using MesMiddleware.Monitor.Data;
 using MesMiddleware.Monitor.Models;
 using MesMiddleware.Shared.Models;
+using System.IO;
 using System.Net.Http;
 using System.Text.Json;
 
@@ -257,6 +258,12 @@ public class RetryUploadJob
     private readonly MonitorDbContext _dbContext;
     private readonly WebApiOptions _webApiOptions;
 
+    // 補報 Log 記錄相關
+    private static readonly object _logLock = new object();
+    private static readonly string _logDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "mes-retry-logs");
+    private static DateTime _lastCleanup = DateTime.MinValue;
+    private static readonly int _retentionDays = 7;
+
     public RetryUploadJob(
         IUploadQueueService queueService,
         ITokenService tokenService,
@@ -455,12 +462,151 @@ public class RetryUploadJob
                 response = await httpClient.SendAsync(retryRequest, cancellationToken);
             }
 
-            return response.IsSuccessStatusCode;
+            if (response.IsSuccessStatusCode)
+            {
+                // 記錄成功的補報
+                LogRetryUploadToFile(data, requestPayload, true, null);
+                return true;
+            }
+            else
+            {
+                var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+                var errorMsg = $"MES Cloud returned {response.StatusCode}: {responseContent}";
+                // 記錄失敗的補報
+                LogRetryUploadToFile(data, requestPayload, false, errorMsg);
+                return false;
+            }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Exception during MES Cloud upload in retry job");
+            // 記錄異常的補報
+            LogRetryUploadToFile(data, null, false, $"Exception: {ex.Message}");
             return false;
+        }
+    }
+
+    /// <summary>
+    /// 將補報資料記錄到檔案
+    /// 檔案命名格式: mes-retry-YYYY-MM-DD.txt
+    /// </summary>
+    private void LogRetryUploadToFile(InspectionRecord data, object? requestPayload, bool success, string? errorMessage)
+    {
+        try
+        {
+            // 確保目錄存在
+            if (!Directory.Exists(_logDirectory))
+            {
+                Directory.CreateDirectory(_logDirectory);
+                _logger.LogInformation("Created MES retry log directory: {Directory}", _logDirectory);
+            }
+
+            // 產生以日期命名的檔案名稱
+            var today = DateTime.Now;
+            var filename = $"mes-retry-{today:yyyy-MM-dd}.txt";
+            var filepath = Path.Combine(_logDirectory, filename);
+
+            // 序列化請求資料為 JSON
+            string jsonContent;
+            if (requestPayload != null)
+            {
+                jsonContent = JsonSerializer.Serialize(requestPayload, new JsonSerializerOptions
+                {
+                    WriteIndented = false,
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
+            }
+            else
+            {
+                // 如果沒有 payload，直接序列化 data
+                jsonContent = JsonSerializer.Serialize(new
+                {
+                    isVerifyLot = false,
+                    data = new[] { data }
+                }, new JsonSerializerOptions
+                {
+                    WriteIndented = false,
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
+            }
+
+            // 取得 TraceCode 或 LotNo 用於記錄
+            var traceInfo = data.TraceCode ?? data.LotNo ?? "N/A";
+            var status = success ? "RETRY_SUCCESS" : "RETRY_FAILED";
+            var errorPart = string.IsNullOrEmpty(errorMessage) ? "" : $" | Error: {errorMessage}";
+
+            // 組成記錄行 (含時間戳記、TraceCode、狀態)
+            var logEntry = $"[{today:yyyy-MM-dd HH:mm:ss.fff}] [{status}] [TraceCode: {traceInfo}]{errorPart} {jsonContent}{Environment.NewLine}";
+
+            // 執行緒安全寫入檔案，使用 FileStream 確保立即寫入磁碟
+            lock (_logLock)
+            {
+                using (var fs = new FileStream(filepath, FileMode.Append, FileAccess.Write, FileShare.Read, 4096, FileOptions.WriteThrough))
+                using (var sw = new StreamWriter(fs))
+                {
+                    sw.Write(logEntry);
+                    sw.Flush();
+                }
+            }
+
+            _logger.LogDebug("MES retry data logged to file: {Filepath}", filepath);
+
+            // 每小時執行一次清理檢查
+            if ((DateTime.Now - _lastCleanup).TotalHours >= 1)
+            {
+                CleanupOldLogFiles();
+                _lastCleanup = DateTime.Now;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to log MES retry data to file");
+        }
+    }
+
+    /// <summary>
+    /// 清理超過保留天數的舊記錄檔案
+    /// </summary>
+    private void CleanupOldLogFiles()
+    {
+        try
+        {
+            if (!Directory.Exists(_logDirectory))
+                return;
+
+            var cutoffDate = DateTime.Now.AddDays(-_retentionDays);
+            var files = Directory.GetFiles(_logDirectory, "mes-retry-*.txt");
+            var deletedCount = 0;
+
+            foreach (var file in files)
+            {
+                try
+                {
+                    var fileInfo = new FileInfo(file);
+
+                    if (fileInfo.LastWriteTime < cutoffDate)
+                    {
+                        File.Delete(file);
+                        deletedCount++;
+                        _logger.LogInformation("Deleted old MES retry log file: {FileName} (LastWrite: {LastWrite})",
+                            fileInfo.Name, fileInfo.LastWriteTime);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to delete old log file: {File}", file);
+                }
+            }
+
+            if (deletedCount > 0)
+            {
+                _logger.LogInformation("MES retry log cleanup completed: deleted {Count} files older than {Days} days",
+                    deletedCount, _retentionDays);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to cleanup old MES retry log files");
         }
     }
 }

@@ -90,7 +90,7 @@ public class LabViewDataConverter : ILabViewDataConverter
                 record.OtherData.Add(new OtherDataItem
                 {
                     Code = other.Code,
-                    Key = other.Name ?? other.Code ?? string.Empty,
+                    Name = other.Name ?? other.Code ?? string.Empty,
                     Value = other.Value ?? string.Empty,
                     Unit = other.Unit,
                     Desc = other.Desc
@@ -158,11 +158,11 @@ public class LabViewDataConverter : ILabViewDataConverter
             {
                 traceData.OtherData.Add(new MesOtherDataItem
                 {
-                    Code = other.Code ?? other.Key,
-                    Name = other.Key,
+                    Code = other.Code ?? other.Name,
+                    Name = other.Name,
                     Value = other.Value,
                     Unit = other.Unit ?? string.Empty,
-                    Desc = other.Desc ?? other.Key
+                    Desc = other.Desc ?? other.Name
                 });
             }
 

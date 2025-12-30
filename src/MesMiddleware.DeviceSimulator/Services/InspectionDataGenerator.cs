@@ -51,9 +51,9 @@ public class InspectionDataGenerator
 
         var otherData = new List<OtherDataItem>
         {
-            new OtherDataItem { Key = "檢測結果", Value = result },
-            new OtherDataItem { Key = "工單號", Value = $"WO-{now:yyyyMM}-{_random.Next(1, 100):D3}" },
-            new OtherDataItem { Key = "備註", Value = result == "NG" ? GenerateNgRemark() : "正常" }
+            new OtherDataItem { Name = "檢測結果", Value = result },
+            new OtherDataItem { Name = "工單號", Value = $"WO-{now:yyyyMM}-{_random.Next(1, 100):D3}" },
+            new OtherDataItem { Name = "備註", Value = result == "NG" ? GenerateNgRemark() : "正常" }
         };
 
         return new InspectionRecord

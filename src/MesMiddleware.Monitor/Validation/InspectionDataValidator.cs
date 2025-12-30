@@ -78,9 +78,9 @@ public class InspectionDataValidator : AbstractValidator<InspectionRecord>
         // OtherDataItem validation
         RuleForEach(x => x.OtherData).ChildRules(otherData =>
         {
-            otherData.RuleFor(o => o.Key)
+            otherData.RuleFor(o => o.Name)
                 .NotEmpty()
-                .WithMessage("OtherData.Key is required");
+                .WithMessage("OtherData.Name is required");
 
             otherData.RuleFor(o => o.Value)
                 .NotEmpty()

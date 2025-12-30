@@ -43,6 +43,12 @@ public partial class MainViewModel : ObservableObject
     private TraceVerificationViewModel _traceVerificationViewModel;
 
     /// <summary>
+    /// 資料記錄視圖模型 (顯示 LabVIEW 接收資料和 MES 發送資料)
+    /// </summary>
+    [ObservableProperty]
+    private DataLogViewModel _dataLogViewModel;
+
+    /// <summary>
     /// 視窗是否可見
     /// </summary>
     [ObservableProperty]
@@ -68,6 +74,8 @@ public partial class MainViewModel : ObservableObject
     public string TabQueue => _localizationService.GetString("TabQueue");
     public string TabCommands => _localizationService.GetString("TabCommands");
     public string TabTraceVerification => _localizationService.GetString("TraceVerification_TabTitle");
+    public string TabLabViewData => "LabVIEW 接收資料";
+    public string TabMesUploadData => "MES 發送資料";
 
     // 語言選項
     public string LanguageTitle => _localizationService.GetString("Language_Title");
@@ -84,7 +92,7 @@ public partial class MainViewModel : ObservableObject
     public string HeaderSubtitle => _localizationService.GetString("Header_Subtitle");
 
     // 版本資訊
-    public const string AppVersion = "v2.2.0";
+    public const string AppVersion = "v2.3.0";
     public static string BuildDate => GetBuildDate();
     public string VersionInfo => $"{AppVersion} | {BuildDate}";
 
@@ -171,6 +179,7 @@ public partial class MainViewModel : ObservableObject
         HistoryViewModel historyViewModel,
         QueueViewModel queueViewModel,
         TraceVerificationViewModel traceVerificationViewModel,
+        DataLogViewModel dataLogViewModel,
         ILogger<MainViewModel> logger)
     {
         _apiClient = apiClient;
@@ -179,6 +188,7 @@ public partial class MainViewModel : ObservableObject
         HistoryViewModel = historyViewModel;
         QueueViewModel = queueViewModel;
         TraceVerificationViewModel = traceVerificationViewModel;
+        DataLogViewModel = dataLogViewModel;
         _logger = logger;
 
         // 訂閱語言變更事件
@@ -343,5 +353,7 @@ public partial class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(HistoryHeaderEquipmentName));
         OnPropertyChanged(nameof(HistoryHeaderStatus));
         OnPropertyChanged(nameof(HistoryHeaderErrorMessage));
+        OnPropertyChanged(nameof(TabLabViewData));
+        OnPropertyChanged(nameof(TabMesUploadData));
     }
 }

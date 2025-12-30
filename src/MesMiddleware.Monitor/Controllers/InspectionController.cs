@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MesMiddleware.Shared.Models;
+using MesMiddleware.Shared.Models.LabView;
 using System.Threading.Channels;
 
 namespace MesMiddleware.Monitor.Controllers;
@@ -16,12 +17,12 @@ namespace MesMiddleware.Monitor.Controllers;
 public class InspectionController : ControllerBase
 {
     private readonly IValidator<InspectionRecord> _validator;
-    private readonly Channel<InspectionRecord> _inspectionChannel;
+    private readonly Channel<LabViewInspectionRequest> _inspectionChannel;
     private readonly ILogger<InspectionController> _logger;
 
     public InspectionController(
         IValidator<InspectionRecord> validator,
-        Channel<InspectionRecord> inspectionChannel,
+        Channel<LabViewInspectionRequest> inspectionChannel,
         ILogger<InspectionController> logger)
     {
         _validator = validator;
@@ -59,8 +60,11 @@ public class InspectionController : ControllerBase
                 });
             }
 
-            // Write to in-memory channel (fast, non-blocking)
-            await _inspectionChannel.Writer.WriteAsync(data);
+            // 將 InspectionRecord 轉換為 LabViewInspectionRequest 格式
+            var labViewRequest = ConvertToLabViewRequest(data);
+
+            // Write to in-memory channel
+            await _inspectionChannel.Writer.WriteAsync(labViewRequest);
 
             // 記錄到 Device → Monitor 歷史
             StatusController.AddDeviceToMonitorHistory(
@@ -69,7 +73,7 @@ public class InspectionController : ControllerBase
                 null
             );
 
-            // 更新設備活動時間（IncrementReceived is called in InspectionChannelProcessor）
+            // 更新設備活動時間
             StatusController.UpdateDeviceActivity();
 
             _logger.LogInformation("Inspection data accepted: {TraceCodeOrLot}",
@@ -89,5 +93,68 @@ public class InspectionController : ControllerBase
                 message = "Internal server error"
             });
         }
+    }
+
+    /// <summary>
+    /// 將 InspectionRecord 轉換為 LabViewInspectionRequest 格式
+    /// </summary>
+    private LabViewInspectionRequest ConvertToLabViewRequest(InspectionRecord data)
+    {
+        var labViewData = new LabViewInspectionData
+        {
+            ProcName = data.ProcName,
+            DevName = data.DevName,
+            UserName = data.UserName,
+            WorkClass = data.WorkClass,
+            TraceCode = data.TraceCode,
+            LotNo = data.LotNo,
+            PartNumber = data.PartNumber,
+            Remark = data.Remark
+        };
+
+        // 轉換 ParamData
+        foreach (var param in data.ParamData)
+        {
+            labViewData.ParamData.Add(new LabViewParamDataItem
+            {
+                Code = param.Code,
+                Name = param.Name,
+                Value = param.Value,
+                Unit = param.Unit,
+                Desc = param.Desc
+            });
+        }
+
+        // 轉換 Benchmarks
+        foreach (var benchmark in data.Benchmarks)
+        {
+            labViewData.Benchmarks.Add(new LabViewBenchmarkItem
+            {
+                Code = benchmark.Code,
+                Name = benchmark.Name,
+                Value = benchmark.Value,
+                Unit = benchmark.Unit,
+                Desc = benchmark.Desc
+            });
+        }
+
+        // 轉換 OtherData
+        foreach (var other in data.OtherData)
+        {
+            labViewData.OtherData.Add(new LabViewOtherDataItem
+            {
+                Code = other.Code,
+                Name = other.Name,
+                Value = other.Value,
+                Unit = other.Unit,
+                Desc = other.Desc
+            });
+        }
+
+        return new LabViewInspectionRequest
+        {
+            IsVerifyLot = false,
+            Data = new List<LabViewInspectionData> { labViewData }
+        };
     }
 }

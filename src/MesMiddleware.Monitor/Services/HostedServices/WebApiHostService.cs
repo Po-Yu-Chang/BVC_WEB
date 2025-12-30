@@ -8,6 +8,7 @@ using MesMiddleware.Monitor.Services;
 using MesMiddleware.Monitor.Services.Converters;
 using MesMiddleware.Monitor.Validation;
 using MesMiddleware.Shared.Models;
+using MesMiddleware.Shared.Models.LabView;
 using FluentValidation;
 using System.Net.Http;
 using System.Threading.Channels;
@@ -57,7 +58,7 @@ public class WebApiHostService : BackgroundService
             // Register shared services from WPF DI container
             builder.Services.AddSingleton(_serviceProvider.GetRequiredService<ITokenService>());
             builder.Services.AddSingleton(_serviceProvider.GetRequiredService<IHttpClientFactory>());
-            builder.Services.AddSingleton(_serviceProvider.GetRequiredService<Channel<InspectionRecord>>());
+            builder.Services.AddSingleton(_serviceProvider.GetRequiredService<Channel<LabViewInspectionRequest>>());
 
             // Register validator
             builder.Services.AddScoped<IValidator<InspectionRecord>, InspectionDataValidator>();

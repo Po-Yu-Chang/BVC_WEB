@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using MesMiddleware.Monitor.Services.Converters;
-using MesMiddleware.Shared.Models;
 using MesMiddleware.Shared.Models.LabView;
 using System.IO;
 using System.Text.Json;
@@ -12,14 +10,13 @@ namespace MesMiddleware.Monitor.Controllers;
 
 /// <summary>
 /// API endpoint for LabVIEW equipment to submit inspection data.
-/// Accepts LabVIEW JSON format and converts to internal format.
+/// Accepts LabVIEW JSON format and forwards directly to MES Cloud (no conversion).
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class LabViewController : ControllerBase
 {
-    private readonly ILabViewDataConverter _converter;
-    private readonly Channel<InspectionRecord> _inspectionChannel;
+    private readonly Channel<LabViewInspectionRequest> _inspectionChannel;
     private readonly ILogger<LabViewController> _logger;
 
     // LabVIEW 資料記錄相關
@@ -29,11 +26,9 @@ public class LabViewController : ControllerBase
     private static readonly int _retentionDays = 7;
 
     public LabViewController(
-        ILabViewDataConverter converter,
-        Channel<InspectionRecord> inspectionChannel,
+        Channel<LabViewInspectionRequest> inspectionChannel,
         ILogger<LabViewController> logger)
     {
-        _converter = converter;
         _inspectionChannel = inspectionChannel;
         _logger = logger;
     }
@@ -82,27 +77,21 @@ public class LabViewController : ControllerBase
                 });
             }
 
-            // Convert to internal format
-            var records = _converter.ToInspectionRecords(request);
+            // 直接將原始請求寫入 Channel (不做轉換，避免資料遺失)
+            await _inspectionChannel.Writer.WriteAsync(request);
 
-            // Write all records to channel
-            foreach (var record in records)
-            {
-                await _inspectionChannel.Writer.WriteAsync(record);
+            // Record to Device -> Monitor history (使用第一筆資料的 TraceCode)
+            var firstData = request.Data.First();
+            var traceInfo = firstData.TraceCode ?? firstData.LotNo ?? "N/A";
 
-                // Record to Device -> Monitor history
-                StatusController.AddDeviceToMonitorHistory(
-                    record.TraceCode ?? record.LotNo ?? "N/A",
-                    "Received",
-                    null
-                );
+            StatusController.AddDeviceToMonitorHistory(traceInfo, "Received", null);
 
-                _logger.LogInformation("LabVIEW data accepted: {TraceCodeOrLot} (DevName: {DevName})",
-                    record.TraceCode ?? record.LotNo,
-                    record.DevName);
-            }
+            _logger.LogInformation("LabVIEW data accepted: {TraceCodeOrLot} (DevName: {DevName}, Count: {Count})",
+                traceInfo,
+                firstData.DevName,
+                request.Data.Count);
 
-            // Update device activity status (IncrementReceived is called in InspectionChannelProcessor)
+            // Update device activity status
             StatusController.UpdateDeviceActivity();
 
             // Return MES-compatible success response
@@ -110,7 +99,7 @@ public class LabViewController : ControllerBase
             {
                 success = true,
                 code = "200",
-                msg = $" (Accepted {records.Count} records)",
+                msg = $"Accepted {request.Data.Count} records",
                 data = ""
             });
         }
@@ -131,10 +120,17 @@ public class LabViewController : ControllerBase
     /// 將 LabVIEW 傳送的資料記錄到檔案
     /// 檔案命名格式: labview-YYYY-MM-DD.txt
     /// </summary>
-    private void LogLabViewDataToFile(LabViewInspectionRequest request)
+    private void LogLabViewDataToFile(LabViewInspectionRequest? request)
     {
         try
         {
+            // Null 檢查
+            if (request == null)
+            {
+                _logger.LogWarning("LogLabViewDataToFile called with null request");
+                return;
+            }
+
             // 確保目錄存在
             if (!Directory.Exists(_logDirectory))
             {
@@ -147,12 +143,21 @@ public class LabViewController : ControllerBase
             var filename = $"labview-{today:yyyy-MM-dd}.txt";
             var filepath = Path.Combine(_logDirectory, filename);
 
-            // 序列化請求資料為 JSON
-            var jsonContent = JsonSerializer.Serialize(request, new JsonSerializerOptions
+            // 序列化請求資料為 JSON (加上額外的 try-catch)
+            string jsonContent;
+            try
             {
-                WriteIndented = false,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            });
+                jsonContent = JsonSerializer.Serialize(request, new JsonSerializerOptions
+                {
+                    WriteIndented = false,
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
+            }
+            catch (Exception serializeEx)
+            {
+                _logger.LogWarning(serializeEx, "Failed to serialize LabVIEW request to JSON");
+                jsonContent = $"{{\"error\":\"Serialization failed: {serializeEx.Message}\"}}";
+            }
 
             // 取得 TraceCode 或 LotNo 用於記錄
             var traceInfo = request.Data?.FirstOrDefault()?.TraceCode
@@ -162,13 +167,18 @@ public class LabViewController : ControllerBase
             // 組成記錄行 (含時間戳記和 TraceCode)
             var logEntry = $"[{today:yyyy-MM-dd HH:mm:ss.fff}] [TraceCode: {traceInfo}] {jsonContent}{Environment.NewLine}";
 
-            // 執行緒安全寫入檔案
+            // 執行緒安全寫入檔案，使用 FileStream 確保立即寫入磁碟
             lock (_logLock)
             {
-                System.IO.File.AppendAllText(filepath, logEntry);
+                using (var fs = new FileStream(filepath, FileMode.Append, FileAccess.Write, FileShare.Read, 4096, FileOptions.WriteThrough))
+                using (var sw = new StreamWriter(fs))
+                {
+                    sw.Write(logEntry);
+                    sw.Flush();
+                }
             }
 
-            _logger.LogDebug("LabVIEW data logged to file: {Filepath}", filepath);
+            _logger.LogInformation("LabVIEW data logged to file: {Filepath} (TraceCode: {TraceCode})", filepath, traceInfo);
 
             // 每小時執行一次清理檢查（避免每次請求都檢查）
             if ((DateTime.Now - _lastCleanup).TotalHours >= 1)
@@ -179,8 +189,8 @@ public class LabViewController : ControllerBase
         }
         catch (Exception ex)
         {
-            // 記錄失敗不應影響主要功能，只記錄警告
-            _logger.LogWarning(ex, "Failed to log LabVIEW data to file");
+            // 記錄失敗不應影響主要功能，只記錄警告（包含完整例外訊息）
+            _logger.LogWarning(ex, "Failed to log LabVIEW data to file: {Message}", ex.Message);
         }
     }
 

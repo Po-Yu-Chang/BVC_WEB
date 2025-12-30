@@ -300,7 +300,7 @@ public class WebApiUploadTests : IDisposable
             },
             OtherData = new List<OtherDataItem>
             {
-                new() { Key = "Temperature", Value = "25", Unit = "°C" }
+                new() { Name = "Temperature", Value = "25", Unit = "°C" }
             },
             InspectionTime = DateTime.UtcNow
         };

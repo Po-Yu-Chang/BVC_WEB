@@ -12,6 +12,7 @@ using MesMiddleware.Monitor.Services;
 using MesMiddleware.Monitor.Services.HostedServices;
 using MesMiddleware.Monitor.ViewModels;
 using MesMiddleware.Shared.Models;
+using MesMiddleware.Shared.Models.LabView;
 using Serilog;
 using System.IO;
 using System.Net.Http;
@@ -160,11 +161,12 @@ public partial class App : Application
         services.AddSingleton<ITokenService, TokenService>();
 
         // 註冊 Channel for inspection data (Device → Monitor queue)
+        // 直接使用 LabViewInspectionRequest，避免轉換過程中資料遺失
         var channelOptions = new BoundedChannelOptions(1000)
         {
             FullMode = BoundedChannelFullMode.Wait // Wait if channel is full (backpressure)
         };
-        var inspectionChannel = Channel.CreateBounded<InspectionRecord>(channelOptions);
+        var inspectionChannel = Channel.CreateBounded<LabViewInspectionRequest>(channelOptions);
         services.AddSingleton(inspectionChannel);
 
         // 註冊 MiddlewareApiClient (改為直接呼叫 MES Cloud API)
@@ -192,6 +194,7 @@ public partial class App : Application
         services.AddSingleton<HistoryViewModel>();
         services.AddSingleton<QueueViewModel>();
         services.AddSingleton<TraceVerificationViewModel>();
+        services.AddSingleton<DataLogViewModel>();
         services.AddSingleton<MainViewModel>();
 
         // 註冊主視窗
@@ -220,7 +223,7 @@ public partial class App : Application
                 // Copy services from WPF DI container
                 services.AddSingleton(_serviceProvider.GetRequiredService<ITokenService>());
                 services.AddSingleton(_serviceProvider.GetRequiredService<IHttpClientFactory>());
-                services.AddSingleton(_serviceProvider.GetRequiredService<Channel<InspectionRecord>>());
+                services.AddSingleton(_serviceProvider.GetRequiredService<Channel<LabViewInspectionRequest>>());
                 services.AddSingleton(_serviceProvider.GetRequiredService<IOptions<WebApiOptions>>());
                 services.AddSingleton(_serviceProvider.GetRequiredService<IUploadQueueService>());
                 services.AddSingleton(_serviceProvider.GetRequiredService<IConfiguration>());

@@ -842,6 +842,194 @@
                 </Grid>
             </TabItem>
 
+            <!-- LabVIEW 接收資料 Tab -->
+            <TabItem Header="{Binding TabLabViewData}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Header with Refresh Button -->
+                    <Border Grid.Row="0" Background="White" Padding="15" Margin="15,15,15,0" CornerRadius="8">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="LabVIEW 接收資料" FontSize="18" FontWeight="Bold" Foreground="#2C3E50" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding DataLogViewModel.LabViewRecordCount, StringFormat=' ({0} 筆)'}" FontSize="14" Foreground="#7F8C8D" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                            </StackPanel>
+                            <Button Content="重新整理"
+                                    Command="{Binding DataLogViewModel.RefreshLabViewLogsCommand}"
+                                    Style="{StaticResource ModernButtonStyle}"
+                                    HorizontalAlignment="Right"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Split View: Left=Grid, Right=JSON -->
+                    <Grid Grid.Row="1" Margin="15,10,15,15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Left: Data Grid -->
+                        <Border Grid.Column="0" Background="White" CornerRadius="8" Padding="10">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#E0E0E0" Direction="270" ShadowDepth="2" Opacity="0.3" BlurRadius="10"/>
+                            </Border.Effect>
+                            <DataGrid ItemsSource="{Binding DataLogViewModel.LabViewRecords}"
+                                      SelectedItem="{Binding DataLogViewModel.SelectedLabViewRecord}"
+                                      IsReadOnly="True"
+                                      AutoGenerateColumns="False">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="時間" Binding="{Binding Timestamp, StringFormat='HH:mm:ss.fff'}" Width="100"/>
+                                    <DataGridTextColumn Header="TraceCode" Binding="{Binding TraceCode}" Width="*"/>
+                                    <DataGridTextColumn Header="狀態" Binding="{Binding Status}" Width="70"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Border>
+
+                        <!-- Right: JSON Content -->
+                        <Border Grid.Column="2" Background="White" CornerRadius="8" Padding="15">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#E0E0E0" Direction="270" ShadowDepth="2" Opacity="0.3" BlurRadius="10"/>
+                            </Border.Effect>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock Text="JSON 內容 (點擊左側列表查看)" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,10"/>
+                                <Border Grid.Row="1" Background="#F8F9FA" BorderBrush="#BDC3C7" BorderThickness="1" CornerRadius="4" Padding="10">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                                        <TextBox Text="{Binding DataLogViewModel.SelectedLabViewRecord.FormattedJsonContent, Mode=OneWay}"
+                                                 IsReadOnly="True"
+                                                 TextWrapping="NoWrap"
+                                                 FontFamily="Consolas"
+                                                 FontSize="12"
+                                                 Foreground="#2C3E50"
+                                                 Background="Transparent"
+                                                 BorderThickness="0"
+                                                 AcceptsReturn="True"
+                                                 VerticalScrollBarVisibility="Auto"/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </TabItem>
+
+            <!-- MES 發送資料 Tab -->
+            <TabItem Header="{Binding TabMesUploadData}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Header with Refresh Button -->
+                    <Border Grid.Row="0" Background="White" Padding="15" Margin="15,15,15,0" CornerRadius="8">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="MES 發送資料" FontSize="18" FontWeight="Bold" Foreground="#2C3E50" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding DataLogViewModel.MesUploadRecordCount, StringFormat=' ({0} 筆)'}" FontSize="14" Foreground="#7F8C8D" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                            </StackPanel>
+                            <Button Content="重新整理"
+                                    Command="{Binding DataLogViewModel.RefreshMesUploadLogsCommand}"
+                                    Style="{StaticResource ModernButtonStyle}"
+                                    HorizontalAlignment="Right"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Split View: Left=Grid, Right=JSON -->
+                    <Grid Grid.Row="1" Margin="15,10,15,15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Left: Data Grid -->
+                        <Border Grid.Column="0" Background="White" CornerRadius="8" Padding="10">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#E0E0E0" Direction="270" ShadowDepth="2" Opacity="0.3" BlurRadius="10"/>
+                            </Border.Effect>
+                            <DataGrid ItemsSource="{Binding DataLogViewModel.MesUploadRecords}"
+                                      SelectedItem="{Binding DataLogViewModel.SelectedMesUploadRecord}"
+                                      IsReadOnly="True"
+                                      AutoGenerateColumns="False">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="時間" Binding="{Binding Timestamp, StringFormat='HH:mm:ss.fff'}" Width="100"/>
+                                    <DataGridTextColumn Header="TraceCode" Binding="{Binding TraceCode}" Width="*"/>
+                                    <DataGridTextColumn Header="狀態" Binding="{Binding Status}" Width="70">
+                                        <DataGridTextColumn.ElementStyle>
+                                            <Style TargetType="TextBlock">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Status}" Value="SUCCESS">
+                                                        <Setter Property="Foreground" Value="#27AE60"/>
+                                                        <Setter Property="FontWeight" Value="Bold"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="FAILED">
+                                                        <Setter Property="Foreground" Value="#E74C3C"/>
+                                                        <Setter Property="FontWeight" Value="Bold"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </DataGridTextColumn.ElementStyle>
+                                    </DataGridTextColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Border>
+
+                        <!-- Right: JSON Content -->
+                        <Border Grid.Column="2" Background="White" CornerRadius="8" Padding="15">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#E0E0E0" Direction="270" ShadowDepth="2" Opacity="0.3" BlurRadius="10"/>
+                            </Border.Effect>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                    <TextBlock Text="JSON 內容" FontWeight="Bold" Foreground="#2C3E50"/>
+                                    <TextBlock Text="{Binding DataLogViewModel.SelectedMesUploadRecord.Status, StringFormat=' [{0}]'}" FontWeight="Bold" Margin="5,0,0,0">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="#7F8C8D"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding DataLogViewModel.SelectedMesUploadRecord.Status}" Value="SUCCESS">
+                                                        <Setter Property="Foreground" Value="#27AE60"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding DataLogViewModel.SelectedMesUploadRecord.Status}" Value="FAILED">
+                                                        <Setter Property="Foreground" Value="#E74C3C"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+                                <Border Grid.Row="1" Background="#F8F9FA" BorderBrush="#BDC3C7" BorderThickness="1" CornerRadius="4" Padding="10">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                                        <TextBox Text="{Binding DataLogViewModel.SelectedMesUploadRecord.FormattedJsonContent, Mode=OneWay}"
+                                                 IsReadOnly="True"
+                                                 TextWrapping="NoWrap"
+                                                 FontFamily="Consolas"
+                                                 FontSize="12"
+                                                 Foreground="#2C3E50"
+                                                 Background="Transparent"
+                                                 BorderThickness="0"
+                                                 AcceptsReturn="True"
+                                                 VerticalScrollBarVisibility="Auto"/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </TabItem>
+
             <!-- Trace Verification Tab -->
             <TabItem Header="{Binding TabTraceVerification}">
                 <views:TraceVerificationView DataContext="{Binding TraceVerificationViewModel}"/>

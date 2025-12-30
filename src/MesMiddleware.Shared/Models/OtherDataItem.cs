@@ -12,9 +12,9 @@ public class OtherDataItem
     public string? Code { get; set; }
 
     /// <summary>
-    /// Metadata key/identifier (e.g., "CheckTime", "Temperature")
+    /// Metadata name/identifier (e.g., "CheckTime", "Temperature")
     /// </summary>
-    public required string Key { get; set; }
+    public required string Name { get; set; }
 
     /// <summary>
     /// Metadata value
